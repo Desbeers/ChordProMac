@@ -1,0 +1,14 @@
+## User settings
+xcuserdata/
+
+## Icons
+icons/
+
+## Art
+Art/
+
+## Jazzy stuff
+build/
+
+## Mac stuff
+.DS_Store
