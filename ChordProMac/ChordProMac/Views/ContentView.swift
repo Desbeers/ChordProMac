@@ -11,11 +11,13 @@ import SwiftUI
 struct ContentView: View {
     /// Binding to the current document
     @Binding var document: ChordProDocument
+    /// The observable state of the application
+    @EnvironmentObject private var appState: AppState
     /// The body of the `View`
     var body: some View {
         VStack {
             TextEditor(text: $document.text)
-                .font(.system(size: 14, weight: .regular, design: .monospaced))
+                .font(.system(size: appState.settings.fontSize, weight: .regular, design: .monospaced))
                 .padding()
         }
         .toolbar {

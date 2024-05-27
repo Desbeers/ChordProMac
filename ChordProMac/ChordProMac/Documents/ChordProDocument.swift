@@ -33,14 +33,14 @@ struct ChordProDocument: FileDocument {
             let data = configuration.file.regularFileContents,
             let string = String(data: data, encoding: .utf8)
         else {
-            throw ChordProMacError.readDocumentError
+            throw AppError.readDocumentError
         }
         text = string
     }
     /// Save the file
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         guard let data = text.data(using: .utf8) else {
-            throw ChordProMacError.writeDocumentError
+            throw AppError.writeDocumentError
         }
         return .init(regularFileWithContents: data)
     }

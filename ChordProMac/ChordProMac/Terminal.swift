@@ -124,7 +124,7 @@ extension Terminal {
         do {
             try document.text.write(to: sourceURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
-            throw ChordProMacError.writeDocumentError
+            throw AppError.writeDocumentError
         }
         /// Build the arguments for ChordPro
         let arguments = [
