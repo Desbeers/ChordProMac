@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// Terminal utilities
 public enum Terminal {
@@ -109,10 +110,10 @@ extension Terminal {
 extension Terminal {
 
     static func exportDocument(document: ChordProDocument) async throws -> (data: Data?, exportURL: URL) {
-
-        /// For now, just use the official **ChordPro** application to create the PDF
-        /// - Note: The executable should be packed in this application
-        let chordProApp = "/Applications/ChordPro.app/Contents/MacOS/chordpro"
+        /// For now, just use the official **ChordPro** binary to create the PDF
+        /// - Note: The executable is packed in this application
+        let chordProApp = Bundle.main.url(forResource: "chordpro", withExtension: nil)!
+        Logger.pdfBuild.log("BUNDLE: \(chordProApp.path(percentEncoded: false), privacy: .public)")
         /// Store the export in the temporarily directory
         /// - Note: I don;t read the file URL directly because it might not be saved yet
         let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -126,16 +127,17 @@ extension Terminal {
         } catch {
             throw AppError.writeDocumentError
         }
-        /// Build the arguments for ChordPro
+        /// Build the arguments for **ChordPro**
         let arguments = [
-            "\(chordProApp) " +
+            "'\(chordProApp.path(percentEncoded: false))' " +
             "'\(sourceURL.path(percentEncoded: false))' " +
             "--output='" +
             "\(exportURL.path(percentEncoded: false))'"
         ]
         /// Run ChordPro in the shell
         /// - Note: The output is ignored for now
-        _ = await Terminal.runInShell(arguments: arguments)
+        let output = await Terminal.runInShell(arguments: arguments)
+        Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
         /// Return the created PDF
         return (try? Data(contentsOf: exportURL), exportURL)
     }

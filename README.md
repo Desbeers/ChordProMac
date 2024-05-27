@@ -6,7 +6,7 @@ A MacOS SwiftUI wrapper for the official [ChordPro](https://chordpro.org) progra
 
 Goal is to replace the very outdated current wrapper. See [MacOS rewrite](https://github.com/ChordPro/chordpro/issues/373).
 
-For now, it is using the official binary to do the hard work.
+For now, it is using the official pre-compiled binary to do the hard work and that is in the `Bin` directory of the project.
 
 ## What can it do
 
@@ -17,7 +17,5 @@ For now, it is using the official binary to do the hard work.
 ## Notes
 
 - MacOS 13 or higher.
-- The app is not sandboxed.
-- The [official application](https://chordpro.org/chordpro/chordpro-install-on-macos/) must be installed in its default location.
 - I don't want to use any external packages.
 - There are no settings at all yet... (TODO)...
