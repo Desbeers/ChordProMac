@@ -15,4 +15,6 @@ enum AppError: String, LocalizedError {
     case writeDocumentError
     /// A settings error
     case saveSettingsError
+    /// A binary error if **chordpro** is not found in the package
+    case binaryNotFound
 }

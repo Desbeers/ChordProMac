@@ -18,4 +18,3 @@ For now, it is using the official pre-compiled binary to do the hard work and th
 
 - MacOS 13 or higher.
 - I don't want to use any external packages.
-- There are no settings at all yet... (TODO)...

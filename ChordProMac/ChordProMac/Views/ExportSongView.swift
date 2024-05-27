@@ -13,6 +13,8 @@ struct ExportSongView: View {
     let label: String
     /// The document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    /// The app settings
+    @EnvironmentObject private var appState: AppState
     /// Present an export dialog
     @State private var exportFile = false
     /// The song as PDF
@@ -22,7 +24,7 @@ struct ExportSongView: View {
         Button(action: {
             if let document {
                 Task {
-                    pdf = try? await Terminal.exportDocument(document: document.document).data
+                    pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings).data
                     exportFile = true
                 }
             }

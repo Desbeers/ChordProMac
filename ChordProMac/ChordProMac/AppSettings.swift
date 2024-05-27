@@ -10,6 +10,8 @@ import Foundation
 struct AppSettings: Codable {
     /// The font size of the editor
     var fontSize: Double = 14
+    /// The template to use
+    var template: String = "guitar"
 }
 
 extension AppSettings {

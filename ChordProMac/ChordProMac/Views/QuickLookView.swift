@@ -12,6 +12,9 @@ import QuickLook
 struct QuickLookView: View {
     /// The document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    /// The observable state of the application
+    @EnvironmentObject private var appState: AppState
+    /// The optional QuickLook URL
     @State private var quickLookURL: URL?
     /// The body of the `View`
     var body: some View {
@@ -19,7 +22,7 @@ struct QuickLookView: View {
             action: {
                 Task {
                     if let document {
-                        let pdf = try? await Terminal.exportDocument(document: document.document)
+                        let pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings)
                         quickLookURL = pdf?.exportURL
                     }
                 }

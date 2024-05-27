@@ -109,10 +109,14 @@ extension Terminal {
 
 extension Terminal {
 
-    static func exportDocument(document: ChordProDocument) async throws -> (data: Data?, exportURL: URL) {
+    static func exportDocument(document: ChordProDocument, settings: AppSettings) async throws -> (data: Data?, exportURL: URL) {
         /// For now, just use the official **ChordPro** binary to create the PDF
         /// - Note: The executable is packed in this application
-        let chordProApp = Bundle.main.url(forResource: "chordpro", withExtension: nil)!
+        guard
+            let chordProApp = Bundle.main.url(forResource: "chordpro", withExtension: nil)
+        else {
+            throw AppError.binaryNotFound
+        }
         Logger.pdfBuild.log("BUNDLE: \(chordProApp.path(percentEncoded: false), privacy: .public)")
         /// Store the export in the temporarily directory
         /// - Note: I don;t read the file URL directly because it might not be saved yet
@@ -131,6 +135,7 @@ extension Terminal {
         let arguments = [
             "'\(chordProApp.path(percentEncoded: false))' " +
             "'\(sourceURL.path(percentEncoded: false))' " +
+            "--config=\(settings.template) " +
             "--output='" +
             "\(exportURL.path(percentEncoded: false))'"
         ]
