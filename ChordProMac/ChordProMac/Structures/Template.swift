@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// A template we found in the official **ChordPro** source
 struct Template: Identifiable {
     var id: URL {
         url

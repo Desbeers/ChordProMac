@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AppSettings: Codable {
+struct AppSettings: Codable, Equatable {
     /// The font size of the editor
     var fontSize: Double = 14
     /// The template to use
@@ -15,6 +15,15 @@ struct AppSettings: Codable {
 
     // MARK: Transpose
 
+    /// Bool if the song should be transcoded
+    var transcode: Bool = false
+    /// The optional transcode to use
+    var transcodeNotation: String = "common"
+
+    // MARK: Transpose
+
+    /// Bool if the song should be transposed
+    var transpose: Bool = false
     /// The note to transpose from
     var transposeFrom: Note = .c
     /// The note to transpose to

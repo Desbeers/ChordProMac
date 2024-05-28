@@ -139,8 +139,12 @@ extension Terminal {
         arguments.append("'\(sourceURL.path(percentEncoded: false))'")
         /// Add the config file
         arguments.append("--config=\(settings.template)")
+        /// Add the optional  transcode
+        if settings.transcode {
+            arguments.append("--transcode=\(settings.transcodeNotation)")
+        }
         /// Add the optional transpose value
-        if let transpose = settings.transposeValue {
+        if settings.transpose, let transpose = settings.transposeValue {
             arguments.append("--transpose=\(transpose)")
         }
         /// Add the output file
