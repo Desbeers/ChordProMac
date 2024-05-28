@@ -57,8 +57,27 @@ extension SettingsView {
                     }
                 }
             }
+            .labelsHidden()
+            Section("Transpose") {
+                HStack {
+                    Picker("From", selection: $appState.settings.transposeFrom) {
+                        ForEach(Note.allCases, id: \.self) { note in
+                            Text(note.rawValue)
+                        }
+                    }
+                    Picker("To", selection: $appState.settings.transposeTo) {
+                        ForEach(Note.allCases, id: \.self) { note in
+                            Text(note.rawValue)
+                        }
+                    }
+                }
+                    Picker("Accents", selection: $appState.settings.transposeAccents) {
+                        ForEach(Accents.allCases, id: \.self) { accents in
+                            Text(accents.rawValue)
+                        }
+                    }
+            }
         }
-        .labelsHidden()
         .task {
             var templates: [Template] = []
             guard
@@ -69,7 +88,6 @@ extension SettingsView {
             }
             while let template = items.nextObject() as? URL {
                 if template.pathExtension == UTType.json.preferredFilenameExtension ?? ".json", !template.absoluteString.contains("notes") {
-                    dump(template.absoluteString)
                     templates.append(Template(url: template))
                 }
             }

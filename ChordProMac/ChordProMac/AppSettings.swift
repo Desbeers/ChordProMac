@@ -12,6 +12,35 @@ struct AppSettings: Codable {
     var fontSize: Double = 14
     /// The template to use
     var template: String = "guitar"
+
+    // MARK: Transpose
+
+    /// The note to transpose from
+    var transposeFrom: Note = .c
+    /// The note to transpose to
+    var transposeTo: Note = .c
+    /// The transpose accents
+    var transposeAccents: Accents = .defaults
+    /// The calculated optional transpose value
+    var transposeValue: Int? {
+        guard
+            let from = Note.noteValueDict[transposeFrom],
+            let to = Note.noteValueDict[transposeTo]
+        else {
+            return nil
+        }
+        var transpose: Int = to - from
+        transpose += transpose < 0 ? 12 : 0
+        switch transposeAccents {
+        case .defaults:
+            break
+        case .sharps:
+            transpose += 12
+        case .flats:
+            transpose -= 12
+        }
+        return transpose == 0 ? nil : transpose
+    }
 }
 
 extension AppSettings {

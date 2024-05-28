@@ -132,16 +132,22 @@ extension Terminal {
             throw AppError.writeDocumentError
         }
         /// Build the arguments for **ChordPro**
-        let arguments = [
-            "'\(chordProApp.path(percentEncoded: false))' " +
-            "'\(sourceURL.path(percentEncoded: false))' " +
-            "--config=\(settings.template) " +
-            "--output='" +
-            "\(exportURL.path(percentEncoded: false))'"
-        ]
-        /// Run ChordPro in the shell
-        /// - Note: The output is ignored for now
-        let output = await Terminal.runInShell(arguments: arguments)
+        
+        /// The **ChordPro** binary
+        var arguments:[String] = ["'\(chordProApp.path(percentEncoded: false))'"]
+        /// Add the source file
+        arguments.append("'\(sourceURL.path(percentEncoded: false))'")
+        /// Add the config file
+        arguments.append("--config=\(settings.template)")
+        /// Add the optional transpose value
+        if let transpose = settings.transposeValue {
+            arguments.append("--transpose=\(transpose)")
+        }
+        /// Add the output file
+        arguments.append("--output='\(exportURL.path(percentEncoded: false))'")
+        /// Run **ChordPro** in the shell
+        /// - Note: The output is logged
+        let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
         Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
         /// Return the created PDF
         return (try? Data(contentsOf: exportURL), exportURL)
