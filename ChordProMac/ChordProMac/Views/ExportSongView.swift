@@ -21,16 +21,21 @@ struct ExportSongView: View {
     @State private var pdf: Data?
     /// The body of the `View`
     var body: some View {
-        Button(action: {
-            if let document {
-                Task {
-                    pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings).data
-                    exportFile = true
+        Button(
+            action: {
+                if let document {
+                    Task {
+                        pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings).data
+                        exportFile = true
+                    }
                 }
+            },
+            label: {
+                Text(label)
             }
-        }, label: {
-            Text(label)
-        })
+        )
+        /// Disable the button when there is no document window in focus
+        .disabled(document == nil)
         .fileExporter(
             isPresented: $exportFile,
             document: ExportDocument(pdf: pdf),
