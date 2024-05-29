@@ -1,6 +1,6 @@
 # Test build
 
-This is an unsigned, intel only test build.
+This is an unsigned, intel only test build for macOS 13 and later.
 
 - Download the ZIP:
 
