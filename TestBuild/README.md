@@ -1,12 +1,9 @@
 # Test build
 
-This is an unsigned, intel only test build for macOS 13 and later.
+This is an unsigned, intel only test build for macOS 12 and later.
 
-- Download the ZIP:
-
-https://github.com/Desbeers/ChordProMac/raw/main/TestBuild/ChordProMac%202024-05-29%2011-49-32.zip
-
-- Unzip it
+- Download the dmg and open it.
+- Move the application to wherever you want it.
 
 YOU CANNOT JUST OPEN THE APPLICATION!
 
