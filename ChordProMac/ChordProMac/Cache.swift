@@ -41,7 +41,7 @@ public enum Cache {
     /// - Throws: an error if it can't be saved
     public static func delete(key: String, folder: String? = nil) throws {
         let file = try self.path(for: key, folder: folder)
-        try FileManager.default.removeItem(atPath: file.path())
+        try FileManager.default.removeItem(atPath: file.path)
     }
 
     /// Get the path to the cache directory

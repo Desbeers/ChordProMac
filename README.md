@@ -13,8 +13,10 @@ For now, it is using the official pre-compiled binary to do the hard work and th
 - Open and save **ChordPro** files
 - QuickLook the PDF
 - Export the PDF
+- Choose templates
+- Transpose and transcode a song
 
 ## Notes
 
-- MacOS 13 or higher.
+- MacOS 12 or higher.
 - I don't want to use any external packages.

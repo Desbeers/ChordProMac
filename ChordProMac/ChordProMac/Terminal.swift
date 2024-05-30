@@ -117,7 +117,7 @@ extension Terminal {
         else {
             throw AppError.binaryNotFound
         }
-        Logger.pdfBuild.log("BUNDLE: \(chordProApp.path(percentEncoded: false), privacy: .public)")
+        Logger.pdfBuild.log("BUNDLE: \(chordProApp.path, privacy: .public)")
         /// Store the export in the temporarily directory
         /// - Note: I don;t read the file URL directly because it might not be saved yet
         let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -134,9 +134,9 @@ extension Terminal {
         /// Build the arguments for **ChordPro**
         
         /// The **ChordPro** binary
-        var arguments:[String] = ["'\(chordProApp.path(percentEncoded: false))'"]
+        var arguments:[String] = ["'\(chordProApp.path)'"]
         /// Add the source file
-        arguments.append("'\(sourceURL.path(percentEncoded: false))'")
+        arguments.append("'\(sourceURL.path)'")
         /// Add the config file
         arguments.append("--config=\(settings.template)")
         /// Add the optional  transcode
@@ -148,11 +148,11 @@ extension Terminal {
             arguments.append("--transpose=\(transpose)")
         }
         /// Add the output file
-        arguments.append("--output='\(exportURL.path(percentEncoded: false))'")
+        arguments.append("--output='\(exportURL.path)'")
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
+        //Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
         /// Return the created PDF
         return (try? Data(contentsOf: exportURL), exportURL)
     }

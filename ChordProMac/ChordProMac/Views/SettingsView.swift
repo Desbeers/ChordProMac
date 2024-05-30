@@ -27,7 +27,7 @@ struct SettingsView: View {
                     Label("Configuration", systemImage: "filemenu.and.selection")
                 }
         }
-        .formStyle(.grouped)
+        //.formStyle(.grouped)
         .animation(.smooth, value: appState.settings)
     }
 }
@@ -35,33 +35,42 @@ struct SettingsView: View {
 extension SettingsView {
     /// SwiftUI `View` with editor settings
     var editor: some View {
-        Form {
-            Section("Font") {
+        VStack {
+            Section {
                 Picker("The font size of the editor", selection: $appState.settings.fontSize) {
                     ForEach(12...24, id: \.self) { value in
                         Text("\(value)px")
                             .tag(Double(value))
                     }
                 }
+            } header: {
+                Text("Font")
+                    .font(.title2)
             }
+            .padding([.horizontal, .bottom])
         }
+        .padding(.top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
 
 extension SettingsView {
     /// SwiftUI `View` with configuration settings
     var configuration: some View {
-        Form {
-            Section("Template") {
+        ScrollView {
+            Section {
                 Picker("Build-in", selection: $appState.settings.template) {
                     ForEach(templates) { template in
                         Text(template.label.capitalized)
                             .tag(template.label)
                     }
                 }
+            } header: {
+                Text("Template")
+                    .font(.title2)
             }
-            //.labelsHidden()
-            Section("Transpose") {
+            .padding([.horizontal, .bottom])
+            Section {
                 Toggle("Transpose the song", isOn: $appState.settings.transpose)
                 if appState.settings.transpose {
                     HStack {
@@ -82,8 +91,12 @@ extension SettingsView {
                         }
                     }
                 }
+            } header: {
+                Text("Transpose")
+                    .font(.title2)
             }
-            Section("Transcode") {
+            .padding([.horizontal, .bottom])
+            Section {
                 Toggle("Transcode the notation", isOn: $appState.settings.transcode)
                 if appState.settings.transcode {
                     Picker("Transcode to", selection: $appState.settings.transcodeNotation) {
@@ -95,8 +108,14 @@ extension SettingsView {
                     }
                     .labelsHidden()
                 }
+            } header: {
+                Text("Transcode")
+                    .font(.title2)
             }
+            .padding([.horizontal, .bottom])
         }
+        .padding(.top)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .task {
             var templates: [Template] = []
             var notations: [Notation] = []
@@ -118,10 +137,6 @@ extension SettingsView {
                         templates.append(Template(url: item))
                     }
                 }
-
-//                if template.pathExtension == UTType.json.preferredFilenameExtension ?? ".json", !template.absoluteString.contains("notes") {
-//                    templates.append(Template(url: template))
-//                }
             }
             self.templates = templates
             self.notations = notations
