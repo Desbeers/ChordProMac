@@ -1,6 +1,7 @@
 CURRDATE := $(shell date "+%Y-%m-%d")
 TESTBUILDDIR := TestBuild
 DMGNAME := ChordPro macOS ${CURRDATE}.dmg
+MKDIR := mkdir
 
 all: xcode archive
 
@@ -14,5 +15,8 @@ xcode:
 		
 archive:
 	@echo "Archive ChordPro"
+	$(shell $(MKDIR) -p "build/ChordPro")
+	$(shell cp -r "build/Release/ChordPro.app" "build/ChordPro")
+	$(shell cp "ChordProMac/Read Me First.html" "build/ChordPro")
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
-	hdiutil create -format UDZO -srcfolder build/Release/ChordPro.app "${TESTBUILDDIR}/${DMGNAME}"
+	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"
