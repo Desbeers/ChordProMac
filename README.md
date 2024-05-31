@@ -22,7 +22,7 @@ The chordpro-core `Bin` directory can be updated with `make chordpro` but requir
 
 - There are pre-compiled `dmg` images in the 'TestBuild' folder.
 
-### Build yourself (arm and intel:
+### Build yourself (arm and intel)
 
 - Clone or download the project
 
