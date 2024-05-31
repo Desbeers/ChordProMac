@@ -7,7 +7,7 @@ DEST   := build
 
 WRAPPERBIN := ChordProMac/ChordProMac/Bin
 
-all: xcode archive
+all: archive
 	
 chordpro:
 	@echo "Building ChordPro core"
@@ -25,7 +25,7 @@ chordpro:
 	cp -r "${DEST}/ChordProSource/pp/macos/build/lib" "${WRAPPERBIN}"
 	cp -r "${DEST}/ChordProSource/pp/macos/build/script" "${WRAPPERBIN}"
 
-xcode:
+xcodebuild:
 	@echo "Building ChordProMac"
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
@@ -36,7 +36,7 @@ xcode:
 		CODE_SIGNING_REQUIRED=NO \
 		BUILD_DIR=../../../build
 		
-archive:
+archive: xcodebuild
 	@echo "Archive ChordPro"
 	$(MKDIR) -p "${DEST}/ChordPro"
 	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro"
