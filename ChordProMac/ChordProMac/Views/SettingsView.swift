@@ -20,15 +20,14 @@ struct SettingsView: View {
         TabView {
             editor
                 .tabItem {
-                    Label("Editor", systemImage: "text.word.spacing")
+                    Label("Editor", systemImage: "pencil")
                 }
             configuration
                 .tabItem {
                     Label("Configuration", systemImage: "filemenu.and.selection")
                 }
         }
-        //.formStyle(.grouped)
-        .animation(.smooth, value: appState.settings)
+        .animation(.default, value: appState.settings)
     }
 }
 

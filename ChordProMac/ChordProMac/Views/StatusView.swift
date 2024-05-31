@@ -24,6 +24,6 @@ struct StatusView: View {
         .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 4)
-        .animation(.smooth, value: appState.settings)
+        .animation(.default, value: appState.settings)
     }
 }

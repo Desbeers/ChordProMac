@@ -24,6 +24,7 @@ The chordpro-core `Bin` directory can be updated with `make chordpro` but requir
 
 ### Build yourself (arm and intel)
 
+- This needs a full Xcode install
 - Clone or download the project
 
 #### Xcode:
@@ -34,8 +35,6 @@ The chordpro-core `Bin` directory can be updated with `make chordpro` but requir
 
 #### Command line:
 
-- You don't need a developers account or a full install of Xcode
-- `Xcode Command Line Tools` must be installed (enter 'xcode-select --install' in the Terminal to install)
 - Run `make xcodebuild` from the root of the project. That will build an unsigned Intel application... It works on arm as well, it is just that universal binaries will not run unsigned at all...
 
 ## Notes
