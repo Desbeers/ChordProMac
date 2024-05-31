@@ -179,7 +179,7 @@ extensive details and examples.
         // "base" defaults to 1.
         // Use 0 for an empty string, and -1 for a muted string.
         // "fingers" is optional.
-        // "display" (optional) can be used to change the way the chord is displayed. 
+        // "display" (optional) can be used to change the way the chord is displayed.
         "chords" : [
           //  {
           //    "name"  : "Bb",
@@ -268,8 +268,16 @@ extensive details and examples.
             "abc" : {
                 "type"     : "image",
                 "module"   : "ABC",
+    
+                // Default handler "abc2svg" uses program (if set),
+                // otherwise embedded QuickJS or external QuickJS.
+                // Handler "quickjs_xs" uses embedded QuickJS only.
+                // Handler "quickjs_qjs" uses external QuickJS only.
+                // Handler "quickjs" uses internal or external QuickJS.
                 "handler"  : "abc2svg",
-                // No longer used -- ./default.abc will always be used if present
+                "program"  : "",		// specify program tool
+    
+                // No longer used -- ./default.abc will be used if program tool
                 "config"   : "default", // or "none", or "myformat.fmt"
                 // The preamble is a list of lines inserted before the ABC data,
                 // and after the delegate supplied preamble.
@@ -417,7 +425,7 @@ extensive details and examples.
           // Cell dimensions are specified by "width" and "height".
           // The horizontal number of cells depends on the number of strings.
           // The vertical number of cells is "vcells", which should
-          // be 4 or larger to accomodate most chords.
+          // be 4 or larger to accommodate most chords.
           // The horizontal distance between diagrams is "hspace" cells.
           // The vertical distance is "vspace" cells.
           // "linewidth" is the thickness of the lines as a fraction of "width".
@@ -482,6 +490,24 @@ extensive details and examples.
           "even-odd-pages" : 1,
           // Align songs to even/odd pages. When greater than 1, force alignment.
           "pagealign-songs" : 1,
+    
+          // Sort pages by "title", "subtitle", "2page", "compact", "desc".
+          // "sort-pages" is a Comma separated list of the options above.
+          // title  : sort pages alphabetically by title.
+          // subtitle : sort pages alphabetically by subtitle. If this is
+          //          used together with title, only title is used.
+          // 2page :  make sure songs with even pages are placed on even
+          //          pages, so most. if not all, of the song is visible
+          //          in a normal book without needing to turn a page.
+          //          A blank page is added to align.
+          // compact: implies 2page - instead of adding a blank page,
+          //          an odd-paged song is moved in front of this song to achieve
+          //          even page alignment.
+          //          Note: this option requires extra processing time since
+          //          the songbook has to be processed twice.
+          // desc :   modifier to sort descending.
+    
+          "sort-pages" : "",
           // PDF file to add as front matter.
           "front-matter" : "",
           // PDF file to add as back matter.
@@ -562,7 +588,13 @@ extensive details and examples.
     
           "fontdir" : [],
           "fontconfig" : {
-              "times, serif" : {
+              "serif" : {
+                  ""            : "Times-Roman",
+                  "bold"        : "Times-Bold",
+                  "italic"      : "Times-Italic",
+                  "bolditalic"  : "Times-BoldItalic",
+              },
+              "times" : {
                   ""            : "Times-Roman",
                   "bold"        : "Times-Bold",
                   "italic"      : "Times-Italic",
@@ -581,7 +613,13 @@ extensive details and examples.
                   "italic"      : "Helvetica-Oblique",
                   "bolditalic"  : "Helvetica-BoldOblique",
               },
-              "courier, mono, monospace" : {
+              "courier" : {
+                  ""            : "Courier",
+                  "bold"        : "Courier-Bold",
+                  "italic"      : "Courier-Italic",
+                  "bolditalic"  : "Courier-BoldItalic",
+              },
+              "mono, monospace" : {
                   ""            : "Courier",
                   "bold"        : "Courier-Bold",
                   "italic"      : "Courier-Italic",
@@ -808,6 +846,7 @@ extensive details and examples.
             "meta"	    : 0,
             "mma"	    : 0,
             "paths"	    : 0,
+            "pp"	    : 0,
             "spacing"   : 0,
             "song"	    : 0,
             "songfull"  : 0,

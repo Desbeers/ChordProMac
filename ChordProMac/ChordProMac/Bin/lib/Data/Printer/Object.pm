@@ -13,6 +13,7 @@ package # hide from pause
     sub show_overloads     { $_[0]->{'show_overloads'}     }
     sub show_methods       { $_[0]->{'show_methods'}       }
     sub sort_methods       { $_[0]->{'sort_methods'}       }
+    sub show_wrapped       { $_[0]->{'show_wrapped'}       }
     sub inherited          { $_[0]->{'inherited'}          }
     sub format_inheritance { $_[0]->{'format_inheritance'} }
     sub parent_filters     { $_[0]->{'parent_filters'}     }
@@ -37,6 +38,7 @@ package # hide from pause
             'parent_filters' => Data::Printer::Common::_fetch_scalar_or_default($params, 'parent_filters', 1),
             'universal'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'universal', 0),
             'sort_methods' => Data::Printer::Common::_fetch_scalar_or_default($params, 'sort_methods', 1),
+            'show_wrapped' => Data::Printer::Common::_fetch_scalar_or_default($params, 'show_wrapped', 1),
             'internals'    => Data::Printer::Common::_fetch_scalar_or_default($params, 'internals', 1),
             'parents'      => Data::Printer::Common::_fetch_scalar_or_default($params, 'parents', 1),
         };
@@ -56,6 +58,7 @@ use Data::Printer::Filter::GLOB;
 use Data::Printer::Filter::FORMAT;
 use Data::Printer::Filter::Regexp;
 use Data::Printer::Filter::CODE;
+use Data::Printer::Filter::OBJECT;
 use Data::Printer::Filter::GenericClass;
 
 # create our basic accessors:
@@ -68,7 +71,7 @@ my @method_names =qw(
     hash_preserve unicode_charnames colored theme show_weak
     max_depth index separator end_separator class_method class hash_separator
     align_hash sort_keys quote_keys deparse return_value show_dualvar show_tied
-    warnings arrows
+    warnings arrows coderef_stub coderef_undefined
 );
 foreach my $method_name (@method_names) {
     no strict 'refs';
@@ -206,6 +209,8 @@ sub _init {
     $self->{'sort_keys'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'sort_keys', 1);
     $self->{'quote_keys'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'quote_keys', 'auto');
     $self->{'deparse'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'deparse', 0);
+    $self->{'coderef_stub'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'coderef_stub', 'sub { ... }');
+    $self->{'coderef_undefined'} = Data::Printer::Common::_fetch_scalar_or_default($props, 'coderef_undefined', '<undefined coderef>');
     $self->{'return_value'} = Data::Printer::Common::_fetch_anyof(
                              $props,
                              'return_value',
@@ -359,7 +364,7 @@ sub _load_filters {
     my ($self, $props) = @_;
 
     # load our core filters (LVALUE is under the 'SCALAR' filter module)
-    my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE GenericClass);
+    my @core_filters = qw(SCALAR ARRAY HASH REF VSTRING GLOB FORMAT Regexp CODE OBJECT GenericClass);
     foreach my $class (@core_filters) {
         $self->_load_external_filter($class);
     }
@@ -567,12 +572,12 @@ sub _filters_for_data {
     return @potential_filters;
 }
 
-# _see($data): marks data as seen if it was never seen it before.
+# _see($data): marks data as seen if it was never seen before.
 # if we are showing refcounts, we return those. Initially we had
 # this funcionallity separated, but refcounts increase as we find
 # them again and because of that we were seeing weird refcounting.
 # So now instead we store the refcount of the variable when we
-# first saw it.
+# first see it.
 # Finally, if we have already seen the data, we return its stringified
 # position, like "var", "var{foo}[7]", etc. UNLESS $options{seen_override}
 # is set. Why seen_override? Sometimes we want to print the same data
@@ -585,11 +590,19 @@ sub _see {
     return {} unless ref $data;
     my $id = pack 'J', Scalar::Util::refaddr($data);
     if (!exists $self->{_seen}{$id}) {
-        $self->{_seen}{$id} = {
+        my $entry = {
             name     => $self->current_name,
             refcount => ($self->show_refcount ? $self->_refcount($data) : 0),
         };
-        return { refcount => $self->{_seen}{$id}->{refcount} };
+        # the values returned by tied hashes are temporaries, so we can't
+        # mark them as 'seen'. Ideally, we'd use something like
+        # Hash::Util::Fieldhash::register() (see PR#179) and remove entries
+        # from $self->{_seen} when $data is destroyed. The problem is this
+        # adds a lot of internal magic to the data we're inspecting (we tried,
+        # see Issue#75), effectively changing it. So we just ignore them, at
+        # the risk of missing some circular reference.
+        $self->{_seen}{$id} = $entry unless $options{tied_parent};
+        return { refcount => $entry->{refcount} };
     }
     return { refcount => $self->{_seen}{$id}->{refcount} } if $options{seen_override};
     return $self->{_seen}{$id};
@@ -679,10 +692,13 @@ sub parse {
         }
     }
 
+    # FIXME: because of prototypes, p(@data) becomes a ref (that we don't care about)
+    # to the data (that we do care about). So we should not show refcounts, memsize
+    # or readonly status for something guaranteed to be ephemeral.
     $parsed_string .= $self->_check_readonly($data);
     $parsed_string .= $str_weak if ref($data) ne 'REF';
-
     $parsed_string .= $self->_check_memsize($data);
+
     if ($self->show_refcount && ref($data) ne 'SCALAR' && $seen->{refcount} > 1 ) {
         $parsed_string .= ' (refcount: ' . $seen->{refcount} .')';
     }
@@ -843,7 +859,7 @@ values, and when set to "off" it will never show the second value. (default: lax
 
 =head3 show_lvalue
 
-Let's you know whenever a value is an lvalue (default: 1)
+Lets you know whenever a value is an lvalue (default: 1)
 
 =head3 string_max
 
@@ -880,7 +896,7 @@ whether to use the character's names when escaping unicode (e.g. SNOWMAN instead
 
 =head3 print_escapes
 
-Wether to print invisible characters in strings, like \b, \n and \t (default: 0)
+Whether to print invisible characters in strings, like \b, \n and \t (default: 0)
 
 =head3 resolve_scalar_refs
 
@@ -889,7 +905,6 @@ value. For example, you may have an object that you reuse to represent 'true'
 or 'false'. If you have more than one of those in your data, Data::Printer
 will by default print the second one as a circular reference. When this option
 is set to true, it will instead resolve the scalar value and keep going. (default: false)
-
 
 =head2 Array Options
 
@@ -916,8 +931,7 @@ or 'end'. (default: 'begin')
 
 When set, shows the index number before each array element. (default: 1)
 
-
-=head4 Hash Options
+=head2 Hash Options
 
 =head3 align_hash
 
@@ -1041,9 +1055,23 @@ setting also respects the C<ANSI_COLORS_DISABLED> environment variable.
 
 =head3 deparse
 
-If the data structure contains a subroutine reference, this options can be
-set to deparse it and print the underlying code, which hopefully resembles
-the original source code. (default: 0)
+If the data structure contains a subroutine reference (coderef), this option
+can be set to deparse it and print the underlying code, which hopefully
+resembles the original source code. (default: 0)
+
+=head3 coderef_stub
+
+If the data structure contains a subroutine reference (coderef) and the
+'L<deparse|/deparse>' option above is set to false, Data::Printer will print this
+instead. (default: 'C<< sub { ... } >>')
+
+=head3 coderef_undefined
+
+If the data structure contains a subroutine reference (coderef) that has
+not actually been defined at the time of inspection, Data::Printer will
+print this instead. Set it to '0' to disable this check, in which case
+Data::Printer will use whatever value you set on
+L<coderef_stub|/coderef_stub> above. (default: '<undefined coderef>').
 
 =head3 end_separator
 
@@ -1149,7 +1177,7 @@ option to 0.
 =head3 class_method
 
 When Data::Printer is printing an object, it first looks for a method
-named "C<_dataprinter>" and, if one is found, we call it instead of actually
+named "C<_data_printer>" and, if one is found, we call it instead of actually
 parsing the structure.
 
 This way, module authors can control how Data::Printer outputs their objects
@@ -1251,12 +1279,14 @@ This option includes a list of all overloads implemented by the object.
 =head4 show_methods
 
 Controls which of the object's direct methods to show. Can be set to 'none',
-'all', 'private' or 'public'. (default: 'all')
+'all', 'private' or 'public'. When applicable (Moo, Moose) it will also
+show attributes and roles. (default: 'all')
 
 =head4 sort_methods
 
-When listing methods, this option will order them alphabetically, rather than
-on whatever order the list of methods returned. (default: 1)
+When listing methods, attributes and roles, this option will order them
+alphabetically, rather than on whatever order the list of methods returned.
+(default: 1)
 
 =head4 inherited
 

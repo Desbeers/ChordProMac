@@ -1,9 +1,9 @@
 #  You may distribute under the terms of either the GNU General Public License
 #  or the Artistic License (the same terms as Perl itself)
 #
-#  (C) Paul Evans, 2019-2022 -- leonerd@leonerd.org.uk
+#  (C) Paul Evans, 2019-2023 -- leonerd@leonerd.org.uk
 
-package Object::Pad 0.79;
+package Object::Pad 0.808;
 
 use v5.14;
 use warnings;
@@ -107,13 +107,13 @@ silence every experimental warning, which may hide others unintentionally. For
 a more fine-grained approach you can instead use the import line for this
 module to only silence the module's warnings selectively:
 
-   use Object::Pad ':experimental(init_expr)';
-
    use Object::Pad ':experimental(mop)';
 
    use Object::Pad ':experimental(custom_field_attr)';
 
-   use Object::Pad ':experimental(adjust_params)';
+   use Object::Pad ':experimental(composed_adjust)';
+
+   use Object::Pad ':experimental(inherit_field)';
 
    use Object::Pad ':experimental';  # all of the above
 
@@ -122,7 +122,7 @@ I<Since version 0.64.>
 Multiple experimental features can be enabled at once by giving multiple names
 in the parens, separated by spaces:
 
-   use Object::Pad ':experimental(init_expr mop)';
+   use Object::Pad ':experimental(mop custom_field_attr)';
 
 =head2 Automatic Construction
 
@@ -198,36 +198,6 @@ sets the value of the package's C<$VERSION> variable.
 
    class Name VERSION;
 
-A single superclass is supported by the keyword C<isa>
-
-I<Since version 0.41.>
-
-   class Name isa BASECLASS {
-      ...
-   }
-
-   class Name isa BASECLASS BASEVER {
-      ...
-   }
-
-Prior to version 0.41 this was called C<extends>, but I<since version 0.73>
-this is no longer recognised. The C<isa> keyword is now deprecated, in favour
-of the L</:isa> attribute which is preferred because it follows a more
-standard grammar without this special-case.
-
-One or more roles can be composed into the class by the keyword C<does>
-
-I<Since version 0.41.>
-
-   class Name does ROLE, ROLE,... {
-      ...
-   }
-
-Prior to version 0.41 this was called C<implements>, but I<since version 0.73>
-this is no longer recognised. The C<does> keyword is now deprecated, in favour
-of the L</:does> attribute which is preferred because it follows a more
-standard grammar without this special-case.
-
 An optional list of attributes may be supplied in similar syntax as for subs
 or lexical variables. (These are annotations about the class itself; the
 concept should not be confused with per-object-instance data, which here is
@@ -278,8 +248,7 @@ An optional version check can also be supplied; it performs the equivalent of
 I<Since version 0.57.>
 
 Composes a role into the class; optionally requiring a version check on the
-role package. This is a newer form of the C<implements> and C<does>
-keywords and should be preferred for new code.
+role package.
 
 Multiple roles can be composed by using multiple C<:does> attributes, one per
 role.
@@ -309,9 +278,19 @@ between module versions, though it can be relied on to be well-behaved as some
 kind of perl data structure for purposes of modules like L<Data::Dumper> or
 serialisation into things like C<YAML> or C<JSON>.
 
-This representation type may be useful when converting existing classes into
-using C<Object::Pad> where there may be existing subclasses of it that presume
-a blessed hash for their own use.
+   :repr(keys)
+
+I<Since version 0.803.>
+
+The representation will be a blessed hash reference. The instance data will
+be stored in individual keys of the hash, named after the class and the field
+variable name, separated by a C</> symbol. Objects in this representation
+should behave predictably with data printing modules like L<Data::Dumper> or
+serialisation via C<YAML> or C<JSON>.
+
+These two hash-based representation types may be useful when converting
+existing classes into using C<Object::Pad> where there may be existing
+subclasses of it that presume a blessed hash for their own use.
 
    :repr(magic)
 
@@ -321,6 +300,18 @@ instance is doing even in XS modules.
 
 This representation type is the only one that will work for subclassing
 existing classes that do not use blessed hashes.
+
+   :repr(pvobj)
+
+I<Since version 0.804.>
+
+The representation will be the C<SVt_PVOBJ> type newly added to Perl, which
+offers more efficient storage for object instances. This is only available on
+Perl version 5.38.0 onwards.
+
+This is also newly-added and may not be fully tested and reliable yet. Once it
+has more real-world testing and has proven reliable it may become the default
+instance representation on versions of Perl where it is available.
 
    :repr(autoselect), :repr(default)
 
@@ -437,6 +428,76 @@ upgrade of existing classical Perl code into using C<Object::Pad>. When all
 existing code is using C<Object::Pad> then this attribute can be removed from
 the role.
 
+=head2 inherit
+
+   inherit Classname;
+   inherit Classname VER;
+
+   inherit Classname LIST...;
+   inherit Classname VER LIST...;
+
+Declares a superclass that this class extends. At most one superclass is
+supported. If present, this declaration must come before any methods or fields
+are declared, or any roles applied. (Other compile-time declarations such as
+C<use> statements that import utility functions or other behaviours may be
+permitted before this, however, provided that they do not interact with the
+class structure in any way).
+
+This is a newer form of the C<:isa> attribute intended to be more flexible if
+import arguments or other features are added at a later time.
+
+If the package providing the superclass does not exist, an attempt is made to
+load it by code equivalent to
+
+   require Classname;
+
+and thus it must either already exist, or be locatable via the usual C<@INC>
+mechanisms.
+
+An optional version check can also be supplied; it performs the equivalent of
+
+   Classname->VERSION( $ver )
+
+Experimentally I<since version 0.807>, an optional list of arguments can also
+be provided, in similar syntax to those in a C<use> statement. Currently this
+list of arguments must be names of fields to be inherited. Only fields in the
+base class that are annotated with the C<:inheritable> attribute may be
+inherited. Once a field is inherited, methods and other expressions in the
+class body can use that field identically to any fields defined by that class
+itself.
+
+   class Class1 {
+      field $x :inheritable = 123;
+   }
+
+   class Class2 {
+      inherit Class1 '$x';
+      field $y = 456;
+      method describe { say "Class2(x=$x,y=$y)" }
+   }
+
+   Class2->new->describe;
+
+=head2 apply
+
+   apply Rolename;
+
+   apply Rolename VER;
+
+I<Since version 0.807.>
+
+Composes a role into the class; optionally requiring a version check on the
+role package. This is a newer form of the C<:does> attribute intended to be
+more flexible if import arguments or other features are added at a later time.
+
+Multiple roles can be composed by using multiple C<:does> attributes, one per
+role.
+
+C<apply> statements can be freely mixed with other statements inside the body
+of the class. In particular, an C<apply> statement that adds fields or methods
+may appear before or after the class has defined some of its own. It is not
+required that they appear first.
+
 =head2 field
 
    field $var;
@@ -456,7 +517,7 @@ I<Since version 0.66.>
 
 Declares that the instances of the class or role have a member field of the
 given name. This member field will be accessible as a lexical variable within
-any C<method> declarations in the class.
+any C<method> declarations and C<ADJUST> blocks in the class.
 
 Array and hash members are permitted and behave as expected; you do not need
 to store references to anonymous arrays or hashes.
@@ -599,6 +660,12 @@ executed.
 Values for fields are assigned by the constructor before any C<BUILD> blocks
 are invoked.
 
+=head3 :inheritable
+
+Experimentally I<since version 0.807> fields may be optionally inherited when
+deriving a subclass from another. Not every field is allowed to be inherited.
+This attribute marks a field as being available for subclasses to inherit.
+
 =head3 Field Initialiser Expressions
 
 I<Since version 0.54> a deferred statement block is also permitted, on any
@@ -635,14 +702,15 @@ would be dangerous to allow access to it while in this state. However, the
 C<__CLASS__> keyword is available, so initialiser expressions can make use of
 class-based dispatch to invoke class-level methods to help provide values.
 
-This feature should be considered partly B<experimental> and may emit warnings
-to that effect. They can be silenced with
+Field initialier expressions were originally experimental, but I<since version
+0.800> no longer emit experimental warnings.
 
-   use Object::Pad ':experimental(init_expr)';
-
-I<Since version 0.76> expressions that are purely compiletime constants
-(either as single scalars or entire lists of constants) are no longer
-considered experimental. They can be used without silencing the warning.
+I<Since version 0.806> fields already declared in a class are visible during
+the initialisation expression of later fields, and their assigned value can be
+used here. If the earlier field had a C<:param> declaration, it will have been
+assigned from the value passed to the constructor. Note however that all
+C<ADJUST> blocks happen I<after> field initialisation expressions, so any
+modified values set in such blocks will not be visible at this time.
 
 Control flow that attempts to leave a field initialiser expression or block is
 not permitted. This includes any C<return> expression, any C<next/last/redo>
@@ -667,15 +735,16 @@ they appear within are permitted.
 
    has $var { BLOCK }
 
-An older version of the L</field> keyword.
+A now-deprecated older version of the L</field> keyword.
 
 This generally behaves like C<field>, except that inline expressions are
 evaluated immediately, once, during class declaration time. These are I<not>
 stored to be evaluated for each constructor.
 
 Because of the one-shot immediate nature of these initialisation expressions
-(and a bunch of other reasons), the C<has> keyword is now discouraged for use.
-Use the C<field> keyword instead.
+(and a bunch of other reasons), the C<has> keyword is now discouraged for use
+and will emit compile-time warnings in the C<deprecated> category. Use the
+C<field> keyword instead.
 
 If you need to evaluate an expression exactly once during the class
 declaration and assign its now-constant value to every instace, store it in a
@@ -838,7 +907,8 @@ initialising fields from calculated values).
 An adjust block is not a subroutine and thus is not permitted to use
 subroutine attributes (except see below). Note that an C<ADJUST> block is a
 named phaser block and not a method; it does not use the C<sub> or C<method>
-keyword.
+keyword. But, like with C<method>, the member fields are accessible within the
+code body, as is the special C<$self> lexical.
 
 Currently, an C<ADJUST> block receives a reference to the hash containing the
 current constructor arguments, as per L</ADJUSTPARAMS> (see below). This was
@@ -849,6 +919,25 @@ printed to indicate this whenever an C<ADJUST> block uses a signature. This
 warning can be quieted by using C<ADJUSTPARAMS> instead. Additionally, a
 warning may be printed on code that attempts to access the params hashref via
 the C<@_> array.
+
+I<Since version 0.801> in a future version of this module, C<ADJUST> blocks
+may be implemented as true blocks and will not permit out-of-block control
+flow. At present, they are implemented as one full CV per block, but a warning
+is emitted if out-of-block control flow is attempted.
+
+   ADJUST {
+      return;
+   }
+
+   Using return to leave an ADJUST block is discouraged and will be removed
+   in a later version at FILE line LINE.
+
+I<Since version 0.805> an experimental feature can be enabled that puts all
+the C<ADJUST> blocks into a single CV, rather than creating one CV for every
+block. This is currently being tested for stability, and may become the
+default behaviour in a future version. For now it must be requested specially:
+
+   use Object::Pad ':experimental(composed_adjust)';
 
 =head2 ADJUST :params
 
@@ -865,11 +954,6 @@ I<Since version 0.70.>
 An C<ADJUST> block can marked with a C<:params> attribute, meaning that it
 consumes additional constructor parameters by assigning them into lexical
 variables.
-
-This feature should be considered B<experimental>, and will emit warnings to
-that effect. They can be silenced with
-
-   use Object::Pad ':experimental(adjust_params)';
 
 Before the block itself, a list of lexical variables are introduced, inside
 parentheses. The name of each one is preceeded by a colon, and consumes a
@@ -1012,30 +1096,64 @@ found useful.
 
 =head2 Implied Pragmata
 
+B<The following behaviour is likely to be removed in a later version of this
+module.>
+
 In order to encourage users to write clean, modern code, the body of the
-C<class> block acts as if the following pragmata are in effect:
+C<class> block currently acts as if the following pragmata are in effect:
 
    use strict;
    use warnings;
    no indirect ':fatal';  # or  no feature 'indirect' on perl 5.32 onwards
    use feature 'signatures';
 
-This list may be extended in subsequent versions to add further restrictions
-and should not be considered exhaustive.
+This behaviour was designed early around the original "line-0" version of the
+Perl 7 plan, which has subsequently been found to be a bad design and
+abandoned. That leaves this module in an unfortunate situation, because its
+behaviour here does not match the plans for core perl; where the
+recently-added C<class> keyword does none of this, although the C<method>
+keyword always behaves as if signatures were enabled anyway.
 
-Further additions will only be ones that remove "discouraged" or deprecated
-language features with the overall goal of enforcing a more clean modern style
-within the body. As long as you write code that is in a clean, modern style
-(and I fully accept that this wording is vague and subjective) you should not
-find any new restrictions to be majorly problematic. Either the code will
-continue to run unaffected, or you may have to make some small alterations to
-bring it into a conforming style.
+It is eventually planned that this behaviour will be removed from
+C<Object::Pad> entirely (except for enabling the C<signatures> feature). While
+that won't in itself break any existing code, it would mean that code which
+previously ran with the protection of C<strict> and C<warnings> would now not
+be. A satisfactory solution to this problem has not yet been found, but until
+then it is suggested that code using this module remembers to explicitly
+enable this set of pragmata before using the C<class> keyword.
+
+A handy way to do this is to use the C<use VERSION> syntax; v5.36 or later
+will already perform all of the pragmata listed above.
+
+   use v5.36;
+
+If you import this module with a module version number of C<0.800> or higher
+it will enable a warning if you forget to enable C<strict> and C<warnings>
+before using the C<class> or C<roll> keywords:
+
+   use Object::Pad 0.800;
+
+   class X { ... }
+
+Z<>
+
+   class keyword enabled 'use strict' but this will be removed in a later version at FILE line 3.
+   class keyword enabled 'use warnings' but this will be removed in a later version at FILE line 3.
 
 =head2 Yield True
+
+B<The following behaviour is likely to be removed in a later version of this
+module.>
 
 A C<class> statement or block will yield a true boolean value. This means that
 it can be used directly inside a F<.pm> file, avoiding the need to explicitly
 yield a true value from the end of it.
+
+As with the implied pragmata above, this behaviour has also been found to be a
+bad design and will likely be removed soon. For now it is suggested not to
+rely on it and instead either use the new C<module_true> feature already part
+of the C<use v5.38> pragma, or on older perls simply remember to put an
+explicit true value at the end of the file.
 
 =head1 SUBCLASSING CLASSIC PERL CLASSES
 
@@ -1169,6 +1287,22 @@ more visually distinct.
 
 =cut
 
+sub VERSION
+{
+   my $pkg = shift;
+
+   my $ret = $pkg->SUPER::VERSION( @_ );
+
+   if( @_ ) {
+      my $ver = version->parse( @_ );
+
+      # Only bother to store it if it's >= v0.800
+      $^H{"Object::Pad/imported-version"} = $ver->numify if $ver ge v0.800;
+   }
+
+   return $ret;
+}
+
 sub import
 {
    my $class = shift;
@@ -1250,7 +1384,7 @@ sub import_into
    my $class = shift;
    my $caller = shift;
 
-   $class->_import_experimental( \@_, qw( init_expr mop custom_field_attr adjust_params ) );
+   $class->_import_experimental( \@_, qw( init_expr mop custom_field_attr adjust_params composed_adjust inherit_field ) );
 
    $class->_import_configuration( \@_ );
 
@@ -1258,10 +1392,10 @@ sub import_into
 
    # Default imports
    unless( %syms ) {
-      $syms{$_}++ for qw( class role method field has requires BUILD ADJUST );
+      $syms{$_}++ for qw( class role inherit apply method field has requires BUILD ADJUST );
    }
 
-   delete $syms{$_} and $^H{"Object::Pad/$_"}++ for qw( class role method field has requires BUILD ADJUST );
+   delete $syms{$_} and $^H{"Object::Pad/$_"}++ for qw( class role inherit apply method field has requires BUILD ADJUST );
 
    croak "Unrecognised import symbols @{[ keys %syms ]}" if keys %syms;
 }

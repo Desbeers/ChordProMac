@@ -3,7 +3,7 @@ package HTTP::Message;
 use strict;
 use warnings;
 
-our $VERSION = '6.37';
+our $VERSION = '6.22';
 
 require HTTP::Headers;
 require Carp;
@@ -302,14 +302,6 @@ sub decoded_content
 		    $content_ref = \$output;
 		    $content_ref_iscopy++;
 		}
-		elsif ($ce eq 'br') {
-		    require IO::Uncompress::Brotli;
-		    my $bro = IO::Uncompress::Brotli->create;
-		    my $output = eval { $bro->decompress($$content_ref) };
-		    $@ and die "Can't unbrotli content: $@";
-		    $content_ref = \$output;
-		    $content_ref_iscopy++;
-		}
 		elsif ($ce eq "x-bzip2" or $ce eq "bzip2") {
 		    require IO::Uncompress::Bunzip2;
 		    my $output;
@@ -441,10 +433,6 @@ sub decodable
         require IO::Uncompress::Bunzip2;
         push(@enc, "x-bzip2", "bzip2");
     };
-    eval {
-        require IO::Uncompress::Brotli;
-        push(@enc, 'br');
-    };
     # we don't care about announcing the 'identity', 'base64' and
     # 'quoted-printable' stuff
     return wantarray ? @enc : join(", ", @enc);
@@ -502,13 +490,6 @@ sub encode
 	    IO::Compress::Bzip2::bzip2(\$content, \$output)
 		or die "Can't bzip2 content: $IO::Compress::Bzip2::Bzip2Error";
 	    $content = $output;
-	}
-	elsif ($encoding eq "br") {
-		require IO::Compress::Brotli;
-		my $output;
-		eval { $output = IO::Compress::Brotli::bro($content) }
-		or die "Can't brotli content: $@";
-		$content = $output;
 	}
 	elsif ($encoding eq "rot13") {  # for the fun of it
 	    $content =~ tr/A-Za-z/N-ZA-Mn-za-m/;
@@ -659,42 +640,23 @@ sub _stale_content {
     }
 }
 
+
 # delegate all other method calls to the headers object.
 our $AUTOLOAD;
+sub AUTOLOAD
+{
+    my $method = substr($AUTOLOAD, rindex($AUTOLOAD, '::')+2);
 
-sub AUTOLOAD {
-    my ( $package, $method ) = $AUTOLOAD =~ m/\A(.+)::([^:]*)\z/;
-    my $code = $_[0]->can($method);
-    Carp::croak(
-        qq(Can't locate object method "$method" via package "$package"))
-        unless $code;
-    goto &$code;
+    # We create the function here so that it will not need to be
+    # autoloaded the next time.
+    no strict 'refs';
+    *$method = sub { local $Carp::Internal{+__PACKAGE__} = 1; shift->headers->$method(@_) };
+    goto &$method;
 }
 
-sub can {
-    my ( $self, $method ) = @_;
 
-    if ( my $own_method = $self->SUPER::can($method) ) {
-        return $own_method;
-    }
+sub DESTROY {}  # avoid AUTOLOADing it
 
-    my $headers = ref($self) ? $self->headers : 'HTTP::Headers';
-    if ( $headers->can($method) ) {
-
-        # We create the function here so that it will not need to be
-        # autoloaded or recreated the next time.
-        no strict 'refs';
-        *$method = sub {
-            local $Carp::Internal{ +__PACKAGE__ } = 1;
-            shift->headers->$method(@_);
-        };
-        return \&$method;
-    }
-
-    return undef;
-}
-
-sub DESTROY { }    # avoid AUTOLOADing it
 
 # Private method to access members in %$self
 sub _elem
@@ -820,7 +782,7 @@ HTTP::Message - HTTP style message (base class)
 
 =head1 VERSION
 
-version 6.37
+version 6.22
 
 =head1 SYNOPSIS
 
@@ -924,14 +886,9 @@ for details about how charset is determined.
 
 =item $mess->decoded_content( %options )
 
-Returns the content with any C<Content-Encoding> undone and, for textual content
-(C<Content-Type> values starting with C<text/>, exactly matching
-C<application/xml>, or ending with C<+xml>), the raw content's character set
-decoded into Perl's Unicode string format. Note that this
-L<does not currently|https://github.com/libwww-perl/HTTP-Message/pull/99>
-attempt to decode declared character sets for any other content types like
-C<application/json> or C<application/javascript>.  If the C<Content-Encoding>
-or C<charset> of the message is unknown, this method will fail by returning
+Returns the content with any C<Content-Encoding> undone and for textual content
+the raw content encoded to Perl's Unicode strings.  If the C<Content-Encoding>
+or C<charset> of the message is unknown this method will fail by returning
 C<undef>.
 
 The following options can be specified.
@@ -1005,7 +962,7 @@ want to process its content as a string.
 Apply the given encodings to the content of the message.  Returns TRUE
 if successful. The "identity" (non-)encoding is always supported; other
 currently supported encodings, subject to availability of required
-additional modules, are "gzip", "deflate", "x-bzip2", "base64" and "br".
+additional modules, are "gzip", "deflate", "x-bzip2" and "base64".
 
 A successful call to this function will set the C<Content-Encoding>
 header.
@@ -1163,7 +1120,7 @@ Gisle Aas <gisle@activestate.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 1994 by Gisle Aas.
+This software is copyright (c) 1994-2017 by Gisle Aas.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

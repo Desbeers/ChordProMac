@@ -5,7 +5,7 @@ use base 'PDF::API2::Basic::PDF::Pages';
 use strict;
 use warnings;
 
-our $VERSION = '2.043'; # VERSION
+our $VERSION = '2.047'; # VERSION
 
 use Carp;
 use POSIX qw(floor);
@@ -165,8 +165,8 @@ sub size {
     %boundaries = $page->boundaries();
     ($x1, $y1, $x2, $y2) = $page->boundaries('trim');
 
-Set prepress page boundaries when called with a hash containing one or more page
-boundary definitions.  Returns the C<$page> object.
+Set or replace all prepress page boundaries when called with a hash containing
+one or more page boundary definitions.  Returns the C<$page> object.
 
 Returns the current page boundaries if called without arguments.  Returns the
 coordinates for the specified page boundary if called with one argument.
@@ -376,8 +376,6 @@ sub boundaries {
         $self->_bounding_box($box_name, @rectangle);
         $boxes{$box} = [@rectangle];
     }
-
-    # Get
 
     return $self;
 }
@@ -649,6 +647,8 @@ sub text {
 
 Places an image or other external object (a.k.a. XObject) on the page in the
 specified location.
+
+If C<$x> and C<$y> are omitted, the object will be placed at C<[0, 0]>.
 
 For images, C<$scale_x> and C<$scale_y> represent the width and height of the
 image on the page in points.  If C<$scale_x> is omitted, it will default to 72

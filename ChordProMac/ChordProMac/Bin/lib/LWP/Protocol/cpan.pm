@@ -2,9 +2,9 @@ package LWP::Protocol::cpan;
 
 use strict;
 
-use parent qw(LWP::Protocol);
+use base qw(LWP::Protocol);
 
-our $VERSION = '6.67';
+our $VERSION = '6.44';
 
 require URI;
 require HTTP::Status;

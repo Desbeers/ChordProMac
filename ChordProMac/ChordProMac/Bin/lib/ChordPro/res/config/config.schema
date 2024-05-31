@@ -44,6 +44,10 @@
             "type" : "string"
           }
         },
+        "program" : {
+          "type" : "string",
+          "default" : ""
+        },
         "module" : {
           "type" : "string",
           "default" : "ABC"
@@ -1717,6 +1721,12 @@
 		  "type" : "number"
 		}
 	      }
+	    },
+
+	    "sort-pages" : {
+	        "description" : "How to reorder pages.",
+		"default" : "",
+		"type" : "string"
 	    },
 
 	    "split-marker" : {

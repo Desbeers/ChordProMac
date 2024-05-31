@@ -39,9 +39,10 @@ use ChordPro::Utils;
 
 sub DEBUG() { $::config->{debug}->{txtblk} }
 
-sub txt2xform( $s, $pw, $elt ) {
+sub txt2xform( $self, %args ) {
+    my $elt = $args{elt};
 
-    my $ps = $s->{_ps};
+    my $ps = $self->{_ps};
     my $pr = $ps->{pr};
     my $opts = { %{$elt->{opts}} };
 
@@ -52,15 +53,20 @@ sub txt2xform( $s, $pw, $elt ) {
 	$style = "text";
     }
     my $font  = $ps->{fonts}->{$style};
+    my $bgcol = $pr->_bgcolor($font->{background});
+    $bgcol = "" if $bgcol eq "none";
 
-    my $size   = delete($opts->{textsize}) || $font->{size};
+    my $size   = fontsize( delete($opts->{textsize}), $font->{size} );
     my $color  = delete($opts->{textcolor});
     my $flush  = delete($opts->{flush})  // "left";
     my $vflush = delete($opts->{vflush}) // "top";
 
     my $data = $elt->{data};
-    if ( $color ) {
-	$data = [ map { "<span color='$color'>$_</span>" } @$data ];
+    if ( $color || $bgcol ) {
+	my $span = "";
+	$span .= " color='$color'" if $color;
+	$span .= " background='$bgcol'" if $bgcol;
+	$data = [ map { "<span$span>$_</span>" } @$data ];
     }
     my $padding  = delete($opts->{padding});
 
@@ -74,13 +80,14 @@ sub txt2xform( $s, $pw, $elt ) {
     for ( @$data ) {
 	( $w, $h ) = $pr->strwidth( $_, $font, $size );
 	$awidth = $w if $w > $awidth;
-	$aheight += $h * $ps->{spacing}->{lyrics};
+	$aheight += ($h||$size) * $ps->{spacing}->{lyrics};
     }
 
     # Desired width (includes padding).
     my ( $width, $height );
     if ( $width = delete($opts->{width}) ) {
-	$width -= 2*($padding||0);
+	# Note that using dimension is not yet operational.
+	$width = dimension( $width, width => $size ) - 2*($padding||0);
     }
     else {
 	$width = $awidth;
@@ -91,7 +98,8 @@ sub txt2xform( $s, $pw, $elt ) {
 
     # Desired height (includes padding).
     if ( $height = delete($opts->{height}) ) {
-	$height -= 2*($padding||0);
+	# Note that using dimension is not yet operational.
+	$height = dimension( $height, width => $size ) - 2*($padding||0);
     }
     else {
 	$height = $aheight;
@@ -117,6 +125,7 @@ sub txt2xform( $s, $pw, $elt ) {
     }
 
     my $y = $height - $ycorr;
+    my $sp = $ps->{spacing}->{$style} || $ps->{spacing}->{lyrics};
 
     if ( $flush eq "right" || $flush eq "center"
 	 || $vflush eq "middle" || $vflush eq "bottom" ) {
@@ -129,18 +138,19 @@ sub txt2xform( $s, $pw, $elt ) {
 	}
 
 	for ( @$data ) {
-	    my $w = $pr->strheight( $_, $font, $size );
+	    my $h = $pr->strheight( $_, $font, $size ) || $size;
 	    $pr->{tmplayout}->set_width($width);
 	    $pr->{tmplayout}->set_alignment($flush);
 	    $pr->{tmplayout}->show( 0, $y, $xo );
-	    $y -= $h * $ps->{spacing}->{lyrics};
+	    $y -= $h * $sp;
 	}
     }
     else {			# assume top/left
 	for ( @$data ) {
-	    my $h = $pr->strheight( $_, $font, $size );
+	    my $h = $pr->strheight( $_, $font, $size ) || $size;
+	    $pr->{tmplayout}->set_alignment($flush);
 	    $pr->{tmplayout}->show( 0, $y, $xo );
-	    $y -= $h * $ps->{spacing}->{lyrics};
+	    $y -= $h * $sp;
 	}
     }
 

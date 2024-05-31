@@ -10,7 +10,7 @@ package ChordPro::Config;
 use v5.26;
 use utf8;
 use Carp;
-use feature qw( signatures );
+use feature qw( signatures state );
 no warnings "experimental::signatures";
 
 use ChordPro;
@@ -18,7 +18,6 @@ use ChordPro::Paths;
 use ChordPro::Utils;
 use File::LoadLines;
 use File::Spec;
-use JSON::PP ();
 use Scalar::Util qw(reftype);
 use List::Util qw(any);
 use Hash::Util;
@@ -48,12 +47,11 @@ This module can be run standalone and will print the default config.
 #sub default_config();
 
 sub configurator ( $opts = undef ) {
-    my $pp = JSON::PP->new->relaxed;
 
     # Test programs call configurator without options.
     # Prepare a minimal config.
     unless ( $opts ) {
-        my $cfg = $pp->decode( default_config() );
+        my $cfg = json_load( default_config() );
         $config = $cfg;
 	config_split_fc_aliases($cfg);
         $options = { verbose => 0 };
@@ -70,7 +68,7 @@ sub configurator ( $opts = undef ) {
 
     # Load defaults.
     warn("Reading: <builtin>\n") if $verbose > 1;
-    my $cfg = $pp->decode( default_config() );
+    my $cfg = json_load( default_config() );
 
     # This is easier than splitting out manually :)
     config_split_fc_aliases($cfg);
@@ -155,7 +153,8 @@ sub configurator ( $opts = undef ) {
     }
 
     # Handle defines from the command line.
-    $cfg = hmerge( $cfg, prp2cfg( $options->{define}, $cfg ) );
+    # $cfg = hmerge( $cfg, prp2cfg( $options->{define}, $cfg ) );
+    prpadd2cfg( $cfg, %{$options->{define}} );
 
     # Sanitize added extra entries.
     for ( qw(title subtitle footer) ) {
@@ -199,7 +198,9 @@ sub configurator ( $opts = undef ) {
 
     my @allfonts = keys(%{$cfg->{pdf}->{fonts}});
     for my $ff ( @allfonts ) {
-        unless ( $cfg->{pdf}->{fonts}->{$ff}->{name}
+	# Derived chords can have size or color only. Disable
+	# this test for now.
+        unless ( 1 || $cfg->{pdf}->{fonts}->{$ff}->{name}
                  || $cfg->{pdf}->{fonts}->{$ff}->{description}
                  || $cfg->{pdf}->{fonts}->{$ff}->{file} ) {
             delete( $cfg->{pdf}->{fonts}->{$ff} );
@@ -275,8 +276,7 @@ sub get_config ( $file ) {
 
     if ( $file =~ /\.json$/i ) {
         if ( open( my $fd, "<:raw", $file ) ) {
-            my $pp = JSON::PP->new->relaxed;
-            my $new = $pp->decode( loadlines( $fd, { split => 0 } ) );
+            my $new = json_load( loadlines( $fd, { split => 0 } ), $file );
             precheck( $new, $file );
             close($fd);
             return $new;
@@ -393,8 +393,7 @@ sub config_final ( $delta ) {
     my $cfg = configurator($options);
 
     if ( $delta ) {
-        my $pp = JSON::PP->new->relaxed;
-        my $def = $pp->decode( default_config() );
+        my $def = json_load( default_config() );
         $cfg->reduce($def);
     }
     $cfg->unlock;
@@ -409,6 +408,7 @@ sub config_final ( $delta ) {
         cfg2props($cfg);
     }
     else {
+	use JSON::PP;
         my $pp = JSON::PP->new->canonical->indent(4)->pretty;
         $pp->encode({%$cfg});
     }
@@ -416,8 +416,7 @@ sub config_final ( $delta ) {
 
 sub config_default () {
     if ( $ENV{CHORDPRO_CFGPROPS} ) {
-        my $pp = JSON::PP->new->relaxed;
-        my $cfg = $pp->decode( default_config() );
+        my $cfg = json_load( default_config() );
         cfg2props($cfg);
     }
     else {
@@ -1035,7 +1034,7 @@ sub default_config () {
     // "base" defaults to 1.
     // Use 0 for an empty string, and -1 for a muted string.
     // "fingers" is optional.
-    // "display" (optional) can be used to change the way the chord is displayed. 
+    // "display" (optional) can be used to change the way the chord is displayed.
     "chords" : [
       //  {
       //    "name"  : "Bb",
@@ -1124,8 +1123,16 @@ sub default_config () {
         "abc" : {
             "type"     : "image",
             "module"   : "ABC",
+
+            // Default handler "abc2svg" uses program (if set),
+            // otherwise embedded QuickJS or external QuickJS.
+            // Handler "quickjs_xs" uses embedded QuickJS only.
+            // Handler "quickjs_qjs" uses external QuickJS only.
+            // Handler "quickjs" uses internal or external QuickJS.
             "handler"  : "abc2svg",
-            // No longer used -- ./default.abc will always be used if present
+            "program"  : "",		// specify program tool
+
+            // No longer used -- ./default.abc will be used if program tool
             "config"   : "default", // or "none", or "myformat.fmt"
             // The preamble is a list of lines inserted before the ABC data,
             // and after the delegate supplied preamble.
@@ -1273,7 +1280,7 @@ sub default_config () {
       // Cell dimensions are specified by "width" and "height".
       // The horizontal number of cells depends on the number of strings.
       // The vertical number of cells is "vcells", which should
-      // be 4 or larger to accomodate most chords.
+      // be 4 or larger to accommodate most chords.
       // The horizontal distance between diagrams is "hspace" cells.
       // The vertical distance is "vspace" cells.
       // "linewidth" is the thickness of the lines as a fraction of "width".
@@ -1338,6 +1345,24 @@ sub default_config () {
       "even-odd-pages" : 1,
       // Align songs to even/odd pages. When greater than 1, force alignment.
       "pagealign-songs" : 1,
+
+      // Sort pages by "title", "subtitle", "2page", "compact", "desc".
+      // "sort-pages" is a Comma separated list of the options above.
+      // title  : sort pages alphabetically by title.
+      // subtitle : sort pages alphabetically by subtitle. If this is
+      //          used together with title, only title is used.
+      // 2page :  make sure songs with even pages are placed on even
+      //          pages, so most. if not all, of the song is visible
+      //          in a normal book without needing to turn a page.
+      //          A blank page is added to align.
+      // compact: implies 2page - instead of adding a blank page,
+      //          an odd-paged song is moved in front of this song to achieve
+      //          even page alignment.
+      //          Note: this option requires extra processing time since
+      //          the songbook has to be processed twice.
+      // desc :   modifier to sort descending.
+
+      "sort-pages" : "",
       // PDF file to add as front matter.
       "front-matter" : "",
       // PDF file to add as back matter.
@@ -1418,7 +1443,13 @@ sub default_config () {
 
       "fontdir" : [],
       "fontconfig" : {
-          "times, serif" : {
+          "serif" : {
+              ""            : "Times-Roman",
+              "bold"        : "Times-Bold",
+              "italic"      : "Times-Italic",
+              "bolditalic"  : "Times-BoldItalic",
+          },
+          "times" : {
               ""            : "Times-Roman",
               "bold"        : "Times-Bold",
               "italic"      : "Times-Italic",
@@ -1437,7 +1468,13 @@ sub default_config () {
               "italic"      : "Helvetica-Oblique",
               "bolditalic"  : "Helvetica-BoldOblique",
           },
-          "courier, mono, monospace" : {
+          "courier" : {
+              ""            : "Courier",
+              "bold"        : "Courier-Bold",
+              "italic"      : "Courier-Italic",
+              "bolditalic"  : "Courier-BoldItalic",
+          },
+          "mono, monospace" : {
               ""            : "Courier",
               "bold"        : "Courier-Bold",
               "italic"      : "Courier-Italic",
@@ -1664,6 +1701,7 @@ sub default_config () {
         "meta"	    : 0,
         "mma"	    : 0,
         "paths"	    : 0,
+        "pp"	    : 0,
         "spacing"   : 0,
         "song"	    : 0,
         "songfull"  : 0,

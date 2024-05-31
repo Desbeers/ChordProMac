@@ -5,7 +5,7 @@ use base 'PDF::API2::Resource::XObject';
 use strict;
 use warnings;
 
-our $VERSION = '2.043'; # VERSION
+our $VERSION = '2.047'; # VERSION
 
 use PDF::API2::Basic::PDF::Utils;
 
@@ -46,7 +46,7 @@ sub bbox {
         $self->{'BBox'} = PDFArray(map { PDFNum($_) } @_);
     }
 
-Carp::confess("XX") unless defined $self->{'BBox'};    return map { $_->val() } $self->{'BBox'}->elements();
+    return map { $_->val() } $self->{'BBox'}->elements();
 }
 
 =item $resource = $form->resource($type, $key)

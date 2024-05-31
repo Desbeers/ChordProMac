@@ -5,7 +5,7 @@ use base 'PDF::API2::Basic::PDF::Array';
 use strict;
 use warnings;
 
-our $VERSION = '2.043'; # VERSION
+our $VERSION = '2.047'; # VERSION
 
 use PDF::API2::Basic::PDF::Utils;
 use PDF::API2::Util;

@@ -12,9 +12,9 @@ use warnings;
 
 use parent qw(URI::_server URI::_userpass);
 
-use URI::Escape ();
+use URI::Escape qw(uri_unescape);
 
-our $VERSION = '5.12';
+our $VERSION = '1.76';
 
 sub default_port { 5060 }
 

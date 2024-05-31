@@ -1,5 +1,5 @@
 package Net::HTTP::Methods;
-our $VERSION = '6.22';
+our $VERSION = '6.19';
 use strict;
 use warnings;
 use URI;
@@ -35,14 +35,8 @@ sub http_configure {
     die "Listen option not allowed" if $cnf->{Listen};
     my $explicit_host = (exists $cnf->{Host});
     my $host = delete $cnf->{Host};
-    # All this because $cnf->{PeerAddr} = 0 is actually valid.
-    my $peer;
-    for my $key (qw{PeerAddr PeerHost}) {
-	next if !defined($cnf->{$key}) || q{} eq $cnf->{$key};
-	$peer = $cnf->{$key};
-	last;
-    }
-    if (!defined $peer) {
+    my $peer = $cnf->{PeerAddr} || $cnf->{PeerHost};
+    if (!$peer) {
 	die "No Host option provided" unless $host;
 	$cnf->{PeerAddr} = $peer = $host;
     }
@@ -655,7 +649,7 @@ Net::HTTP::Methods - Methods shared by Net::HTTP and Net::HTTPS
 
 =head1 VERSION
 
-version 6.22
+version 6.19
 
 =head1 AUTHOR
 
@@ -663,7 +657,7 @@ Gisle Aas <gisle@activestate.com>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2001 by Gisle Aas.
+This software is copyright (c) 2001-2017 by Gisle Aas.
 
 This is free software; you can redistribute it and/or modify it under
 the same terms as the Perl 5 programming language system itself.

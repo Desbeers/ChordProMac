@@ -5,7 +5,7 @@ use base 'PDF::API2::Basic::PDF::Dict';
 use strict;
 use warnings;
 
-our $VERSION = '2.043'; # VERSION
+our $VERSION = '2.047'; # VERSION
 
 use Carp;
 use Compress::Zlib ();
@@ -30,7 +30,7 @@ PDF::API2::Content - Methods for adding graphics and text to a PDF
     my $content = $page->graphics();
     my $content = $page->text();
 
-    # Then call the methods below add graphics and text to the page.
+    # Then call the methods below to add graphics and text to the page.
 
 =cut
 
@@ -52,6 +52,7 @@ sub new {
     $self->{' matrix'} = [1, 0, 0, 1, 0, 0];
     $self->{' textmatrix'} = [1, 0, 0, 1, 0, 0];
     $self->{' textlinematrix'} = [0, 0];
+    $self->{' textlinestart'} = 0;
     $self->{' fillcolor'} = [0];
     $self->{' strokecolor'} = [0];
     $self->{' translate'} = [0, 0];
@@ -168,17 +169,16 @@ sub skew {
         rotate    => $degrees,
         scale     => [$x, $y],
         skew      => [$a, $b],
-        relative  => $boolean,
+        repeat    => $boolean,
     );
 
 Performs multiple coordinate transformations, in the order recommended by the
 PDF specification (translate, rotate, scale, then skew).  Omitted options will
 be unchanged.
 
-If C<relative> is true, the specified transformations will be added to any
-previous changes to the coordinate system.  By default, calling C<transform> or
-any of the other transformation methods will overwrite any previous changes to
-the coordinate system.
+If C<repeat> is true and if this is not the first call to a transformation
+method, the previous transformation will be performed again, modified by any
+other provided arguments.
 
 =cut
 
@@ -232,6 +232,9 @@ sub _transform {
 # Common Transformations.
 sub transform {
     my ($self, %options) = @_;
+    return $self->transform_rel(%options) if $options{'repeat'};
+
+    # Deprecated (renamed to 'repeat' to avoid confusion)
     return $self->transform_rel(%options) if $options{'relative'};
 
     # Deprecated options (remove hyphens)
@@ -380,7 +383,7 @@ sub _restore {
 sub restore {
     my $self = shift;
     if ($self->_in_text_object()) {
-        carp 'Calling save from a text content object has no effect';
+        carp 'Calling restore from a text content object has no effect';
         return;
     }
 
@@ -1045,23 +1048,6 @@ sub close {
     return $self;
 }
 
-=head2 end
-
-    $content = $content->end();
-
-Ends the current path without filling or stroking.
-
-=cut
-
-# Deprecated (renamed)
-sub endpath { return end(@_) }
-
-sub end {
-    my $self = shift();
-    $self->add('n');
-    return $self;
-}
-
 =head1 SHAPE CONSTRUCTION (DRAWING)
 
 The following are convenience methods for drawing closed paths.
@@ -1176,7 +1162,7 @@ sub pie {
 
 =head2 stroke_color
 
-    $content = $content->stroke_color($color, @arguments);
+    $content->stroke_color($color, @arguments);
 
 Sets the stroke color, which is black by default.
 
@@ -1199,7 +1185,7 @@ can be given as C<%F000> or C<%FFFF000000000000>.
 
 =head2 fill_color
 
-    $content = $content->fill_color($color, @arguments);
+    $content->fill_color($color, @arguments);
 
 Sets the fill color, which is black by default.  Arguments are the same as in
 L</"stroke_color">.
@@ -1446,6 +1432,24 @@ sub clip {
     return $self;
 }
 
+=head2 end
+
+    $content = $content->end();
+
+Ends the current path without filling or stroking.  This is used primarily for
+the side effect of changing the current clipping path.
+
+=cut
+
+# Deprecated (renamed)
+sub endpath { return end(@_) }
+
+sub end {
+    my $self = shift();
+    $self->add('n');
+    return $self;
+}
+
 sub shade {
     my ($self, $shade, @cord) = @_;
 
@@ -1472,6 +1476,8 @@ sub shade {
 
 Places an image or other external object (a.k.a. XObject) on the page in the
 specified location.
+
+If C<$x> and C<$y> are omitted, the object will be placed at C<[0, 0]>.
 
 For images, C<$scale_x> and C<$scale_y> represent the width and height of the
 image on the page in points.  If C<$scale_x> is omitted, it will default to 72
@@ -1576,7 +1582,7 @@ L<PDF::API2/"font"> to add the font to the document.
 
     my $pdf = PDF::API2->new();
     my $page = $pdf->page();
-    my $text = $pdf->text();
+    my $text = $page->text();
 
     my $font = $pdf->font('Helvetica');
     $text->font($font, 24);
@@ -1877,7 +1883,8 @@ sub position {
     if (defined $x) {
         $self->add(float($x), float($y), 'Td');
         $self->matrix_update($x, $y);
-        $self->{' textlinematrix'}->[0] = $x;
+        $self->{' textlinematrix'}->[0] = $self->{' textlinestart'} + $x;
+        $self->{' textlinestart'} = $self->{' textlinematrix'}->[0];
         return $self;
     }
 
@@ -1889,7 +1896,8 @@ sub distance {
     my ($self, $dx, $dy) = @_;
     $self->add(float($dx), float($dy), 'Td');
     $self->matrix_update($dx, $dy);
-    $self->{' textlinematrix'}->[0] = $dx;
+    $self->{' textlinematrix'}->[0] = $self->{' textlinestart'} + $dx;
+    $self->{' textlinestart'} = $self->{' textlinematrix'}->[0];
 }
 
 # Deprecated; use position (ignores leading) or crlf (uses leading) instead
@@ -1903,7 +1911,8 @@ sub cr {
         $self->add('T*');
         $self->matrix_update(0, $self->leading() * -1);
     }
-    $self->{' textlinematrix'}->[0] = 0;
+
+    $self->{' textlinematrix'}->[0] = $self->{' textlinestart'};
 }
 
 =head2 crlf
@@ -1928,7 +1937,7 @@ sub crlf {
     }
 
     $self->matrix_update(0, $leading * -1);
-    $self->{' textlinematrix'}->[0] = 0;
+    $self->{' textlinematrix'}->[0] = $self->{' textlinestart'};
     return $self;
 }
 
@@ -1937,7 +1946,7 @@ sub nl {
     my $self = shift();
     $self->add('T*');
     $self->matrix_update(0, $self->leading() * -1);
-    $self->{' textlinematrix'}->[0] = 0;
+    $self->{' textlinematrix'}->[0] = $self->{' textlinestart'};
 }
 
 sub _textpos {
@@ -2326,7 +2335,7 @@ sub paragraph {
         last if $height < 0;
 
         my $align = $opts{'align'} // 'left';
-        if ($align eq 'justified') {
+        if ($align eq 'justified' or $align eq 'justify') {
             ($w, $text) = $self->text_fill_justified($text, $width, %opts);
         }
         elsif ($align eq 'right') {
@@ -2534,6 +2543,7 @@ sub textstart {
         $self->{' leading'} = 0;
         $self->{' rise'} = 0;
         $self->{' render'} = 0;
+        $self->{' textlinestart'} = 0;
         @{$self->{' matrix'}} = (1, 0, 0, 1, 0, 0);
         @{$self->{' textmatrix'}} = (1, 0, 0, 1, 0, 0);
         @{$self->{' textlinematrix'}} = (0, 0);
@@ -2599,7 +2609,7 @@ Remove hyphens from option names (C<-translate> becomes C<translate>, etc.).
 
 =item transform_rel
 
-Replace with L</"transform">, setting option C<relative> to true.  Remove
+Replace with L</"transform">, setting option C<repeat> to true.  Remove
 hyphens from the names of other options.
 
 =item linewidth

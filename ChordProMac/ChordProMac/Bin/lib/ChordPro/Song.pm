@@ -217,9 +217,7 @@ sub parse_song {
     $config->unlock;
 
     if ( %$defs ) {
-	my $c = $config->hmerge( prp2cfg( $defs, $config ) );
-	bless $c => ref($config);
-	$config = $c;
+	prpadd2cfg( $config, %$defs );
     }
 
     for ( qw( transpose transcode decapo lyrics-only ) ) {
@@ -331,10 +329,15 @@ sub parse_song {
 	    $_ .= $cont;
 	}
 
+	# Uncomment this to allow \uDXXX\uDYYY (surrogate) escapes.
+	s/ \\u(d[89ab][[:xdigit:]]{2})\\u(d[cdef][[:xdigit:]]{2})
+	 / pack('U*', 0x10000 + (hex($1) - 0xD800) * 0x400 + (hex($2) - 0xDC00) )
+	   /igex;
+
 	# Uncomment this to allow \uXXXX escapes.
 	s/\\u([0-9a-f]{4})/chr(hex("0x$1"))/ige;
 	# Uncomment this to allow \u{XX...} escapes.
-	# s/\\u\{([0-9a-f]+)\}/chr(hex("0x$1"))/ige;
+	s/\\u\{([0-9a-f]+)\}/chr(hex("0x$1"))/ige;
 
 	$diag->{orig} = $_;
 	# Get rid of TABs.
@@ -346,9 +349,9 @@ sub parse_song {
 
 	for my $pp ( "all", "env-$in_context" ) {
 	    if ( $prep->{$pp} ) {
-		0&&warn("PRE:  ", $_, "\n");
+		$config->{debug}->{pp} && warn("PRE:  ", $_, "\n");
 		$prep->{$pp}->($_);
-		0&&warn("POST: ", $_, "\n");
+		$config->{debug}->{pp} && warn("POST: ", $_, "\n");
 		if ( /\n/ ) {
 		    my @a = split( /\n/, $_ );
 		    $_ = shift(@a);
@@ -556,6 +559,10 @@ sub parse_song {
 			}
 		    }
 		    $opts = $a->{opts} = { %$opts, %{$a->{opts}} };
+		    if ( $opts->{align} && $opts->{x} && $opts->{x} =~ /\%$/ ) {
+			do_warn( "Useless combination of x percentage with align (align ignored)" );
+			delete $opts->{align};
+    }
 
 		    my $def = !!$id;
 		    $id //= "_Image".$assetid++;
@@ -618,9 +625,9 @@ sub parse_song {
 	if ( /^\s*\{(.*)\}\s*$/ ) {
 	    my $dir = $1;
 	    if ( $prep->{directive} ) {
-		# warn("PRE:  ", $_, "\n");
+		$config->{debug}->{pp} && warn("PRE:  ", $_, "\n");
 		$prep->{directive}->($dir);
-		# warn("POST: ", $_, "\n");
+		$config->{debug}->{pp} && warn("POST: ", $_, "\n");
 	    }
 	    $self->add( type => "ignore",
 			text => $_ )
@@ -648,9 +655,9 @@ sub parse_song {
 
 	if ( /\S/ ) {
 	    if ( $prep->{songline} ) {
-		# warn("PRE:  ", $_, "\n");
+		$config->{debug}->{pp} && warn("PRE:  ", $_, "\n");
 		$prep->{songline}->($_);
-		# warn("POST: ", $_, "\n");
+		$config->{debug}->{pp} && warn("POST: ", $_, "\n");
 	    }
 	    if ( $config->{settings}->{flowtext}
 		 && @{ $self->{body}//[] } ) {
@@ -1117,6 +1124,7 @@ my %abbrevs = (
    cb	      => "comment_box",
    cf	      => "chordfont",
    ci	      => "comment_italic",
+   col	      => "colums",
    colb	      => "column_break",
    cs	      => "chordsize",
    eob	      => "end_of_bridge",
@@ -1276,7 +1284,7 @@ sub directive {
 		  $xpose + ($config->{settings}->{transpose}//0 );
 	    }
 	    my $kv = {};
-	    if ( $arg =~ /\b(id|label|scale|split|spread|width|align|center)=(.+)/ ) {
+	    if ( $arg =~ /\w+=["'](.+)/ ) {
 		$kv = parse_kv($arg);
 	    }
 	    else {
@@ -1297,7 +1305,7 @@ sub directive {
 	    if ( $arg =~ /^label=/ ) {
 		$arg = parse_kv($arg)->{label};
 	    }
-	    elsif ( $arg =~ /\b(id|scale|split|spread|width|align|center)=(.+)/ ) {
+	    elsif ( $arg =~ /\w+=["'](.+)/ ) {
 		# Doesn't look like a label. Assume a mistake.
 		do_warn("Garbage in start_of_$in_context: $arg (ignored)\n");
 		$arg = "";
@@ -1373,49 +1381,10 @@ sub directive {
 		    value => $arg,
 		  );
 
-	# THIS IS BASICALLY A COPY OF THE CODE IN Config.pm.
-	# TODO: GENERALIZE.
-	my $ccfg = {};
-	my @k = split( /[:.]/, $1 );
-	my $c = \$ccfg;		# new
-	my $o = $config;	# current
-	my $lk = pop(@k);	# last key
+	$config->unlock;
+	prpadd2cfg( $config, $1 => $arg );
+	$config->lock;
 
-	# Step through the keys.
-	foreach ( @k ) {
-	    $c = \($$c->{$_});
-	    $o = $o->{$_};
-	}
-
-	# Turn hash.array into hash.array.> (append).
-	if ( ref($o) eq 'HASH' && ref($o->{$lk}) eq 'ARRAY' ) {
-	    $c = \($$c->{$lk});
-	    $o = $o->{$lk};
-	    $lk = '>';
-	}
-
-	# Final key. Merge array if so.
-	if ( ( $lk =~ /^\d+$/ || $lk eq '>' || $lk eq '<' )
-	       && ref($o) eq 'ARRAY' ) {
-	    unless ( ref($$c) eq 'ARRAY' ) {
-		# Only copy orig values the first time.
-		$$c->[$_] = $o->[$_] for 0..scalar(@{$o})-1;
-	    }
-	    if ( $lk eq '>' ) {
-		push( @{$$c}, $arg );
-	    }
-	    elsif ( $lk eq '<' ) {
-		unshift( @{$$c}, $arg );
-	    }
-	    else {
-		$$c->[$lk] = $arg;
-	    }
-	}
-	else {
-	    $$c->{$lk} = $arg;
-	}
-
-	$config->augment($ccfg);
 	upd_config();
 
 	return 1;
@@ -1544,7 +1513,7 @@ sub dir_image {
 	    $opts{lc($k)} = $v;
 	}
 	elsif ( $k =~ /^(x|y)$/i
-		&& $v =~ /^([-+]?\d+(?:\.\d+)?\%?)$/ ) {
+		&& $v =~ /^(?:base[+-])?([-+]?\d+(?:\.\d+)?\%?)$/ ) {
 	    $opts{lc($k)} = $v;
 	}
 	elsif ( $k =~ /^(scale)$/
@@ -1595,6 +1564,10 @@ sub dir_image {
     unless ( $uri || $id || $chord ) {
 	do_warn( "Missing image source\n" );
 	return;
+    }
+    if ( $opts{align} && $opts{x} && $opts{x} =~ /\%$/ ) {
+	do_warn( "Useless combination of x percentage with align (align ignored)" );
+	delete $opts{align};
     }
 
     # If the image uri does not have a directory, look it up

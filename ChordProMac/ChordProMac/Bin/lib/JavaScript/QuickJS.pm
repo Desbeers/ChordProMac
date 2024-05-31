@@ -18,14 +18,14 @@ Quick and dirty …
         [ "The", "last", "value", "is", "returned." ];
     > );
 
-… or, something a bit fancier:
+… or load ES6 modules:
 
-    my $js = JavaScript::QuickJS->new()->std()->helpers();
+    my $js = JavaScript::QuickJS->new()->helpers();
 
     $js->eval_module( q/
-        import * as std from 'std';
+        import * as coolStuff from 'cool/stuff';
 
-        for (const [key, value] of Object.entries(std.getenviron())) {
+        for (const [key, value] of Object.entries(coolStuff)) {
             console.log(key, value);
         }
     / );
@@ -47,7 +47,7 @@ your system.
 
 use XSLoader;
 
-our $VERSION = '0.18';
+our $VERSION = '0.21';
 
 XSLoader::load( __PACKAGE__, $VERSION );
 
@@ -119,30 +119,33 @@ Returns I<OBJ>.
 
 =head2 $obj = I<OBJ>->std()
 
-Enables (but does I<not> import) QuickJS’s C<std> module.
-See L</SYNOPSIS> above for example usage.
+Enables QuickJS’s C<std> module and creates a global of the same name
+that’s usable from both script and module modes.
+
+This resembles C<qjs>’s C<--std> flag except that it I<only> enables
+C<std>, not C<os>.
 
 Returns I<OBJ>.
 
 =head2 $obj = I<OBJ>->os()
 
-Like C<std()> but for QuickJS’s C<os> module.
+Like C<std()> but enables QuickJS’s C<os> module instead of C<std>.
 
 =head2 $VALUE = I<OBJ>->eval( $JS_CODE )
 
-Comparable to running C<qjs -e '...'>. Returns $JS_CODE’s last value;
+Like running C<qjs -e '...'>. Returns $JS_CODE’s last value;
 see below for details on type conversions from JavaScript to Perl.
 
 Untrapped exceptions in JavaScript will be rethrown as Perl exceptions.
 
 $JS_CODE is a I<character> string.
 
-=head2 $obj = I<OBJ>->eval_module( $JS_CODE )
+=head2 $promise = I<OBJ>->eval_module( $JS_CODE )
 
 Runs $JS_CODE as a module, which enables ES6 module syntax.
 Note that no values can be returned directly in this mode of execution.
 
-Returns I<OBJ>.
+Returns a promise that resolves once the module is loaded.
 
 =head2 $obj = I<OBJ>->await()
 
@@ -362,12 +365,6 @@ V8 versions.
 L<SpiderMonkey|https://spidermonkey.dev/> engine to Perl.
 
 =back
-
-=head1 TODO
-
-Upstream QuickJS seems to lack active maintenance. It may be advantageous
-to switch to one of its forks (like
-L<quickjs-ng|https://github.com/quickjs-ng/quickjs>).
 
 =head1 LICENSE & COPYRIGHT
 

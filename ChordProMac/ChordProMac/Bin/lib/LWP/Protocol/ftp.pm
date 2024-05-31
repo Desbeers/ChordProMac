@@ -2,10 +2,10 @@ package LWP::Protocol::ftp;
 
 # Implementation of the ftp protocol (RFC 959). We let the Net::FTP
 # package do all the dirty work.
-use parent qw(LWP::Protocol);
+use base qw(LWP::Protocol);
 use strict;
 
-our $VERSION = '6.67';
+our $VERSION = '6.44';
 
 use Carp            ();
 use HTTP::Status    ();
@@ -21,7 +21,7 @@ use File::Listing   ();
         LWP::Protocol::MyFTP;
 
     use strict;
-    use parent qw(Net::FTP);
+    use base qw(Net::FTP);
 
     sub new {
         my $class = shift;

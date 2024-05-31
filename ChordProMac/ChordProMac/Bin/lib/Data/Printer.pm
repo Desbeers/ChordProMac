@@ -5,7 +5,7 @@ use Data::Printer::Object;
 use Data::Printer::Common;
 use Data::Printer::Config;
 
-our $VERSION = '1.000004';
+our $VERSION = '1.002001';
 $VERSION = eval $VERSION;
 
 my $rc_arguments;
@@ -45,7 +45,34 @@ sub import {
 sub _initialize {
     # potential race but worst case is we read it twice :)
     { no warnings 'redefine'; *_initialize = sub {} }
-    $rc_arguments = Data::Printer::Config::load_rc_file();
+
+    my $rc_filename = Data::Printer::Config::_get_first_rc_file_available();
+    $rc_arguments = Data::Printer::Config::load_rc_file($rc_filename);
+
+    if (
+           exists $rc_arguments->{'_'}{live_update}
+        && defined $rc_arguments->{'_'}{live_update}
+        && $rc_arguments->{'_'}{live_update} =~ /\A\d+\z/
+        && $rc_arguments->{'_'}{live_update} > 0) {
+        my $now = time;
+        my $last_mod = (stat $rc_filename)[9];
+        {
+            no warnings 'redefine';
+            *_initialize = sub {
+                if (time - $now > $rc_arguments->{'_'}{live_update}) {
+                    my $new_last_mod = (stat $rc_filename)[9];
+                    if (defined $new_last_mod && $new_last_mod > $last_mod) {
+                        $now = time;
+                        $last_mod = $new_last_mod;
+                        $rc_arguments = Data::Printer::Config::load_rc_file($rc_filename);
+                        if (!exists $rc_arguments->{'_'}{live_update} || !$rc_arguments->{'_'}{live_update}) {
+                            *_initialize = sub {};
+                        }
+                    }
+                }
+            };
+        }
+    }
 }
 
 sub np (\[@$%&];%) {
@@ -55,6 +82,7 @@ sub np (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    return '' if $args_to_use->{quiet};
     my $printer = Data::Printer::Object->new($args_to_use);
 
     # force color level 0 on 'auto' colors:
@@ -84,8 +112,20 @@ sub p (\[@$%&];%) {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
-    my $printer = Data::Printer::Object->new($args_to_use);
     my $want_value = defined wantarray;
+
+    # return as quickly as possible under 'quiet'.
+    if ($args_to_use->{quiet}) {
+        # we avoid creating a Data::Printer::Object instance
+        # to speed things up, since we don't do anything under 'quiet'.
+        my $return_type = Data::Printer::Common::_fetch_anyof(
+            $args_to_use, 'return_value', 'pass', [qw(pass dump void)]
+        );
+        return _handle_output(undef, undef, $want_value, $_[0], $return_type, 1);
+    }
+
+    my $printer = Data::Printer::Object->new($args_to_use);
+
     if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
         $printer->{_output_color_level} = 0;
     }
@@ -102,7 +142,7 @@ sub p (\[@$%&];%) {
         $output = $printer->_write_label . $output;
     }
 
-    return _handle_output($printer, $output, $want_value, $_[0]);
+    return _handle_output($output, $printer->{output_handle}, $want_value, $_[0], $printer->return_value, undef);
 }
 
 # This is a p() clone without prototypes. Just like regular Data::Dumper,
@@ -122,9 +162,20 @@ sub _p_without_prototypes  {
 
     my $caller = caller;
     my $args_to_use = _fetch_args_with($caller, \%properties);
+    my $want_value = defined wantarray;
+
+    # return as quickly as possible under 'quiet'.
+    if ($args_to_use->{quiet}) {
+        # we avoid creating a Data::Printer::Object instance
+        # to speed things up, since we don't do anything under 'quiet'.
+        my $return_type = Data::Printer::Common::_fetch_anyof(
+            $args_to_use, 'return_value', 'pass', [qw(pass dump void)]
+        );
+        return _handle_output(undef, undef, $want_value, $_[0], $return_type, 1);
+    }
+
     my $printer = Data::Printer::Object->new($args_to_use);
 
-    my $want_value = defined wantarray;
     if ($printer->colored eq 'auto' && $printer->return_value eq 'dump' && $want_value) {
         $printer->{_output_color_level} = 0;
     }
@@ -142,15 +193,15 @@ sub _p_without_prototypes  {
         $output = $printer->_write_label . $output;
     }
 
-    return _handle_output($printer, $output, $want_value, $_[0]);
+    return _handle_output($output, $printer->{output_handle}, $want_value, $_[0], $printer->return_value, undef);
 }
 
 
 sub _handle_output {
-    my ($printer, $output, $wantarray, $data) = @_;
+    my ($output, $out_handle, $wantarray, $data, $return_type, $quiet) = @_;
 
-    if ($printer->return_value eq 'pass') {
-        print { $printer->{output_handle} } $output . "\n";
+    if ($return_type eq 'pass') {
+        print { $out_handle } $output . "\n" unless $quiet;
         require Scalar::Util;
         my $ref = Scalar::Util::blessed($data);
         return $data if defined $ref;
@@ -171,8 +222,8 @@ sub _handle_output {
             return $data;
         }
     }
-    elsif ($printer->return_value eq 'void' || !$wantarray) {
-        print { $printer->{output_handle} } $output . "\n";
+    elsif ($return_type eq 'void' || !$wantarray) {
+        print { $out_handle} $output . "\n" unless $quiet;
         return;
     }
     else {
@@ -255,17 +306,16 @@ Want to see what's inside a variable in a complete, colored and human-friendly w
     p @array;
     p %hash;
 
-    # for anonymous array/hash references, use postderef (on perl 5.24 or later):
-    p [ $one, $two, $three ]->@*;
-    p { foo => $foo, bar => $bar }->%*;
+    # printing anonymous array references:
+    p [ $one, $two, $three ]->@*;    # perl 5.24 or later!
+    p @{[ $one, $two, $three ]};     # same, older perls
+    &p( [ $one, $two, $three ] );    # same, older perls
 
-    # or deref the anonymous ref:
-    p @{[ $one, $two, $three ]};
-    p %{{ foo => $foo, bar => $bar }};
+    # printing anonymous hash references:
+    p { foo => $foo, bar => $bar }->%*;   # perl 5.24 or later!
+    p %{{ foo => $foo, bar => $bar }};    # same, older perls
+    &p( { foo => $foo, bar => $bar } );   # same, older perls
 
-    # or put '&' in front of the call:
-    &p( [ $one, $two, $three ] );
-    &p( { foo => $foo, bar => $bar } );
 
 The snippets above will print the contents of the chosen variables to STDERR
 on your terminal, with colors and a few extra features to help you debug
@@ -284,7 +334,7 @@ easily too.
 
 That's pretty much it :)
 
-=for html <img alt="Data::Printer in action" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif" />
+=for html <img alt="samples of Data::Printer output for several kinds of data and objects" src="https://raw.githubusercontent.com/garu/Data-Printer/master/examples/ddp.gif" />
 
 Data::Printer is L<fully customizable|/Properties Quick Reference>, even
 on a per-module basis! Once you figure out your own preferences, create a
@@ -298,7 +348,7 @@ Here's what Data::Printer offers Perl developers, out of the box:
 
 =over 4
 
-=item * Variable dumps designed for I<< easy parsing by the human brain >>,
+=item * Variable dumps designed for B<< easy parsing by the human brain >>,
 not a machine.
 
 =back
@@ -342,11 +392,18 @@ or install hardcore tools like Devel::Peek and Devel::Gladiator.
 
 =over 4
 
+=item * B<< Full support for dumping perl 5.38 native classes >>.
+
+=back
+
+=over 4
+
 =item * keep your custom settings on a
 L<< .dataprinter|/The .dataprinter configuration file >> file that allows
-B<< different options per module >> being analyzed! You may also create a
-custom L<profile|Data::Printer::Profile> class with your preferences and
-filters and upload it to CPAN.
+B<< different options per module >> being analyzed! You can have
+B<< one C<.dataprinter> file per project >>, or default to one in your home
+directory. You may also create a custom L<profile|Data::Printer::Profile> class
+with your preferences and filters and upload it to CPAN.
 
 =back
 
@@ -370,7 +427,8 @@ and the customization section below cover about 90% of all use cases.
 =over 4
 
 =item * Works on B<< Perl 5.8 and later >>. Because you can't control where
-you debug, we try our best to be compatible with all versions of Perl 5.
+you debug, we try our best to be compatible with all versions of Perl 5, from
+the oldest available to the bleeding edge.
 
 =back
 
@@ -426,7 +484,7 @@ or prefix C<p()> with C<&>:
 
 You can pass custom options that will work only on that particular call:
 
-    p @var, as => "some label", colorized => 0;
+    p @var, as => "some label", colored => 0;
     p %var, show_memsize => 1;
 
 By default, C<p()> prints to STDERR and returns the same variable being
@@ -508,10 +566,24 @@ is super simple and can be understood in the example below:
     multiline = 0
     output    = /var/log/myapp/debug.data
 
+    # use 'quiet' to silence all output from p() and np()
+    # called from the specified package.
+    [MyApp::Yet::Another]
+    quiet = 1
+
 Note that if you set custom properties as arguments to C<p()> or C<np()>, you
 should group suboptions as a hashref. So while the C<.dataprinter> file has
 "C<< class.expand = 0 >>" and "C<< class.inherited = none >>", the equivalent
 code is "C<< class => { expand => 0, inherited => 'none' } >>".
+
+=head3 live updating your .dataprinter without restarts
+
+Data::Printer 1.1 introduces a new 'live_update' flag that can be set to a
+positive integer to enable live updates. When this mode is on, Data::Printer
+will check if the C<.dataprinter> file has been updated and, if so, it will
+reload it. This way you can toggle features on and off and control output
+verbosity directly from your C<.dataprinter> file without needing to change
+or restart running code.
 
 =head2 Properties Quick Reference
 
@@ -609,6 +681,11 @@ array index you had originally.
 =item * B<fulldump> - when set to 1, disables all max string/hash/array
 values. Use this to generate complete (full) dumps of all your content,
 which is trimmed by default.
+
+=item * B<quiet> - when set to 1, disables all data parsing and returns as
+quickly as possible. Use this to disable all output from C<p()> and C<np()>
+inside a particular package, either from the 'use' call or from .dataprinter.
+(introduced in version 1.1)
 
 =back
 
@@ -713,7 +790,7 @@ you want):
     p my @array = qw(a b c d);          # wrong
     my @array = qw(a b c d); p @array;  # right
 
-If you pass a nonexistant key/index to DDP using prototypes, they
+If you pass a nonexistent key/index to DDP using prototypes, they
 will trigger autovivification:
 
     use DDP;
@@ -884,8 +961,24 @@ to be dumped using Data::Printer.
 =head2 Using Data::Printer in a perl shell (REPL)
 
 Some people really enjoy using a REPL shell to quickly try Perl code. One
-of the most popular ones out there is L<Devel::REPL>. If you use it, now
-you can also see its output with Data::Printer!
+of the most popular ones out there are L<Reply> and L<Devel::REPL>. If you
+use them, now you can also see its output with Data::Printer!
+
+=over 4
+
+=item * B<Reply>
+
+=back
+
+Just install L<Reply::Plugin::DataPrinter> and add a line with
+C<< [DataPrinter] >> to your C<.replyrc> file. That's it! Next time
+you run the 'reply' REPL, Data::Printer will be used to dump variables!
+
+=over 4
+
+=item * B<Devel::REPL>
+
+=back
 
 Just install L<Devel::REPL::Plugin::DataPrinter> and add the following
 line to your re.pl configuration file (usually ".re.pl/repl.rc" in your
@@ -1006,29 +1099,29 @@ Many thanks to everyone who helped design and develop this module with
 patches, bug reports, wishlists, comments and tests. They are (alphabetically):
 
 Adam Rosenstein, Alexandr Ciornii (chorny), Alexander Hartmaier (abraxxa),
-Allan Whiteford, Anatoly (Snelius30), Andreas König (andk), Andy Bach,
-Anthony DeRobertis, Árpád Szász, Athanasios Douitsis (aduitsis),
+Allan Whiteford, Anatoly (Snelius30), Andre Klärner, Andreas König (andk),
+Andy Bach, Anthony DeRobertis, Árpád Szász, Athanasios Douitsis (aduitsis),
 Baldur Kristinsson, Benct Philip Jonsson (bpj), brian d foy,
 Chad Granum (exodist), Chris Prather (perigrin), Curtis Poe (Ovid),
 David D Lowe (Flimm), David E. Condon (hhg7), David Golden (xdg),
 David Precious (bigpresh), David Raab, David E. Wheeler (theory),
 Damien Krotkine (dams), Denis Howe, dirk, Dotan Dimet, Eden Cardim (edenc),
-Elliot Shank (elliotjs), Eugen Konkov (KES777), Fernando Corrêa (SmokeMachine),
-Fitz Elliott, Florian (fschlich), Frew Schmidt (frew), GianniGi,
-Graham Knop (haarg), Graham Todd, Gregory J. Oschwald, grr, Håkon Hægland,
-Iaroslav O. Kosmina (darviarush), Ivan Bessarabov (bessarabv), J Mash,
-James E. Keenan (jkeenan), Jarrod Funnell (Timbus), Jay Allen (jayallen),
-Jay Hannah (jhannah), jcop, Jesse Luehrs (doy), Joel Berger (jberger),
-John S. Anderson (genehack), Karen Etheridge (ether),
-Kartik Thakore (kthakore), Kevin Dawson (bowtie), Kevin McGrath (catlgrep),
-Kip Hampton (ubu), Londran, Marcel Grünauer (hanekomu),
-Marco Masetti (grubert65), Mark Fowler (Trelane), Martin J. Evans,
-Matt S. Trout (mst), Maxim Vuets, Michael Conrad, Mike Doherty (doherty),
-Nicolas R (atoomic),  Nigel Metheringham (nigelm), Nuba Princigalli (nuba),
-Olaf Alders (oalders), Paul Evans (LeoNerd), Pedro Melo (melo),
-Philippe Bruhat (BooK), Przemysław Wesołek (jest), Rebecca Turner (iarna),
-Renato Cron (renatoCRON), Ricardo Signes (rjbs), Rob Hoelz (hoelzro),
-Salve J. Nilsen (sjn), sawyer, Sebastian Willing (Sewi),
+Elliot Shank (elliotjs), Elvin Aslanov, Eugen Konkov (KES777),
+Fernando Corrêa (SmokeMachine), Fitz Elliott, Florian Schlichting (fschlich),
+Frew Schmidt (frew), GianniGi, Graham Knop (haarg), Graham Todd,
+Gregory J. Oschwald, grr, Håkon Hægland, Iaroslav O. Kosmina (darviarush),
+Ivan Bessarabov (bessarabv), J Mash, James E. Keenan (jkeenan),
+Jarrod Funnell (Timbus), Jay Allen (jayallen), Jay Hannah (jhannah), jcop,
+Jesse Luehrs (doy), Joel Berger (jberger), John S. Anderson (genehack),
+Karen Etheridge (ether), Kartik Thakore (kthakore), Kevin Dawson (bowtie),
+Kevin McGrath (catlgrep), Kip Hampton (ubu), Londran,
+Marcel Grünauer (hanekomu), Marco Masetti (grubert65), Mark Fowler (Trelane),
+Martin J. Evans, Matthias Muth, Matt S. Trout (mst), Maxim Vuets, Michael Conrad,
+Mike Doherty (doherty), Nicolas R (atoomic), Nigel Metheringham (nigelm),
+Nuba Princigalli (nuba), Olaf Alders (oalders), Paul Evans (LeoNerd),
+Pedro Melo (melo), Philippe Bruhat (BooK), Przemysław Wesołek (jest),
+Rebecca Turner (iarna), Renato Cron (renatoCRON), Ricardo Signes (rjbs),
+Rob Hoelz (hoelzro), Salve J. Nilsen (sjn), sawyer, Sebastian Willing (Sewi),
 Sébastien Feugère (smonff), Sergey Aleynikov (randir), Slaven Rezić,
 Stanislaw Pusep (syp), Stephen Thirlwall (sdt), sugyan, Tai Paul,
 Tatsuhiko Miyagawa (miyagawa), Thomas Sibley (tsibley),
@@ -1041,7 +1134,7 @@ If I missed your name, please drop me a line!
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright (C) 2011-2021 Breno G. de Oliveira
+Copyright (C) 2011-2024 Breno G. de Oliveira
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

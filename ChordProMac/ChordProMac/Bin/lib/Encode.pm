@@ -8,7 +8,8 @@ use warnings;
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 our $VERSION;
 BEGIN {
-    $VERSION = sprintf "%d.%02d", q$Revision: 3.08 $ =~ /(\d+)/g;
+    $VERSION = "3.08_01";
+    $VERSION = eval $VERSION;
     require XSLoader;
     XSLoader::load( __PACKAGE__, $VERSION );
 }
@@ -66,8 +67,8 @@ require Encode::Config;
 eval {
     local $SIG{__DIE__};
     local $SIG{__WARN__};
-    local @INC = @INC || ();
-    pop @INC if $INC[-1] eq '.';
+    local @INC = @INC;
+    pop @INC if @INC && $INC[-1] eq '.';
     require Encode::ConfigLocal;
 };
 
@@ -256,4 +257,4 @@ if ($ON_EBCDIC) {
 
 __END__
 
-#line 973
+#line 974

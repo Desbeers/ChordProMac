@@ -152,7 +152,7 @@ extension Terminal {
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        //Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
+        Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
         /// Return the created PDF
         return (try? Data(contentsOf: exportURL), exportURL)
     }

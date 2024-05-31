@@ -2,22 +2,20 @@ package LWP::UserAgent;
 
 use strict;
 
-use parent qw(LWP::MemberMixin);
+use base qw(LWP::MemberMixin);
 
 use Carp ();
-use File::Copy ();
 use HTTP::Request ();
 use HTTP::Response ();
 use HTTP::Date ();
 
 use LWP ();
-use HTTP::Status ();
 use LWP::Protocol ();
 
-use Scalar::Util qw(blessed openhandle);
+use Scalar::Util qw(blessed);
 use Try::Tiny qw(try catch);
 
-our $VERSION = '6.67';
+our $VERSION = '6.44';
 
 sub new
 {
@@ -303,11 +301,9 @@ sub request {
     $response->previous($previous) if $previous;
 
     if ($response->redirects >= $self->{max_redirect}) {
-        if ($response->header('Location')) {
-            $response->header("Client-Warning" =>
+        $response->header("Client-Warning" =>
                 "Redirect loop detected (max_redirect = $self->{max_redirect})"
-            );
-        }
+        );
         return $response;
     }
 
@@ -320,8 +316,7 @@ sub request {
     if (   $code == HTTP::Status::RC_MOVED_PERMANENTLY
         or $code == HTTP::Status::RC_FOUND
         or $code == HTTP::Status::RC_SEE_OTHER
-        or $code == HTTP::Status::RC_TEMPORARY_REDIRECT
-        or $code == HTTP::Status::RC_PERMANENT_REDIRECT)
+        or $code == HTTP::Status::RC_TEMPORARY_REDIRECT)
     {
         my $referral = $request->clone;
 
@@ -446,41 +441,38 @@ sub get {
     return $self->request( HTTP::Request::Common::GET( @parameters ), @suff );
 }
 
-sub _maybe_copy_default_content_type {
+sub _has_raw_content {
     my $self = shift;
-    my $req  = shift;
+    shift; # drop url
 
-    my $default_ct = $self->default_header('Content-Type');
-    return unless defined $default_ct;
-
-    # drop url
-    shift;
-
-    # adapted from HTTP::Request::Common::request_type_with_data
+    # taken from HTTP::Request::Common::request_type_with_data
     my $content;
     $content = shift if @_ and ref $_[0];
-
-    # We only care about the final value, really
-    my $ct;
-
-    my ($k, $v);
-    while (($k, $v) = splice(@_, 0, 2)) {
+    my($k, $v);
+    while (($k,$v) = splice(@_, 0, 2)) {
         if (lc($k) eq 'content') {
             $content = $v;
         }
-        elsif (lc($k) eq 'content-type') {
-            $ct = $v;
-        }
     }
 
-    # Content-type provided and truthy? skip
-    return if $ct;
+    # We were given Content => 'string' ...
+    if (defined $content && ! ref ($content)) {
+        return 1;
+    }
 
-    # Content is not just a string? Then it must be x-www-form-urlencoded
-    return if defined $content && ref($content);
+    return;
+}
 
-    # Provide default
-    $req->header('Content-Type' => $default_ct);
+sub _maybe_copy_default_content_type {
+    my ($self, $req, @parameters) = @_;
+
+    # If we have a default Content-Type and someone passes in a POST/PUT
+    # with Content => 'some-string-value', use that Content-Type instead
+    # of x-www-form-urlencoded
+    my $ct = $self->default_header('Content-Type');
+    return unless defined $ct && $self->_has_raw_content(@parameters);
+
+    $req->header('Content-Type' => $ct);
 }
 
 sub post {
@@ -558,13 +550,11 @@ sub _process_colonic_headers {
 	    # Some sanity-checking...
 	    Carp::croak("A :content_file value can't be undef")
 		unless defined $arg;
+	    Carp::croak("A :content_file value can't be a reference")
+		if ref $arg;
+	    Carp::croak("A :content_file value can't be \"\"")
+		unless length $arg;
 
-	    unless ( defined openhandle($arg) ) {
-		    Carp::croak("A :content_file value can't be a reference")
-			if ref $arg;
-		    Carp::croak("A :content_file value can't be \"\"")
-			unless length $arg;
-	    }
 	}
 	elsif ($args->[$i] eq ':read_size_hint') {
 	    $size = $args->[$i + 1];
@@ -741,8 +731,7 @@ sub ssl_opts {
 	return $old;
     }
 
-    my @opts= sort keys %{$self->{ssl_opts}};
-    return @opts;
+    return keys %{$self->{ssl_opts}};
 }
 
 sub parse_head {
@@ -792,10 +781,7 @@ sub cookie_jar {
 	}
 	$self->{cookie_jar} = $jar;
         $self->set_my_handler("request_prepare",
-            $jar ? sub {
-                return if $_[0]->header("Cookie");
-                $jar->add_cookie_header($_[0]);
-            } : undef,
+            $jar ? sub { $jar->add_cookie_header($_[0]); } : undef,
         );
         $self->set_my_handler("response_done",
             $jar ? sub { $jar->extract_cookies($_[0]); } : undef,
@@ -894,8 +880,9 @@ sub get_my_handler {
             $init->(\%spec);
         }
         elsif (ref($init) eq "HASH") {
-            $spec{$_}= $init->{$_}
-                for keys %$init;
+            while (my($k, $v) = each %$init) {
+                $spec{$k} = $v;
+            }
         }
         $spec{callback} ||= sub {};
         $spec{line} ||= join(":", (caller)[1,2]);
@@ -1008,14 +995,10 @@ sub mirror
             $request->header( 'If-Modified-Since' => HTTP::Date::time2str($mtime) );
         }
     }
-
-    require File::Temp;
-    my ($tmpfh, $tmpfile) = File::Temp::tempfile("$file-XXXXXX");
-    close($tmpfh) or die "Could not close tmpfile '$tmpfile': $!";
+    my $tmpfile = "$file-$$";
 
     my $response = $self->request($request, $tmpfile);
     if ( $response->header('X-Died') ) {
-        unlink($tmpfile);
         die $response->header('X-Died');
     }
 
@@ -1029,32 +1012,26 @@ sub mirror
 
         if ( defined $content_length and $file_length < $content_length ) {
             unlink($tmpfile);
-            die "Transfer truncated: only $file_length out of $content_length bytes received\n";
+            die "Transfer truncated: " . "only $file_length out of $content_length bytes received\n";
         }
         elsif ( defined $content_length and $file_length > $content_length ) {
             unlink($tmpfile);
-            die "Content-length mismatch: expected $content_length bytes, got $file_length\n";
+            die "Content-length mismatch: " . "expected $content_length bytes, got $file_length\n";
         }
         # The file was the expected length.
         else {
             # Replace the stale file with a fresh copy
-            # File::Copy will attempt to do it atomically,
-            # and fall back to a delete + copy if that fails.
-            File::Copy::move( $tmpfile, $file )
-                or die "Cannot rename '$tmpfile' to '$file': $!\n";
-
-            # Set standard file permissions if umask is supported.
-            # If not, leave what File::Temp created in effect.
-            if ( defined(my $umask = umask()) ) {
-                my $mode = 0666 &~ $umask;
-                chmod $mode, $file
-                    or die sprintf("Cannot chmod %o '%s': %s\n", $mode, $file, $!);
+            if ( -e $file ) {
+                # Some DOSish systems fail to rename if the target exists
+                chmod 0777, $file;
+                unlink $file;
             }
+            rename( $tmpfile, $file )
+                or die "Cannot rename '$tmpfile' to '$file': $!\n";
 
             # make sure the file has the same last modification time
             if ( my $lm = $response->last_modified ) {
-                utime $lm, $lm, $file
-                    or warn "Cannot update modification time of '$file': $!\n";
+                utime $lm, $lm, $file;
             }
         }
     }
@@ -1115,28 +1092,15 @@ sub env_proxy {
     my ($self) = @_;
     require Encode;
     require Encode::Locale;
-    my $env_request_method= $ENV{REQUEST_METHOD};
-    my %seen;
-    foreach my $k (sort keys %ENV) {
-        my $real_key= $k;
-        my $v= $ENV{$k}
-            or next;
-        if ( $env_request_method ) {
-            # Need to be careful when called in the CGI environment, as
-            # the HTTP_PROXY variable is under control of that other guy.
-            next if $k =~ /^HTTP_/;
-            $k = "HTTP_PROXY" if $k eq "CGI_HTTP_PROXY";
-        }
+    my($k,$v);
+    while(($k, $v) = each %ENV) {
+	if ($ENV{REQUEST_METHOD}) {
+	    # Need to be careful when called in the CGI environment, as
+	    # the HTTP_PROXY variable is under control of that other guy.
+	    next if $k =~ /^HTTP_/;
+	    $k = "HTTP_PROXY" if $k eq "CGI_HTTP_PROXY";
+	}
 	$k = lc($k);
-        if (my $from_key= $seen{$k}) {
-            warn "Environment contains multiple differing definitions for '$k'.\n".
-                 "Using value from '$from_key' ($ENV{$from_key}) and ignoring '$real_key' ($v)"
-                if $v ne $ENV{$from_key};
-            next;
-        } else {
-            $seen{$k}= $real_key;
-        }
-
 	next unless $k =~ /^(.*)_proxy$/;
 	$k = $1;
 	if ($k eq 'no') {
@@ -1282,21 +1246,21 @@ The following options correspond to attribute methods described below:
    KEY                     DEFAULT
    -----------             --------------------
    agent                   "libwww-perl/#.###"
+   from                    undef
    conn_cache              undef
    cookie_jar              undef
    default_headers         HTTP::Headers->new
-   from                    undef
    local_address           undef
-   max_redirect            7
+   ssl_opts                { verify_hostname => 1 }
    max_size                undef
-   no_proxy                []
+   max_redirect            7
    parse_head              1
    protocols_allowed       undef
    protocols_forbidden     undef
-   proxy                   undef
    requests_redirectable   ['GET', 'HEAD']
-   ssl_opts                { verify_hostname => 1 }
    timeout                 180
+   proxy                   undef
+   no_proxy                []
 
 The following additional options are also accepted: If the C<env_proxy> option
 is passed in with a true value, then proxy settings are read from environment
@@ -1808,7 +1772,7 @@ Set handlers private to the executing subroutine.  Works by defaulting
 an C<owner> field to the C<%matchspec> that holds the name of the called
 subroutine.  You might pass an explicit C<owner> to override this.
 
-If C<$cb> is passed as C<undef>, remove the handler.
+If $cb is passed as C<undef>, remove the handler.
 
 =head1 REQUEST METHODS
 
@@ -1824,7 +1788,7 @@ This method will dispatch a C<DELETE> request on the given URL.  Additional
 headers and content options are the same as for the L<LWP::UserAgent/get>
 method.
 
-This method will use the C<DELETE()> function from L<HTTP::Request::Common>
+This method will use the DELETE() function from L<HTTP::Request::Common>
 to build the request.  See L<HTTP::Request::Common> for a details on
 how to pass form content and other advanced features.
 
@@ -1852,15 +1816,13 @@ Fields names that start with ":" are special.  These will not
 initialize headers of the request but will determine how the response
 content is treated.  The following special field names are recognized:
 
-    ':content_file'   => $filename # or $filehandle
+    ':content_file'   => $filename
     ':content_cb'     => \&callback
     ':read_size_hint' => $bytes
 
-If a C<$filename> or C<$filehandle> is provided with the C<:content_file>
-option, then the response content will be saved here instead of in
-the response object.  The C<$filehandle> may also be an object with
-an open file descriptor, such as a L<File::Temp> object.
-If a callback is provided with the C<:content_cb> option then
+If a $filename is provided with the C<:content_file> option, then the
+response content will be saved here instead of in the response
+object.  If a callback is provided with the C<:content_cb> option then
 this function will be called for each chunk of the response content as
 it is received from the server.  If neither of these options are
 given, then the response content will accumulate in the response
@@ -1880,9 +1842,9 @@ number of callback invocations.
 
 The callback function is called with 3 arguments: a chunk of data, a
 reference to the response object, and a reference to the protocol
-object.  The callback can abort the request by invoking C<die()>.  The
+object.  The callback can abort the request by invoking die().  The
 exception message will show up as the "X-Died" header field in the
-response returned by the C<< $ua->get() >> method.
+response returned by the get() function.
 
 =head2 head
 
@@ -1927,8 +1889,6 @@ time of the file.  If the document on the server has not changed since
 this time, then nothing happens.  If the document has been updated, it
 will be downloaded again.  The modification time of the file will be
 forced to match that of the server.
-
-Uses L<File::Copy/move> to attempt to atomically replace the C<$filename>.
 
 The return value is an L<HTTP::Response> object.
 
@@ -2142,7 +2102,8 @@ See L</"cookie_jar"> for more information.
 
 =head2 Managing Protocols
 
-C<protocols_allowed> gives you the ability to allow arbitrary protocols.
+C<protocols_allowed> gives you the ability to whitelist the protocols you're
+willing to allow.
 
     my $ua = LWP::UserAgent->new(
         protocols_allowed => [ 'http', 'https' ]
@@ -2151,7 +2112,8 @@ C<protocols_allowed> gives you the ability to allow arbitrary protocols.
 This will prevent you from inadvertently following URLs like
 C<file:///etc/passwd>.  See L</"protocols_allowed">.
 
-C<protocols_forbidden> gives you the ability to deny arbitrary protocols.
+C<protocols_forbidden> gives you the ability to blacklist the protocols you're
+unwilling to allow.
 
     my $ua = LWP::UserAgent->new(
         protocols_forbidden => [ 'file', 'mailto', 'ssh', ]

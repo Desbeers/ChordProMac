@@ -1,8 +1,11 @@
 #line 1 "<embedded>/PAR/Heavy.pm"
 package PAR::Heavy;
+use strict;
+use warnings;
+
 $PAR::Heavy::VERSION = '0.12';
 
-#line 17
+#line 20
 
 ########################################################################
 # Dynamic inclusion of XS modules
@@ -12,6 +15,8 @@ $PAR::Heavy::VERSION = '0.12';
 
 # enable debug/trace messages from DynaLoader perl code
 my $dl_debug = $ENV{PERL_DL_DEBUG} || 0;
+
+our %FullCache;
 
 my ($bootstrap, $dl_findfile);  # Caches for code references
 my ($cache_key);                # The current file to find
@@ -32,10 +37,14 @@ sub _init_dynaloader {
     $bootstrap   = \&DynaLoader::bootstrap;
     $dl_findfile = \&DynaLoader::dl_findfile;
 
-    local $^W;
-    *{'DynaLoader::dl_expandspec'}  = sub { return };
-    *{'DynaLoader::bootstrap'}      = \&_bootstrap;
-    *{'DynaLoader::dl_findfile'}    = \&_dl_findfile;
+    {
+        no strict 'refs';
+        local $^W;
+        no warnings 'redefine';
+        *{'DynaLoader::dl_expandspec'}  = sub { return };
+        *{'DynaLoader::bootstrap'}      = \&_bootstrap;
+        *{'DynaLoader::dl_findfile'}    = \&_dl_findfile;
+    }
 }
 
 # Return the cached location of .dll inside PAR first, if possible.
@@ -159,4 +168,4 @@ sub _dl_extract {
 
 1;
 
-#line 201
+#line 212

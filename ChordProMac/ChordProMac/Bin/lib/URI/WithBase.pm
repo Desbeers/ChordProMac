@@ -3,10 +3,10 @@ package URI::WithBase;
 use strict;
 use warnings;
 
-use URI ();
-use Scalar::Util qw(blessed);
+use URI;
+use Scalar::Util 'blessed';
 
-our $VERSION = '5.12';
+our $VERSION = "2.20";
 
 use overload '""' => "as_string", fallback => 1;
 

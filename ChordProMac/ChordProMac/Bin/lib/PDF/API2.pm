@@ -1,10 +1,9 @@
 package PDF::API2;
 
 use strict;
-use warnings;
 no warnings qw[ deprecated recursion uninitialized ];
 
-our $VERSION = '2.043'; # VERSION
+our $VERSION = '2.047'; # VERSION
 
 use Carp;
 use Encode qw(:all);
@@ -553,15 +552,20 @@ sub _is_date {
     # D: prefix and the year, all components are optional but must be present if
     # a later component is present.  No provision is made in the specification
     # for leap seconds, etc.
-    return unless $value =~ /^D:([0-9]{4})        # D:YYYY (required)
-                             (?:([01][0-9])       # Month (01-12)
-                             (?:([0123][0-9])     # Day (01-31)
-                             (?:([012][0-9])      # Hour (00-23)
-                             (?:([012345][0-9])   # Minute (00-59)
-                             (?:([012345][0-9])   # Second (00-59)
-                             (?:([Z+-])           # UT Offset Direction
-                             (?:([012][0-9])      # UT Offset Hours
-                             (?:\'([012345][0-9]) # UT Offset Minutes
+    #
+    # The Adobe PDF specifications (including 1.7) state that the offset minutes
+    # must have a trailing apostrophe.  Beginning with the ISO version of the
+    # 1.7 specification, a trailing apostrophe is not permitted after the offset
+    # minutes.  For compatibility, we accept either version as valid.
+    return unless $value =~ /^D:([0-9]{4})         # D:YYYY (required)
+                             (?:([01][0-9])        # Month (01-12)
+                             (?:([0123][0-9])      # Day (01-31)
+                             (?:([012][0-9])       # Hour (00-23)
+                             (?:([012345][0-9])    # Minute (00-59)
+                             (?:([012345][0-9])    # Second (00-59)
+                             (?:([Z+-])            # UT Offset Direction
+                             (?:([012][0-9])\'?    # UT Offset Hours
+                             (?:([012345][0-9])\'? # UT Offset Minutes
                              )?)?)?)?)?)?)?)?$/x;
     my ($year, $month, $day, $hour, $minute, $second, $od, $oh, $om)
         = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
@@ -591,6 +595,10 @@ sub _is_date {
     }
     if (defined $om) {
         return unless $om <= 59;
+    }
+    if (defined $oh and $om) {
+        # Apostrophe is required between offset hour and minute
+        return unless $value =~ /$oh\'$om\'?/;
     }
 
     return 1;
@@ -927,7 +935,7 @@ sub page_layout {
                   $name eq 'two_page_right'   ? 'TwoPageRight'   : '');
 
     croak "Invalid page layout: $name" unless $layout;
-    $self->{'catalog'}->{'PageMode'} = PDFName($layout);
+    $self->{'catalog'}->{'PageLayout'} = PDFName($layout);
     $self->{'pdf'}->out_obj($self->{'catalog'});
     return $self;
 }
@@ -1343,8 +1351,8 @@ sub open_page {
 Imports a page from C<$source_pdf> and adds it to the specified position in
 C<$pdf>.
 
-If C<$source_page_num> or C<$target_page_num> is 0 or -1, the last page in the
-document is used.
+If C<$source_page_num> or C<$target_page_num> is 0, -1, or unspecified, the last
+page in the document is used.
 
 B<Note:> If you pass a page object instead of a page number for
 C<$target_page_num>, the contents of the page will be merged into the existing
@@ -1382,6 +1390,7 @@ sub import_page {
     }
     else {
         $s_page = $s_pdf->open_page($s_idx);
+        die "Unable to open page '$s_idx' in source PDF" unless defined $s_page;
     }
 
     if (ref($t_idx) eq 'PDF::API2::Page') {
@@ -1529,7 +1538,7 @@ sub embed_page {
     $s_idx ||= 0;
 
     unless (ref($s_pdf) and $s_pdf->isa('PDF::API2')) {
-        die "Invalid usage: first argument must be PDF::API2 instance, not: " . ref($s_pdf);
+        croak "Invalid usage: first argument must be PDF::API2 instance, not: " . ref($s_pdf);
     }
 
     my ($s_page, $xo);
@@ -1541,6 +1550,7 @@ sub embed_page {
     }
     else {
         $s_page = $s_pdf->open_page($s_idx);
+        croak "Unable to open page $s_idx in source PDF" unless defined $s_page;
     }
 
     $self->{'apiimportcache'} ||= {};
@@ -1972,6 +1982,12 @@ sub font {
     if (PDF::API2::Resource::Font::CoreFont->is_standard($name)) {
         return $self->corefont($name, %options);
     }
+    elsif ($name eq 'Times' and not $options{'format'}) {
+        # Accept Times as an alias for Times-Roman to follow the pattern set by
+        # Courier and Helvetica.
+        carp "Times is not a standard font; substituting Times-Roman";
+        return $self->corefont('Times-Roman', %options);
+    }
 
     my $format = $options{'format'};
     $format //= ($name =~ /\.[ot]tf$/i ? 'truetype' :
@@ -2009,7 +2025,7 @@ sub font {
 
     $font = $pdf->synthetic_font($base_font, %options)
 
-Create and return a new synthetic font object.  See
+Creates and returns a new synthetic font object.  See
 L<PDF::API2::Resource::Font::SynFont> for details.
 
 =cut
@@ -2033,6 +2049,35 @@ sub synthetic_font {
     $obj->tounicodemap() if $opts{-unicodemap};
 
     return $obj;
+}
+
+=head2 standard_fonts
+
+    @names = $pdf->standard_fonts()
+
+Returns the names of the 14 standard (built-in) fonts.  See
+L<PDF::API2::Resource::Font::CoreFont> for details.
+
+=cut
+
+sub standard_fonts {
+    require PDF::API2::Resource::Font::CoreFont;
+    return PDF::API2::Resource::Font::CoreFont->names();
+}
+
+=head2 is_standard_font
+
+    $boolean = PDF::API2->is_standard_font($name);
+
+Returns true if C<$name> is an exact, case-sensitive match for one of the
+standard font names.
+
+=cut
+
+sub is_standard_font {
+    my $name = pop();
+    require PDF::API2::Resource::Font::CoreFont;
+    return PDF::API2::Resource::Font::CoreFont->is_standard($name);
 }
 
 =head2 font_path
@@ -2238,7 +2283,7 @@ sub image {
     my $format = lc($options{'format'} // '');
 
     if (ref($file) eq 'GD::Image') {
-        return image_gd($file, %options);
+        return $self->image_gd($file, %options);
     }
     elsif (ref($file)) {
         $format ||= _detect_image_format($file);
@@ -2376,10 +2421,13 @@ Generate and return a barcode that can be placed as part of a page's content:
     my $barcode = $pdf->barcode('ean13', '0123456789012');
     $page->object($barcode, 100, 100);
 
+    my $qr_code = $pdf->barcode('qr', 'http://www.example.com');
+    $page->object($qr_code, 100, 300, 144 / $qr_code->width())
+
     $pdf->save('sample.pdf');
 
 C<$format> can be one of C<codabar>, C<code128>, C<code39> (a.k.a. 3 of 9),
-C<ean128>, C<ean13>, or C<itf> (a.k.a. interleaved 2 of 5).
+C<ean128>, C<ean13>, C<itf> (a.k.a. interleaved 2 of 5), or C<qr>.
 
 C<$code> is the value to be encoded.  Start and stop characters are only
 required when they're not static (e.g. for Codabar).
@@ -2401,16 +2449,17 @@ The base height of the barcode in points.
 
 =item * bar_extend
 
-If present, bars for non-printing characters (e.g. start and stop characters)
-will be extended downward by this many points, and printing characters will be
-shown below their respective bars.
+If present and applicable, bars for non-printing characters (e.g. start and stop
+characters) will be extended downward by this many points, and printing
+characters will be shown below their respective bars.
 
 This is enabled by default for EAN-13 barcodes.
 
 =item * caption
 
 If present, this value will be printed, centered, beneath the barcode, and
-should be a human-readable representation of the barcode.
+should be a human-readable representation of the barcode.  This option is
+ignored for QR codes.
 
 =item * font
 
@@ -2432,12 +2481,12 @@ A margin, in points, that will be place before the left and bottom edges of the
 barcode (including the caption, if present).  This is used to help barcode
 scanners tell where the barcode begins and ends.
 
-The default is the width of one encoded character.
+The default is the width of one encoded character, or four squares for QR codes.
 
 =item * bar_overflow
 
 Shrinks the horizontal width of bars by this amount in points to account for ink
-spread when printing.
+spread when printing.  This option is ignored for QR codes.
 
 The default is 0.01 points.
 
@@ -2449,6 +2498,10 @@ L<PDF::API2::Content/"fillcolor">.
 The default is black.
 
 =back
+
+QR codes have
+L<additional options|PDF::API2::Resource::XObject::Form::BarCode::qrcode> for
+customizing the error correction level and other niche settings.
 
 =cut
 
@@ -2502,6 +2555,11 @@ sub barcode {
             $options{'font_size'} //= 10 * $options{'bar_width'};
         }
     }
+    elsif ($format eq 'qr') {
+        $options{'bar_width'} //= 1;
+        $options{'bar_height'} //= $options{'bar_width'};
+        $options{'quiet_zone'} //= 4 * $options{'bar_width'};
+    }
     else {
         croak "Unrecognized barcode format: $format";
     }
@@ -2540,6 +2598,13 @@ sub barcode {
     }
     elsif ($format eq 'itf') {
         return $self->xo_2of5int(%options, -code => $value);
+    }
+    elsif ($format eq 'qr') {
+        my $qr_class = 'PDF::API2::Resource::XObject::Form::BarCode::qrcode';
+        eval "require $qr_class";
+        my $obj = $qr_class->new($self->{'pdf'}, %options, code => $value);
+        # $self->{'pdf'}->out_obj($self->{'pages'});
+        return $obj;
     }
 }
 

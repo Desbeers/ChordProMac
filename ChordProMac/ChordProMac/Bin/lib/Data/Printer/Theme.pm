@@ -29,7 +29,7 @@ sub sgr_color_for {
 }
 
 # prints the SGR (terminal) color reset modifier
-sub color_reset { return "\e[0m" }
+sub color_reset { return "\e[m" }
 
 sub new {
     my ($class, %params) = @_;
@@ -228,6 +228,8 @@ Data::Printer::Theme - create your own color themes for DDP!
             vstring     => '#aabbcc', # version strings (v5.30.1, etc)
             lvalue      => '#aabbcc', # lvalue label
             format      => '#aabbcc', # format type
+            true        => '#aabbcc', # boolean type (true)
+            false       => '#aabbcc', # boolean type (false)
             repeated    => '#aabbcc', # references to seen values
             caller_info => '#aabbcc', # details on what's being printed
             weak        => '#aabbcc', # weak references flag

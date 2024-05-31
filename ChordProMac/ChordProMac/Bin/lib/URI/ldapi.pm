@@ -3,11 +3,11 @@ package URI::ldapi;
 use strict;
 use warnings;
 
-our $VERSION = '5.12';
+our $VERSION = '1.76';
 
 use parent qw(URI::_ldap URI::_generic);
 
-use URI::Escape ();
+require URI::Escape;
 
 sub un_path {
     my $self = shift;

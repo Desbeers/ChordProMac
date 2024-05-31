@@ -2,7 +2,7 @@
 package PAR::SetupProgname;
 $PAR::SetupProgname::VERSION = '1.002';
 
-use 5.006;
+use 5.008009;
 use strict;
 use warnings;
 use Config;
@@ -45,5 +45,5 @@ sub set_progname {
 
 __END__
 
-#line 92
+#line 94
 

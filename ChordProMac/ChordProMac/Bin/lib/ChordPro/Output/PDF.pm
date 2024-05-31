@@ -42,10 +42,15 @@ my $regtest = defined($ENV{PERL_HASH_SEED}) && $ENV{PERL_HASH_SEED} == 0;
 sub generate_songbook {
     my ( $self, $sb ) = @_;
 
-    return [] unless $sb->{songs}->[0]->{body}; # no songs
+    return [] unless $sb->{songs}->[0]->{body}
+                  || $sb->{songs}->[0]->{source}->{embedding};
     $verbose ||= $options->{verbose};
 
     $ps = $config->{pdf};
+
+    if ( $ps->{'sort-pages'} ) {
+	sort_songbook($sb);
+    }
 
     my $pr = (__PACKAGE__."::Writer")->new( $ps, $pdfapi );
     warn("Generating PDF ", $options->{output} || "__new__.pdf", "...\n") if $options->{verbose};
@@ -85,12 +90,19 @@ sub generate_songbook {
 	$songindex++;
 
 	# Align.
-	if ( $ps->{'pagealign-songs'} && !($page % 2) ) {
+	if ( $ps->{'pagealign-songs'}
+	     && !( $page % 2 or $ps->{'sort-pages'} =~ /2page|compact/ ) ) {
 	    $pr->newpage($ps, $page);
 	    $page++;
 	    $first_song_aligned //= 1;
 	}
 	$first_song_aligned //= 0;
+
+	if ( ($page % 2) && $song->{meta}->{pages} && $song->{meta}->{pages} == 2 ) {
+	    $pr->newpage($ps, $page+1);
+	    $page++;
+	    print STDERR " " if $options->{verbose}; # Progress indicator
+	}
 
 	$song->{meta}->{tocpage} = $page;
 	push( @book, [ $song->{meta}->{title}->[0], $song ] );
@@ -101,6 +113,10 @@ sub generate_songbook {
 	    while ( my ($k,$v) = each %{$sb->{assets}} ) {
 		$song->{assets}->{$k} = $v;
 	    }
+	}
+
+	if ( $options->{verbose} ) {
+	    print STDERR "$page "; # Progress indicator
 	}
 
 	$page += $song->{meta}->{pages} =
@@ -114,6 +130,7 @@ sub generate_songbook {
     }
     $pages_of{songbook} = $page - 1;
     $start_of{back} = $page;
+    print STDERR "\n" if $options->{verbose}; # Progress indicator
 
     $::config->{contents} //=
       [ { $::config->{toc}->{order} eq "alpha"
@@ -495,7 +512,8 @@ sub generate_song {
 	    my $ftext = $fonts->{label} || $fonts->{text};
 	    my $w = $pr->strwidth("    ", $ftext);
 	    for ( @{ $s->{labels} } ) {
-		for ( split( /\\n/, $_ ) ) {
+		# Split on real newlines and \n.
+		for ( split( /\\n|\n/, $_ ) ) {
 		    my $t = $pr->strwidth( $_, $ftext ) + $w;
 		    $longest = $t if $t > $longest;
 		}
@@ -673,7 +691,7 @@ sub generate_song {
 		( $bgpdf, $pg ) = ( $1, $2 );
 	    }
 	    $fn = CP->findres($bgpdf);
-	    if ( -s -r $fn ) {
+	    if ( $fn && -s -r $fn ) {
 		$pg++ if $ps->{"even-odd-pages"} && !$rightpage;
 		$pr->importpage( $fn, $pg );
 	    }
@@ -1229,7 +1247,7 @@ sub generate_song {
 		    # Use as margin label.
 		    unshift( @elts, { %$elt,
 				      type => $t->{type} // "comment",
-				      font => $ps->{fonts}->{label},
+				      font => $ps->{fonts}->{$t->{type} // "label"},
 				      text => $ps->{chorus}->{recall}->{tag},
 				    } )
 		      if $ps->{chorus}->{recall}->{tag} ne "";
@@ -1243,7 +1261,7 @@ sub generate_song {
 		    # Use as tag.
 		    unshift( @elts, { %$elt,
 				      type => $t->{type} // "comment",
-				      font => $ps->{fonts}->{label},
+				      font => $ps->{fonts}->{$t->{type} // "label"},
 				      text => $elt->{chorus}->[0]->{value},
 				    } )
 		}
@@ -1512,7 +1530,10 @@ sub prlabel {
     my $font= $ps->{fonts}->{label} || $ps->{fonts}->{text};
     $font->{size} ||= $font->{fd}->{size};
     $ps->{pr}->setfont($font);	# for strwidth.
-    for ( split( /\\n/, $label ) ) {
+
+    # Now we have quoted strings we can have real newlines.
+    # Split on real and unescaped (old style) newlines.
+    for ( split( /\\n|\n/, $label ) ) {
 	my $label = $_;
 	if ( $align eq "right" ) {
 	    my $avg_space_width = $ps->{pr}->strwidth("m");
@@ -1755,15 +1776,15 @@ sub songline {
 	    # Underline the first word of the phrase, to indicate
 	    # the actual chord position. Skip leading non-letters.
 	    $phrase = " " if $phrase eq "";
-	    my ( $pre, $word, $rest ) = $phrase =~ /^(\W+)?(\w+)(.+)?$/;
-	    my $ulstart = $x;
-	    $ulstart += $pr->strwidth($pre) if defined($pre);
-	    my $w = $pr->strwidth( $word//" ", $ftext );
-	    # Avoid running together of syllables.
-	    $w *= 0.75 unless defined($rest);
 
-	    $pr->hline( $ulstart, $ytext + font_ul($ftext), $w,
-			0.25, $ps->{theme}->{foreground} );
+	    # This may screw up in some markup situations.
+	    my ( $pre, $word, $rest ) =
+	      $phrase =~ /^((?:\<[^>]*?\>|\W)+)?(\w+)(.+)?$/;
+	    # This should take case of most cases...
+	    unless ( $i == $n || defined($rest) && $rest !~ /^\</ ) {
+		$rest = chop($word) . ($rest//"");
+	    }
+	    $phrase = ($pre//"") . "<u>" . $word . "</u>" . ($rest//"");
 
 	    # Print the text.
 	    pr_label_maybe( $ps, $x, $ytext );
@@ -1870,10 +1891,12 @@ sub imageline {
     my $opts = { %{$assets->{$id}->{opts}//{}}, %{$elt->{opts}//{}} };
     my $img = $assets->{$id}->{data};
     my $label = $opts->{label};
+    my $anchor = $opts->{anchor} //= "float";
     my $width = $opts->{width};
     my $height = $opts->{height};
     my $avwidth  = $assets->{$id}->{vwidth};
     my $avheight = $assets->{$id}->{vheight};
+
     unless ( $img ) {
 	return "Unhandled image type: asset=$id";
     }
@@ -1892,16 +1915,21 @@ sub imageline {
     }
 
     # Available width and height.
-    my $pw;
-    if ( $ps->{columns} > 1 ) {
-	$pw = $ps->{columnoffsets}->[1]
-	  - $ps->{columnoffsets}->[0]
-	    - $ps->{columnspace};
+    my ( $pw, $ph );
+    if ( $anchor eq "paper" ) {
+	( $pw, $ph ) = @{$ps->{papersize}};
     }
     else {
-	$pw = $ps->{__rightmargin} - $ps->{_leftmargin};
+	if ( $ps->{columns} > 1 ) {
+	    $pw = $ps->{columnoffsets}->[1]
+	      - $ps->{columnoffsets}->[0]
+	      - $ps->{columnspace};
+	}
+	else {
+	    $pw = $ps->{__rightmargin} - $ps->{_leftmargin};
+	}
+	$ph = $ps->{_margintop} - $ps->{_marginbottom};
     }
-    my $ph = $ps->{_margintop} - $ps->{_marginbottom};
 
     if ( $width && $width =~ /^(\d+(?:\.\d+)?)\%$/ ) {
 	$width  = $1/100 * $pw;
@@ -1957,13 +1985,18 @@ sub imageline {
     $h *= $scale;
     $w *= $scale;
 
-    my $anchor = $opts->{anchor} //= "float";
     my $ox = $opts->{x};
     my $oy = $opts->{y};
 
-    my $align;
+    # Not sure I like this...
+    if ( defined $oy && $oy =~ /base([-+].*)/ ) {
+	$oy = -$1;
+	$oy += $opts->{base}*$scale if $opts->{base};
+	warn("Y: ", $opts->{y}, " BASE: ", $opts->{base}, " -> $oy\n");
+    }
+
+    my 	$align = $opts->{align};
     if ( $anchor eq "float" ) {
-	$align = $opts->{align};
 	$align //= ( $opts->{center} // 1 ) ? "center" : "left";
 	# Note that image is placed aligned on $x.
 	if ( $align eq "center" ) {
@@ -1976,7 +2009,7 @@ sub imageline {
     }
     $align //= "left";
 
-    my $y = $gety->($h);	# may have been changed by checkspace
+    my $y = $gety->($anchor eq "float" ? $h : 0);	# may have been changed by checkspace
     if ( defined ( my $tag = $i_tag // $label ) ) {
 	$i_tag = $tag;
     	my $ftext = $ps->{fonts}->{comment};
@@ -2034,7 +2067,7 @@ sub imageline {
 		     xscale => $w/$img->width,
 		     yscale => $h/$img->height,
 		     border => $opts->{border} || 0,
-		     valign => "top",
+		     valign => $opts->{valign} // "top",
 		     align  => $align,
 		   );
 
@@ -2521,6 +2554,7 @@ sub configurator {
     $fm->( qw( comment_box    text     ) );
     $fm->( qw( comment        text     ) );
     $fm->( qw( annotation     chord    ) );
+    $fm->( qw( label          text     ) );
     $fm->( qw( toc            text     ) );
     $fm->( qw( empty          text     ) );
     $fm->( qw( grid           chord    ) );
@@ -2736,7 +2770,7 @@ sub prepare_assets {
 	    $w = $elt->{opts}->{width}
 	      if $elt->{opts}->{width} && $elt->{opts}->{width} < $w;
 
-	    my $res = $hd->( $s, $w, $elt );
+	    my $res = $hd->( $s, elt => $elt, pagewidth => $w );
 	    if ( $res ) {
 		$res->{opts} = { %{ $res->{opts} // {} },
 				 %{ $elt->{opts} // {} } };
@@ -2748,6 +2782,15 @@ sub prepare_assets {
 		      "\n" )
 		  if $config->{debug}->{images};
 		$s->{assets}->{$id} = $res;
+	    }
+	    else {
+		# Substitute alert image.
+		$s->{assets}->{$id} = $res =
+		  { type => "image",
+		    line => $elt->{line},
+		    subtype => "xform",
+		    data => TextLayoutImageElement::alert(60),
+		    opts => { %{$elt->{opts}//{}} } };
 	    }
 
 	    # If the delegate produced an SVG, continue processing.
@@ -2778,7 +2821,7 @@ sub prepare_assets {
 		fc   => sub { svg_fonthandler( $ps, @_ ) },
 		tc   => sub { svg_texthandler( $ps, @_ ) },
 		atts => { debug   => $config->{debug}->{svg} > 1,
-			  verbose => $config->{debug}->{svg},
+			  verbose => $config->{debug}->{svg} // 0,
 			} );
 	    my $data = $elt->{data};
 	    my $o = $p->process( $data ? \join( "\n", @$data ) : $elt->{uri},
@@ -2810,14 +2853,24 @@ sub prepare_assets {
 	    if ( @$o > 1 ) {
 		$res->{multi} = $o;
 	    }
-
 	    warn("Created asset $id (xform, ",
 		 $o->[0]->{vwidth}, "x", $o->[0]->{vheight}, ")",
 		 " scale=", $res->{opts}->{scale} || 1,
 		 " align=", $res->{opts}->{align}//"default",
 		 " sep=", $sep,
+		 " base=", $res->{opts}->{base}//"",
 		 "\n")
 	      if $config->{debug}->{images};
+	    next;
+	}
+
+	if ( $elt->{type} eq "image" && $elt->{subtype} eq "xform" ) {
+	    # Ready to go.
+	    next;
+	}
+
+	if ( $elt->{type} eq "image" && $elt->{data} ) {
+	    # Ready to go.
 	    next;
 	}
 
@@ -2912,6 +2965,7 @@ sub prepare_assets {
     $assets = $s->{assets} || {};
     ::dump( $assets, as => "Assets, Pass 2" )
       if $config->{debug}->{assets} & 0x02;
+
 }
 
 
@@ -2930,24 +2984,8 @@ my %corefonts =
      "Courier-Bold",
      "Courier-Oblique",
      "Courier-BoldOblique",
-     "ZapfDingbats",
-     "Georgia",
-     "Georgia,Bold",
-     "Georgia,Italic",
-     "Georgia,BoldItalic",
-     "Verdana",
-     "Verdana,Bold",
-     "Verdana,Italic",
-     "Verdana,BoldItalic",
-     "Webdings",
-     "Wingdings" ),
-   # For convenience.
-   "georgia-bold"	 => "Georgia,Bold",
-   "georgia-italic"	 => "Georgia,Italic",
-   "georgia-bolditalic"	 => "Georgia,BoldItalic",
-   "verdana-bold"	 => "Verdana,Bold",
-   "verdana-italic"	 => "Verdana,Italic",
-   "verdana-bolditalic"	 => "Verdana,BoldItalic",
+     "Symbol",
+     "ZapfDingbats" ),
 );
 
 sub is_corefont {
@@ -2956,7 +2994,8 @@ sub is_corefont {
 
 # Font handler for SVG embedding.
 sub svg_fonthandler {
-    my ( $ps, $el, $pdf, $style ) = @_;
+    my ( $ps, $svg, %args ) = @_;
+    my ( $pdf, $style ) = @args{qw(pdf style)};
 
     my $family = lc( $style->{'font-family'} );
     my $stl    = lc( $style->{'font-style'}  // "normal" );
@@ -3016,15 +3055,21 @@ sub svg_fonthandler {
 
 # Text handler for SVG embedding.
 sub svg_texthandler {
-    my ( $ps, $el, $xo, $pdf, $style, $text, %opts ) = @_;
+    my ( $ps, $svg, %args ) = @_;
+    my $xo    = delete($args{xo});
+    my $pdf   = delete($args{pdf});
+    my $style = delete($args{style});
+    my $text  = delete($args{text});
+    my %opts  = %args;
+
     my @t = split( /([♯♭])/, $text );
     if ( @t == 1 ) {
 	# Nothing special.
-	$el->set_font( $xo, $style );
+	$svg->set_font( $xo, $style );
 	return $xo->text( $text, %opts );
     }
 
-    my ( $font, $sz ) = $el->root->fontmanager->find_font($style);
+    my ( $font, $sz ) = $svg->root->fontmanager->find_font($style);
     my $has_sharp = $font->glyphByUni(ord("♯")) ne ".notdef";
     my $has_flat  = $font->glyphByUni(ord("♭")) ne ".notdef";
     # For convenience we assume that either both are available, or missing.
@@ -3066,6 +3111,100 @@ sub _dump {
 		       "[]"
 		      );
     }
+}
+
+sub sort_songbook {
+    my ( $sb ) = @_;
+    my $ps = $config->{pdf};
+    my $pri = ( __PACKAGE__."::Writer" )->new( $ps, $pdfapi );
+
+    # Count pages to properly align multi-page songs without
+    # needing to turn page.
+    my $page = $options->{"start-page-number"} ||= 1;
+
+    my $sorting = $ps->{'sort-pages'};
+
+    if ( $sorting =~ /2page|compact/ ) {
+	# Progress indicator
+	print STDERR "Counting pages:\n" if $options->{verbose};
+
+	foreach my $song ( @{$sb->{songs}} ) {
+	    $song->{meta}->{pages} =
+	      generate_song( $song, { pr => $pri, startpage => 1 } );
+	    if ( $options->{verbose} ) {
+		# Progress indicator
+		print STDERR $song->{meta}->{pages}." ";
+	    }
+	}
+	print STDERR "\n" if $options->{verbose}; # Progress indicator
+    }
+	
+	foreach my $song ( @{$sb->{songs}} ) {
+	  if (!defined($song->{meta}->{sorttitle})) {
+	    $song->{meta}->{sorttitle}=$song->{meta}->{title};
+	  }
+	}
+	
+    my @songlist = @{$sb->{songs}};
+
+    if ( $sorting =~ /title/ ) {
+	if ($sorting =~ /desc/ ) {
+	    @songlist = sort { $b->{meta}->{sorttitle}[0] cmp $a->{meta}->{sorttitle}[0]} @songlist;
+	}
+	else {
+	    @songlist = sort { $a->{meta}->{sorttitle}[0] cmp $b->{meta}->{sorttitle}[0]} @songlist;
+	}
+    }
+    elsif ( $sorting =~ /subtitle/ ) {
+	if ($sorting =~ /desc/ ) {
+	    @songlist = sort { $b->{meta}->{subtitle}[0] cmp $a->{meta}->{subtitle}[0] } @songlist;
+	}
+	else {
+	    @songlist = sort { $a->{meta}->{subtitle}[0] cmp $b->{meta}->{subtitle}[0]} @songlist;
+	}
+    }
+
+    if ( $sorting =~ /compact/ ) {
+	my $pagecount = $page;
+	my $songs = @songlist;
+	my $i = 0;
+	while ( $i<$songs ) {
+	    if ( defined($songlist[$i]->{meta}->{order}) ) {
+		#skip already processed entries
+		$i++;
+		next;
+	    }
+	    my $pages = $songlist[$i]->{meta}->{pages};
+	    $songlist[$i]->{meta}->{order} = $pagecount;
+	    if ( ($pagecount % 2) && $pages == 2 ) {
+		my $j = $i+1;
+		#Find next song with != 2 pages
+		while ( $j < $songs ) {
+		    last if ( !defined($songlist[$j]->{meta}->{order}) && $songlist[$j]->{meta}->{pages} != 2 );
+		    $j++;
+		}
+		if ( $j == $songs ) {
+		    $i++;
+		}
+		else {
+		    # Swapped page gets current ID
+		    $songlist[$j]->{meta}->{order} = $pagecount;
+		    # Pushed page gets ID plus swapped page
+		    $songlist[$i]->{meta}->{order} = $pagecount+$songlist[$j]->{meta}->{pages};
+		    # Add the swapped page to pagecount as it will be skipped later
+		    $pages += $songlist[$j]->{meta}->{pages};
+		}
+	    }
+	    else {
+		$i++
+	    }
+	    $pagecount += $pages;
+	}
+	# By Pagelist
+	@songlist = sort { $a->{meta}->{order} <=> $b->{meta}->{order} } @songlist;
+    }
+
+    $sb->{songs} = [@songlist];
 }
 
 use Object::Pad;
@@ -3118,6 +3257,13 @@ method parse( $ctx, $k, $v ) {
 	# Currently we do not have value-less attributes.
 	else {
 	    carp("Invalid " . TYPE . " attribute: \"$kk\"\n");
+	}
+    }
+
+    if ( $ctl{id} ) {
+	my $a = ChordPro::Output::PDF::assets($ctl{id});
+	if ( $a && $a->{opts}->{base} ) {
+	    $ctl{base} = $a->{opts}->{base};
 	}
     }
 

@@ -1,9 +1,10 @@
 package LWP::Protocol::https;
 
 use strict;
-our $VERSION = '6.10';
+our $VERSION = "6.07";
 
-use base qw(LWP::Protocol::http);
+require LWP::Protocol::http;
+our @ISA = qw(LWP::Protocol::http);
 require Net::HTTPS;
 
 sub socket_type
@@ -115,7 +116,7 @@ sub _check_sock
         my $cert = $sock->get_peer_certificate ||
             die "Missing SSL certificate";
         my $subject = $cert->subject_name;
-        unless ( defined $subject && ( $subject =~ /$check/ ) ) {
+        unless ( $subject =~ /$check/ ) {
             my $ok = $self->_in_san( $check, $cert);
             die "Bad SSL certificate subject: '$subject' !~ /$check/"
                 unless $ok;
@@ -129,9 +130,6 @@ sub _get_sock_info
     my $self = shift;
     $self->SUPER::_get_sock_info(@_);
     my($res, $sock) = @_;
-    if ($sock->can('get_sslversion') and my $sslversion = $sock->get_sslversion) {
-        $res->header("Client-SSL-Version" => $sslversion);
-    }
     $res->header("Client-SSL-Cipher" => $sock->get_cipher);
     my $cert = $sock->get_peer_certificate;
     if ($cert) {
@@ -166,7 +164,7 @@ if ( $Net::HTTPS::SSL_SOCKET_CLASS->can('start_SSL')) {
 #-----------------------------------------------------------
 package LWP::Protocol::https::Socket;
 
-use base qw(Net::HTTPS LWP::Protocol::http::SocketMethods);
+our @ISA = qw(Net::HTTPS LWP::Protocol::http::SocketMethods);
 
 1;
 
@@ -200,7 +198,7 @@ to access sites using HTTP over SSL/TLS.
 
 If hostname verification is requested by LWP::UserAgent's C<ssl_opts>, and
 neither C<SSL_ca_file> nor C<SSL_ca_path> is set, then C<SSL_ca_file> is
-implied to be the one provided by L<Mozilla::CA>.  If the Mozilla::CA module
+implied to be the one provided by Mozilla::CA.  If the Mozilla::CA module
 isn't available SSL requests will fail.  Either install this module, set up an
 alternative C<SSL_ca_file> or disable hostname verification.
 
@@ -214,11 +212,9 @@ underlying modules to install.
 
 L<IO::Socket::SSL>, L<Crypt::SSLeay>, L<Mozilla::CA>
 
-=head1 COPYRIGHT & LICENSE
+=head1 COPYRIGHT
 
-Copyright (c) 1997-2011 Gisle Aas.
+Copyright 1997-2011 Gisle Aas.
 
-This library is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
-
-=cut
+This library is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.

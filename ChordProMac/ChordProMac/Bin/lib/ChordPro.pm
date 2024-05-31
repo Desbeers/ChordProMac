@@ -37,16 +37,16 @@ Typical ChordPro input:
 
     {start_of_chorus}
     Swing [D]low, sweet [G]chari[D]ot,
-    Comin’ for to carry me [A7]home.
+    Comin' for to carry me [A7]home.
     Swing [D7]low, sweet [G]chari[D]ot,
-    Comin’ for to [A7]carry me [D]home.
+    Comin' for to [A7]carry me [D]home.
     {end_of_chorus}
 
     # Verse
     I [D]looked over Jordan, and [G]what did I [D]see,
-    Comin’ for to carry me [A7]home.
-    A [D]band of angels [G]comin’ after [D]me,
-    Comin’ for to [A7]carry me [D]home.
+    Comin' for to carry me [A7]home.
+    A [D]band of angels [G]comin' after [D]me,
+    Comin' for to [A7]carry me [D]home.
 
     {c: Chorus}
 
@@ -882,7 +882,6 @@ sub app_setup {
         $pod2usage->(VERBOSE => 2) if $manual;
     }
     app_ident(\*STDOUT, 0) if $version;
-    app_about(\*STDOUT, $about, 0) if $about;
 
     # If the user specified a config, it must exist.
     # Otherwise, set to a default.
@@ -948,6 +947,11 @@ sub app_setup {
 	print ChordPro::Config::config_final($deltacfg)
 	  if $fincfg || $deltacfg;
 	exit 0;
+    }
+
+    if ( $about ) {
+	$::config = ChordPro::Config::configurator({});
+	app_about( \*STDOUT, $about, 0 );
     }
 
     if ( $dump_chords ) {
@@ -1070,22 +1074,12 @@ sub ::runtimeinfo {
 	$msg .= sprintf( $fmt, $tag, $_ );
 	$tag = "";
     }
-    eval { require ChordPro::Delegate::ABC;
-	   my $x;
-	   if ( ChordPro::Delegate::ABC::have_xs() ) {
-	       $x = ChordPro::Delegate::ABC::packaged_qjs();
-	       $msg .= sprintf( $fmt, "ABC support",
-				$x->{desc} . " (" . $x->{version} . ")" );
-	   }
-	   elsif ( $x = findexe( "abc2svg", "silent" )
-		        || findexe( "abcnode", "silent" ) ) {
-	       $msg .= sprintf( $fmt, "ABC support", $cp->display($x) );
-	   }
-	   elsif ( $x = ChordPro::Delegate::ABC::packaged_qjs() ) {
-	       $msg .= sprintf( $fmt, "ABC support",
-				$cp->display($x->{desc}) . " (" . $x->{version} . ")" );
-	   }
-    };
+    eval {
+	require ChordPro::Delegate::ABC;
+	my $x = ChordPro::Delegate::ABC->info();
+	$msg .= sprintf( $fmt, "ABC support", $x->{info} ) if $x->{info};
+	1;
+    } or $@ =~ /Can't locate/ or warn($@);
 
     my $vv = sub {
 	my ( $mod ) = @_;
@@ -1143,6 +1137,9 @@ sub ::runtimeinfo {
     eval { require JavaScript::QuickJS;
 	$vv->("JavaScript::QuickJS");
     };
+    my $i = json_parser();
+    $vv->( $i->{parser} );
+    $msg =~ s/\n$/(relaxed)\n/ if $i->{relaxed};
     return $msg;
 }
 
@@ -1250,9 +1247,7 @@ dir, and the contents of environment variable C<FONTDIR>. In any case,
 the filename should point to a valid TrueType (C<.ttf>) or OpenType
 (C<.otf>) font.
 
-If it is not a filename, it must be the name one of the built-in fonts.
-
-Built-in 'Adobe Core Fonts':
+If it is not a filename, it must be the name one of the built-in PDF core fonts:
 
   Courier                             Symbol
   Courier-Bold                        Times-Bold
@@ -1262,17 +1257,6 @@ Built-in 'Adobe Core Fonts':
   Helvetica-Bold                      ZapfDingbats
   Helvetica-BoldOblique
   Helvetica-Oblique
-
-Built-in 'Windows Fonts':
-
-  Georgia                             Webdings
-  Georgia,Bold                        Wingdings
-  Georgia,BoldItalic
-  Georgia,Italic
-  Verdana
-  Verdana,Bold
-  Verdana,BoldItalic
-  Verdana,Italic
 
 =head1 MOTIVATION
 

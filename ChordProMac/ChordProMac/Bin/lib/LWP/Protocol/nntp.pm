@@ -2,9 +2,9 @@ package LWP::Protocol::nntp;
 
 # Implementation of the Network News Transfer Protocol (RFC 977)
 
-use parent qw(LWP::Protocol);
+use base qw(LWP::Protocol);
 
-our $VERSION = '6.67';
+our $VERSION = '6.44';
 
 require HTTP::Response;
 require HTTP::Status;

@@ -8,9 +8,7 @@ package Text::Layout::FontDescriptor;
 
 use Carp;
 
-use Text::Layout::Version;
-
-our $VERSION = $Text::Layout::VERSION;
+ our $VERSION = "0.036";
 
 =head1 NAME
 
@@ -146,6 +144,8 @@ sub get_size {
     my ( $self ) = @_;
     $self->{size};
 }
+
+=over
 
 =item set_direction
 
