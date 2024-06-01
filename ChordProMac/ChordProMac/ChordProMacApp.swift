@@ -15,6 +15,7 @@ import SwiftUI
     var body: some Scene {
         DocumentGroup(newDocument: ChordProDocument()) { file in
             ContentView(document: file.$document)
+                /// Below does not seem to work... I think it is because of the editor...
                 .frame(
                     minWidth: 400,
                     idealWidth: 400,
@@ -34,10 +35,8 @@ import SwiftUI
         }
         Settings {
             SettingsView()
-                .frame(width: 300, height: 400)
+                .frame(width: 300, height: 380)
                 .environmentObject(appState)
         }
     }
 }
-
-

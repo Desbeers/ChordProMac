@@ -22,7 +22,10 @@ struct QuickLookView: View {
             action: {
                 Task {
                     if let document {
-                        let pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings)
+                        let pdf = try? await Terminal.exportDocument(
+                            document: document.document,
+                            settings: appState.settings
+                        )
                         quickLookURL = pdf?.exportURL
                     }
                 }

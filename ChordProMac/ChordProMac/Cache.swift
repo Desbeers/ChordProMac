@@ -13,10 +13,10 @@ public enum Cache {
     /// Get a struct from the cache
     /// - Parameters:
     ///   - key: The name of the item in the cache
-    ///   - as: The struct to use for decoding
+    ///   - struct: The struct to use for decoding
     ///   - folder: The optional subfolder to store the item
     /// - Returns: decoded cache item
-    public static func get<T: Codable>(key: String, as: T.Type, folder: String? = nil) throws -> T {
+    public static func get<T: Codable>(key: String, struct: T.Type, folder: String? = nil) throws -> T {
         let file = try self.path(for: key, folder: folder)
         let data = try Data(contentsOf: file)
         return try JSONDecoder().decode(T.self, from: data)

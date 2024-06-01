@@ -13,8 +13,9 @@ struct StatusView: View {
     /// The body of the `View`
     var body: some View {
         HStack {
-            Text("**Template:** \(appState.settings.template)")
+            Text("**Configuration:** \(appState.settings.configLabel)")
             if appState.settings.transpose {
+                // swiftlint:disable:next line_length
                 Text("**Transpose:** from \(appState.settings.transposeFrom.rawValue) to \(appState.settings.transposeTo.rawValue)")
             }
             if appState.settings.transcode {

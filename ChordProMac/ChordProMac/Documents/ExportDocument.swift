@@ -20,7 +20,7 @@ struct ExportDocument: FileDocument {
     }
     /// Black magic
     init(configuration: ReadConfiguration) throws {
-        guard 
+        guard
             let data = configuration.file.regularFileContents
         else {
             throw AppError.writeDocumentError

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View` for an export button
 struct ExportSongView: View {
@@ -25,7 +26,10 @@ struct ExportSongView: View {
             action: {
                 if let document {
                     Task {
-                        pdf = try? await Terminal.exportDocument(document: document.document, settings: appState.settings).data
+                        pdf = try? await Terminal.exportDocument(
+                            document: document.document,
+                            settings: appState.settings
+                        ).data
                         exportFile = true
                     }
                 }
@@ -40,9 +44,9 @@ struct ExportSongView: View {
             isPresented: $exportFile,
             document: ExportDocument(pdf: pdf),
             contentType: .pdf,
-            defaultFilename: document?.fileURL?.deletingPathExtension().lastPathComponent ?? "Export")
-        { result in
-            print("Done")
+            defaultFilename: document?.fileURL?.deletingPathExtension().lastPathComponent ?? "Export"
+        ) { _ in
+            Logger.pdfBuild.notice("Export completed")
         }
 
     }

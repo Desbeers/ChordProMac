@@ -17,4 +17,6 @@ enum AppError: String, LocalizedError {
     case saveSettingsError
     /// A binary error if **chordpro** is not found in the package
     case binaryNotFound
+    /// An error when a custom file is not found
+    case customFileNotFound
 }

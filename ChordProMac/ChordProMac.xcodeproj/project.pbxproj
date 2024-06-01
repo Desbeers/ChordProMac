@@ -11,6 +11,10 @@
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
 		D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DBC2C04B668007E77B8 /* libperl.dylib */; };
+		D72EA32F2C0B2E9400B1BA93 /* CustomFile.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA32E2C0B2E9400B1BA93 /* CustomFile.swift */; };
+		D72EA3312C0B2FF500B1BA93 /* FileBookmark.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA3302C0B2FF500B1BA93 /* FileBookmark.swift */; };
+		D72EA3332C0B31A600B1BA93 /* FileButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA3322C0B31A600B1BA93 /* FileButtonView.swift */; };
+		D72EA3352C0B68B600B1BA93 /* FontStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA3342C0B68B600B1BA93 /* FontStyle.swift */; };
 		D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CA2C04711000291BE7 /* SettingsView.swift */; };
 		D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CC2C04725D00291BE7 /* AppSettings.swift */; };
 		D74002CF2C04728600291BE7 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CE2C04728600291BE7 /* AppState.swift */; };
@@ -39,6 +43,10 @@
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
 		D7146DBC2C04B668007E77B8 /* libperl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libperl.dylib; sourceTree = "<group>"; };
+		D72EA32E2C0B2E9400B1BA93 /* CustomFile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomFile.swift; sourceTree = "<group>"; };
+		D72EA3302C0B2FF500B1BA93 /* FileBookmark.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileBookmark.swift; sourceTree = "<group>"; };
+		D72EA3322C0B31A600B1BA93 /* FileButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileButtonView.swift; sourceTree = "<group>"; };
+		D72EA3342C0B68B600B1BA93 /* FontStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontStyle.swift; sourceTree = "<group>"; };
 		D74002CA2C04711000291BE7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D74002CC2C04725D00291BE7 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		D74002CE2C04728600291BE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
@@ -94,6 +102,8 @@
 				D774F2822C05E18B00CC4E3E /* Accents.swift */,
 				D774F2802C05E07E00CC4E3E /* Note.swift */,
 				D774F2862C05F6CB00CC4E3E /* Notation.swift */,
+				D72EA32E2C0B2E9400B1BA93 /* CustomFile.swift */,
+				D72EA3342C0B68B600B1BA93 /* FontStyle.swift */,
 			);
 			path = Structures;
 			sourceTree = "<group>";
@@ -124,6 +134,7 @@
 				D7723A662C0336C70031CD0C /* AppError.swift */,
 				D74002CC2C04725D00291BE7 /* AppSettings.swift */,
 				D7723A6A2C0348590031CD0C /* DocumentFocus.swift */,
+				D72EA3302C0B2FF500B1BA93 /* FileBookmark.swift */,
 				D7723A602C032A190031CD0C /* Terminal.swift */,
 				D74002D02C049B1800291BE7 /* Cache.swift */,
 				D75E5FFB2C04D3620083F96F /* Logger.swift */,
@@ -153,6 +164,7 @@
 				D7723A6E2C0354250031CD0C /* QuickLookView.swift */,
 				D7723A682C03442F0031CD0C /* ExportSongView.swift */,
 				D74002CA2C04711000291BE7 /* SettingsView.swift */,
+				D72EA3322C0B31A600B1BA93 /* FileButtonView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -176,6 +188,7 @@
 				D7723A452C0326120031CD0C /* Sources */,
 				D7723A462C0326120031CD0C /* Frameworks */,
 				D7723A472C0326120031CD0C /* Resources */,
+				D72EA3362C0B6E1000B1BA93 /* Run SwiftLint */,
 			);
 			buildRules = (
 			);
@@ -235,12 +248,35 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		D72EA3362C0B6E1000B1BA93 /* Run SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run SwiftLint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if which /opt/homebrew/bin/swiftlint >/dev/null; then\n  # swiftlint --enable-all-rules\n  # swiftlint autocorrect\n  /opt/homebrew/bin/swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D7723A452C0326120031CD0C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D75E5FFF2C04FEF00083F96F /* Template.swift in Sources */,
+				D72EA3352C0B68B600B1BA93 /* FontStyle.swift in Sources */,
 				D7723A4D2C0326120031CD0C /* ChordProMacApp.swift in Sources */,
 				D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */,
 				D7723A612C032A190031CD0C /* Terminal.swift in Sources */,
@@ -248,12 +284,15 @@
 				D74002CF2C04728600291BE7 /* AppState.swift in Sources */,
 				D7723A6F2C0354250031CD0C /* QuickLookView.swift in Sources */,
 				D7723A692C03442F0031CD0C /* ExportSongView.swift in Sources */,
+				D72EA3332C0B31A600B1BA93 /* FileButtonView.swift in Sources */,
 				D74002D12C049B1800291BE7 /* Cache.swift in Sources */,
 				D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */,
 				D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */,
 				D7723A4F2C0326120031CD0C /* ChordProDocument.swift in Sources */,
 				D774F2812C05E07E00CC4E3E /* Note.swift in Sources */,
+				D72EA3312C0B2FF500B1BA93 /* FileBookmark.swift in Sources */,
 				D7723A672C0336C70031CD0C /* AppError.swift in Sources */,
+				D72EA32F2C0B2E9400B1BA93 /* CustomFile.swift in Sources */,
 				D75E5FFC2C04D3620083F96F /* Logger.swift in Sources */,
 				D7723A652C0336910031CD0C /* ExportDocument.swift in Sources */,
 				D774F2832C05E18B00CC4E3E /* Accents.swift in Sources */,
@@ -303,7 +342,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -367,7 +406,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -391,12 +430,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChordProMac/ChordProMac.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -424,12 +463,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChordProMac/ChordProMac.entitlements;
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

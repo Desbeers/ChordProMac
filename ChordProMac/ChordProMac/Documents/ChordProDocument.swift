@@ -23,7 +23,20 @@ struct ChordProDocument: FileDocument {
     var text: String
     /// Init the text
     init(text: String = "{title: New Song}") {
-        self.text = text
+        let settings = AppSettings.load()
+        /// Check if we have to use a custom template
+        if
+            settings.useCustomSongTemplate,
+            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customSongTemplate) {
+            /// Get access to the URL
+            _ = persistentURL.startAccessingSecurityScopedResource()
+            let data = try? String(contentsOf: persistentURL, encoding: .utf8)
+            self.text = data ?? text
+            /// Stop access to the URL
+            persistentURL.stopAccessingSecurityScopedResource()
+        } else {
+            self.text = text
+        }
     }
     /// The UTType of the file
     static var readableContentTypes: [UTType] { [.chordProSong] }

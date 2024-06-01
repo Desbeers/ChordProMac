@@ -109,15 +109,17 @@ extension Terminal {
 
 extension Terminal {
 
-    static func exportDocument(document: ChordProDocument, settings: AppSettings) async throws -> (data: Data?, exportURL: URL) {
-        /// For now, just use the official **ChordPro** binary to create the PDF
+    static func exportDocument(
+        document: ChordProDocument,
+        settings: AppSettings
+    ) async throws -> (data: Data?, exportURL: URL) {
+        /// We are using the official **ChordPro** binary to create the PDF
         /// - Note: The executable is packed in this application
         guard
             let chordProApp = Bundle.main.url(forResource: "chordpro", withExtension: nil)
         else {
             throw AppError.binaryNotFound
         }
-        Logger.pdfBuild.log("BUNDLE: \(chordProApp.path, privacy: .public)")
         /// Store the export in the temporarily directory
         /// - Note: I don;t read the file URL directly because it might not be saved yet
         let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
@@ -132,13 +134,32 @@ extension Terminal {
             throw AppError.writeDocumentError
         }
         /// Build the arguments for **ChordPro**
-        
+        var arguments: [String] = []
+        /// Add the optional additional library to the environment
+        if
+            settings.useAdditionalLibrary,
+            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customLibrary) {
+            /// Get access to the URL
+            _ = persistentURL.startAccessingSecurityScopedResource()
+            arguments.append("CHORDPRO_LIB='\(persistentURL.path)'")
+            /// Close the access
+            FileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+        }
         /// The **ChordPro** binary
-        var arguments:[String] = ["'\(chordProApp.path)'"]
+        arguments.append("'\(chordProApp.path)'")
         /// Add the source file
         arguments.append("'\(sourceURL.path)'")
         /// Add the config file
-        arguments.append("--config=\(settings.template)")
+        if settings.useCustomConfig, let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customConfig) {
+            /// Get access to the URL
+            _ = persistentURL.startAccessingSecurityScopedResource()
+            arguments.append("--config='\(persistentURL.path)'")
+            /// Close the access
+            FileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+        } else {
+            /// Use the system config
+            arguments.append("--config=\(settings.systemConfig)")
+        }
         /// Add the optional  transcode
         if settings.transcode {
             arguments.append("--transcode=\(settings.transcodeNotation)")
@@ -152,7 +173,8 @@ extension Terminal {
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        Logger.pdfBuild.log("OUTPUT: \(output.standardError, privacy: .public)")
+        Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
+        Logger.pdfBuild.log("OUTPUT: \(output.standardOutput, privacy: .public)")
         /// Return the created PDF
         return (try? Data(contentsOf: exportURL), exportURL)
     }

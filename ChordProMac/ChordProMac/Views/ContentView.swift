@@ -17,7 +17,7 @@ struct ContentView: View {
     var body: some View {
         VStack {
             TextEditor(text: $document.text)
-                .font(.system(size: appState.settings.fontSize, weight: .regular, design: .monospaced))
+                .font(appState.settings.fontStyle.font(size: appState.settings.fontSize))
                 .padding([.top, .horizontal])
             StatusView()
                 .padding([.horizontal])
