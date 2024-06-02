@@ -21,6 +21,10 @@ struct StatusView: View {
             if appState.settings.transcode {
                 Text("**Transcode:** \(appState.settings.transcodeNotation)")
             }
+            Spacer()
+            Button("Log") {
+                appState.showLog = true
+            }
         }
         .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)

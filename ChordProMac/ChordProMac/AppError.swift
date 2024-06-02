@@ -19,4 +19,27 @@ enum AppError: String, LocalizedError {
     case binaryNotFound
     /// An error when a custom file is not found
     case customFileNotFound
+    /// An error when **chordpro** did not create a PDF
+    case pdfCreationError
+}
+
+// MARK: Protocol implementations
+
+extension AppError {
+
+    /// The description of the error
+    var errorDescription: String? {
+        return "Something went wrong"
+    }
+
+    /// The recovery suggestion
+    var recoverySuggestion: String? {
+        switch self {
+        case .pdfCreationError:
+            return "ChordPro was unable to create a PDF"
+        default:
+            ///  This should not happen
+            return "ChordPro is sorry"
+        }
+    }
 }

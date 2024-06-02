@@ -109,10 +109,11 @@ extension Terminal {
 
 extension Terminal {
 
+    // swiftlint:disable:next function_body_length
     static func exportDocument(
         document: ChordProDocument,
         settings: AppSettings
-    ) async throws -> (data: Data?, exportURL: URL) {
+    ) async throws -> (data: Data, exportURL: URL) {
         /// We are using the official **ChordPro** binary to create the PDF
         /// - Note: The executable is packed in this application
         guard
@@ -120,14 +121,14 @@ extension Terminal {
         else {
             throw AppError.binaryNotFound
         }
-        /// Store the export in the temporarily directory
-        /// - Note: I don;t read the file URL directly because it might not be saved yet
+        /// Get he temporarily directory
         let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
         /// Create a source URL
         let sourceURL = temporaryDirectoryURL.appendingPathComponent(document.fileID, conformingTo: .chordProSong)
         /// Create an export URL
         let exportURL = temporaryDirectoryURL.appendingPathComponent(document.fileID, conformingTo: .pdf)
         /// Write the song to the source URL
+        /// - Note: I don't read the file URL directly because it might not be saved yet
         do {
             try document.text.write(to: sourceURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
@@ -173,9 +174,21 @@ extension Terminal {
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
         Logger.pdfBuild.log("OUTPUT: \(output.standardOutput, privacy: .public)")
-        /// Return the created PDF
-        return (try? Data(contentsOf: exportURL), exportURL)
+        Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
+        /// Write to the log
+        let log: String = "OUTPUT:\n \(output.standardOutput)\n\nERROR:\n\(output.standardError)"
+        do {
+            try log.write(to: AppState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
+        } catch {
+            throw AppError.writeDocumentError
+        }
+        do {
+            let data = try Data(contentsOf: exportURL)
+            /// Return the created PDF
+            return (data, exportURL)
+        } catch {
+            throw AppError.pdfCreationError
+        }
     }
 }

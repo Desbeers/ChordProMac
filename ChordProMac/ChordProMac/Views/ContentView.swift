@@ -22,9 +22,13 @@ struct ContentView: View {
             StatusView()
                 .padding([.horizontal])
         }
+        .errorAlert(error: $appState.alertError, log: $appState.showLog)
         .toolbar {
             ExportSongView(label: "Export")
             QuickLookView()
+        }
+        .sheet(isPresented: $appState.showLog) {
+            LogView()
         }
     }
 }

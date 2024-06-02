@@ -26,11 +26,20 @@ struct ExportSongView: View {
             action: {
                 if let document {
                     Task {
-                        pdf = try? await Terminal.exportDocument(
-                            document: document.document,
-                            settings: appState.settings
-                        ).data
-                        exportFile = true
+                        do {
+                            /// Create the PDF with **ChordPro**
+                            let pdf = try await Terminal.exportDocument(
+                                document: document.document,
+                                settings: appState.settings
+                            )
+                            /// Set the PDF as Data
+                            self.pdf = pdf.data
+                            /// Show the export dialog
+                            exportFile = true
+                        } catch {
+                            /// Show an error
+                            appState.alertError = error
+                        }
                     }
                 }
             },
