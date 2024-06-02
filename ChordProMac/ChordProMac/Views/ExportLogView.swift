@@ -14,14 +14,8 @@ struct ExportLogView: View {
     let label: String
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneState
-    /// The document
-    @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
-//    /// The observable state of the application
-//    @EnvironmentObject private var appState: AppState
-    /// The scene
-    //@FocusedValue(\.sceneState) private var sceneState: SceneState?
     /// Present an export dialog
-    @State private var exportLog = false
+    @State private var exportLogDialog = false
     /// The log as String
     @State private var log: String?
     /// The body of the `View`
@@ -31,7 +25,7 @@ struct ExportLogView: View {
                     Task {
                         do {
                             log = try String(contentsOf: sceneState.logFileURL, encoding: .utf8)
-                            exportLog = true
+                            exportLogDialog = true
                         } catch {
                             /// Show an error
                             sceneState.alertError = error
@@ -43,7 +37,7 @@ struct ExportLogView: View {
             }
         )
         .fileExporter(
-            isPresented: $exportLog,
+            isPresented: $exportLogDialog,
             document: LogDocument(log: log),
             contentType: .plainText,
             defaultFilename: "ChordPro Log Export"

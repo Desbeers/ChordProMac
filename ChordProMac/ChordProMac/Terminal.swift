@@ -9,11 +9,11 @@ import SwiftUI
 import OSLog
 
 /// Terminal utilities
-public enum Terminal {
+enum Terminal {
     // Just a placeholder
 }
 
-public extension Terminal {
+extension Terminal {
 
     /// Run a script in the shell and return its output
     /// - Parameter arguments: The arguments to pass to the shell
@@ -43,7 +43,6 @@ public extension Terminal {
     /// - Parameter arguments: The arguments to pass to the shell
     /// - Returns: The output from the shell as a stream
     static func runInShell(arguments: [String]) -> AsyncStream<StreamedOutput> {
-
         /// Create the task
         let task = Process()
         task.launchPath = "/bin/zsh"
@@ -91,7 +90,7 @@ public extension Terminal {
 extension Terminal {
 
     /// The complete output from the shell
-    public struct Output {
+    struct Output {
         /// The standard output
         public var standardOutput: String
         /// The standard error
@@ -99,7 +98,7 @@ extension Terminal {
     }
 
     /// The stream output from the shell
-    public enum StreamedOutput {
+    enum StreamedOutput {
         /// The standard output
         case standardOutput(String)
         /// The standard error
@@ -109,6 +108,12 @@ extension Terminal {
 
 extension Terminal {
 
+    /// Export a document with the **chordpro** binary to a PDF
+    /// - Parameters:
+    ///   - document: The current ``ChordProDocument``
+    ///   - settings: The current ``AppSettings``
+    ///   - sceneState: The current ``SceneState``
+    /// - Returns: The PDF as `Data` and the status as ``AppError``
     static func exportDocument(
         document: ChordProDocument,
         settings: AppSettings,
@@ -122,15 +127,15 @@ extension Terminal {
             throw AppError.binaryNotFound
         }
         /// Write the song to the source URL
-        /// - Note: I don't read the file URL directly because it might not be saved yet
+        /// - Note: We don't read the file URL directly because it might not be saved yet
         do {
             try document.text.write(to: sceneState.sourceURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
             throw AppError.writeDocumentError
         }
-        /// Build the arguments for **ChordPro**
+        /// Build the arguments to pass to the shell
         var arguments: [String] = []
-        /// Add the optional additional library to the environment
+        /// Add the optional additional library to the environment of the shell
         if
             settings.useAdditionalLibrary,
             let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customLibrary) {
@@ -163,7 +168,7 @@ extension Terminal {
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
         Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
-        /// Write to the log
+        /// Write to the log file
         let log = output.standardError.isEmpty ? "No errors occurred" : output.standardError
         do {
             try log.write(to: sceneState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
@@ -171,10 +176,13 @@ extension Terminal {
             throw AppError.writeDocumentError
         }
         do {
+            /// Try to get the `Data` from the created PDF
             let data = try Data(contentsOf: sceneState.exportURL)
-            /// Return the created PDF
+            /// Return the `Data` and the status of the creation as an ``AppError`
+            /// - Note: That does not mean it is has an error, the status is just using the same structure
             return (data, output.standardError.isEmpty ? .noErrorOccurred : .pdfCreatedWithErrors)
         } catch {
+            /// There is no data, throw an ``AppError``
             throw AppError.pdfCreationError
         }
     }

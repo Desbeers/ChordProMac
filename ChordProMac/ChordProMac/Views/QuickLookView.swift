@@ -10,8 +10,8 @@ import QuickLook
 
 /// SwiftUI `View` for a quick look button
 struct QuickLookView: View {
-    /// The document
-    @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    /// The current document
+    let document: ChordProDocument
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
@@ -23,23 +23,21 @@ struct QuickLookView: View {
         Button(
             action: {
                 Task {
-                    if let document {
-                        do {
-                            let pdf = try await Terminal.exportDocument(
-                                document: document.document,
-                                settings: appState.settings,
-                                sceneState: sceneState
-                            )
-                            /// Show the Quick Look
-                            quickLookURL = sceneState.exportURL
-                            /// Set the status
-                            sceneState.exportStatus = pdf.status
-                        } catch {
-                            /// Show an `Alert`
-                            sceneState.alertError = error
-                            /// Set the status
-                            sceneState.exportStatus = .pdfCreationError
-                        }
+                    do {
+                        let pdf = try await Terminal.exportDocument(
+                            document: document,
+                            settings: appState.settings,
+                            sceneState: sceneState
+                        )
+                        /// Show the Quick Look
+                        quickLookURL = sceneState.exportURL
+                        /// Set the status
+                        sceneState.exportStatus = pdf.status
+                    } catch {
+                        /// Show an `Alert`
+                        sceneState.alertError = error
+                        /// Set the status
+                        sceneState.exportStatus = .pdfCreationError
                     }
                 }
             },

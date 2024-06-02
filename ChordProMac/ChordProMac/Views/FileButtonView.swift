@@ -8,6 +8,8 @@
 import SwiftUI
 import OSLog
 
+/// SwiftUI `View`to select a file
+/// - Note: A file can be a *normal* file but also a folder
 struct FileButtonView: View {
     /// The file to bookmark
     let bookmark: CustomFile

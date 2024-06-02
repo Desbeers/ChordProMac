@@ -17,9 +17,11 @@ extension UTType {
 
 /// Define the  **ChordPro** document
 struct ChordProDocument: FileDocument {
-    /// The text of the file
+    /// The UTType of the song
+    static var readableContentTypes: [UTType] { [.chordProSong] }
+    /// The text of the song
     var text: String
-    /// Init the text
+    /// Init the song
     init(text: String = "{title: New Song}") {
         let settings = AppSettings.load()
         /// Check if we have to use a custom template
@@ -36,8 +38,6 @@ struct ChordProDocument: FileDocument {
             self.text = text
         }
     }
-    /// The UTType of the file
-    static var readableContentTypes: [UTType] { [.chordProSong] }
     /// Black magic
     init(configuration: ReadConfiguration) throws {
         guard
@@ -48,7 +48,7 @@ struct ChordProDocument: FileDocument {
         }
         text = string
     }
-    /// Save the file
+    /// Save the song
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         guard let data = text.data(using: .utf8) else {
             throw AppError.writeDocumentError

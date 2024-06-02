@@ -7,16 +7,21 @@
 
 import Foundation
 
-/// A notation we found in the official **ChordPro** source
+/// A notation we found in the **ChordPro** source
 struct Notation: Identifiable {
+    /// The calculated ID of the notation
     var id: URL {
         url
     }
+    /// The `URL` of the notation
     let url: URL
+    /// The calculated label of the notation
     var label: String {
         let label = self.url.deletingPathExtension()
         return label.lastPathComponent
     }
+    /// The description of the notation
+    /// - Note: Hard-coded because we cannot get this from the source
     var description: String {
         switch label {
         case "common":

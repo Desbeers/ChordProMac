@@ -8,11 +8,11 @@
 import Foundation
 
 /// The observable state of the scene
-/// - Note: Every open song window has its own scene
+/// - Note: Every open song window has its own `SceneState` class
 final class SceneState: ObservableObject {
     /// An error that can happen
     @Published var alertError: Error?
-    /// Bool if we have a log available
+    /// Bool if we want to show the log
     @Published var showLog: Bool = false
     /// Status of the last **ChordPro** export
     @Published var exportStatus: AppError = .noErrorOccurred

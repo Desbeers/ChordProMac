@@ -24,12 +24,12 @@ struct ContentView: View {
                 .padding(4)
                 .background(Color(nsColor: .textBackgroundColor))
             StatusView()
-                .padding([.horizontal])
+                .padding(.horizontal)
         }
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .toolbar {
             ExportSongView(label: "Export as PDF")
-            QuickLookView()
+            QuickLookView(document: document)
         }
         .sheet(isPresented: $sceneState.showLog) {
             LogView()

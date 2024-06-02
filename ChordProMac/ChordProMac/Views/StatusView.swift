@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// SwiftUI `View` wit the status of the scene
 struct StatusView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
@@ -27,7 +28,7 @@ struct StatusView: View {
             HStack {
                 Text(sceneState.exportStatus.recoverySuggestion ?? "")
                     .font(.caption)
-                /// - Note: Just show it with the accent color. I considered *red* but that's a bit rude and not needed. The PDF *is* created.
+                /// - Note: Just show it with the accent color because the PDF *is* created.
                     .foregroundColor(.accentColor)
                 Button("View Log") {
                     sceneState.showLog = true

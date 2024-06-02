@@ -8,7 +8,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Define the  **ChordPro** log as plain text
+/// Define the **ChordPro** log as plain text
 struct LogDocument: FileDocument {
     /// The UTType to export
     static var readableContentTypes: [UTType] { [.plainText] }
@@ -28,7 +28,7 @@ struct LogDocument: FileDocument {
         }
         log = string
     }
-    /// Save the exported log
+    /// Save the exported Log
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
         guard let data = log.data(using: .utf8) else {
             throw AppError.writeDocumentError

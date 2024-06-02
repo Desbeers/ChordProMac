@@ -7,11 +7,15 @@
 
 import SwiftUI
 
+/// Font styles for the `EditorView`
 enum FontStyle: String, CaseIterable, Codable {
+    /// Use a monospaced font
     case monospaced = "Monospaced"
+    /// Use a serif font
     case serif = "Serif"
+    /// Use a sans-serif font
     case sansSerif = "Sans Serif"
-
+    /// The calculated font for the `EditorView`
     func font(size: Double) -> Font {
         switch self {
         case .monospaced:

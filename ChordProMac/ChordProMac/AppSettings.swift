@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// All the settings for the application
 struct AppSettings: Codable, Equatable {
 
     // MARK: Fonts
@@ -89,7 +90,7 @@ struct AppSettings: Codable, Equatable {
 extension AppSettings {
 
     /// Load the application settings
-    /// - Returns: The ``ChordProMacSettings``
+    /// - Returns: The ``AppSettings``
     static func load() -> AppSettings {
         if let settings = try? Cache.get(key: "ChordProMacSettings", struct: AppSettings.self) {
             return settings

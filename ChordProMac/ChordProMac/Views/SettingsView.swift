@@ -9,6 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 
+/// SwiftUI `View` with the application settings
 struct SettingsView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
@@ -136,7 +137,7 @@ extension SettingsView {
 }
 
 extension SettingsView {
-    /// SwiftUI `View` with configuration settings
+    /// SwiftUI `View` with options settings
     var options: some View {
         ScrollView {
             VStack(alignment: .leading) {

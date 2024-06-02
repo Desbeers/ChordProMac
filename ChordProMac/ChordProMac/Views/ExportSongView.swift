@@ -20,7 +20,7 @@ struct ExportSongView: View {
     /// The scene
     @FocusedValue(\.sceneState) private var sceneState: SceneState?
     /// Present an export dialog
-    @State private var exportFile = false
+    @State private var exportSongDialog = false
     /// The song as PDF
     @State private var pdf: Data?
     /// The body of the `View`
@@ -39,7 +39,7 @@ struct ExportSongView: View {
                             /// Set the PDF as Data
                             self.pdf = pdf.data
                             /// Show the export dialog
-                            exportFile = true
+                            exportSongDialog = true
                             /// Set the status
                             sceneState.exportStatus = pdf.status
                         } catch {
@@ -58,7 +58,7 @@ struct ExportSongView: View {
         /// Disable the button when there is no document window in focus and no scene state available
         .disabled(document == nil || sceneState == nil)
         .fileExporter(
-            isPresented: $exportFile,
+            isPresented: $exportSongDialog,
             document: ExportDocument(pdf: pdf),
             contentType: .pdf,
             defaultFilename: document?.fileURL?.deletingPathExtension().lastPathComponent ?? "Export"

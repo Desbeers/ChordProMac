@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-/// SwiftUI buttons for the 'help' menu
+/// SwiftUI buttons for the main `help` menu
 struct HelpButtonsView: View {
     /// The body of te `View`
     var body: some View {
