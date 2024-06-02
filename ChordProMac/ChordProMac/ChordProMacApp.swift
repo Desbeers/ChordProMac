@@ -31,6 +31,7 @@ import SwiftUI
         .commands {
             CommandGroup(after: .importExport) {
                 ExportSongView(label: "Export as PDF…")
+                    .environmentObject(appState)
             }
             CommandGroup(replacing: .help) {
                 HelpButtonsView()

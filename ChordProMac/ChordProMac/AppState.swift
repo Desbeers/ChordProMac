@@ -8,11 +8,8 @@
 import Foundation
 
 /// The observable state of the application
+/// - Note: Every open song window shares this state
 final class AppState: ObservableObject {
-    /// An error that can happen
-    @Published var alertError: Error?
-    /// Bool to show the log of the last **ChordPro** output
-    @Published var showLog: Bool = false
     /// All the settings for the application
     @Published var settings: AppSettings {
         didSet {
@@ -23,10 +20,6 @@ final class AppState: ObservableObject {
     init() {
         self.settings = AppSettings.load()
     }
-    /// The URL of the log file
-    static let logFileURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        .appendingPathComponent("LatestLog", conformingTo: .plainText)
-    
     /// Add the user settings as arguments to **ChordPro** for the Terminal action
     /// - Parameter settings: The ``AppSettings``
     /// - Returns: An array with arguments

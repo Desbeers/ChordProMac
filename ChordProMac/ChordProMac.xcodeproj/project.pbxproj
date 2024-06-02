@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D702E0D72C0CC6F5006D9667 /* SceneState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0D62C0CC6F5006D9667 /* SceneState.swift */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
@@ -44,6 +45,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D702E0D62C0CC6F5006D9667 /* SceneState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneState.swift; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 				D74002CE2C04728600291BE7 /* AppState.swift */,
 				D7723A662C0336C70031CD0C /* AppError.swift */,
 				D74002CC2C04725D00291BE7 /* AppSettings.swift */,
+				D702E0D62C0CC6F5006D9667 /* SceneState.swift */,
 				D7723A6A2C0348590031CD0C /* DocumentFocus.swift */,
 				D72EA3302C0B2FF500B1BA93 /* FileBookmark.swift */,
 				D7723A602C032A190031CD0C /* Terminal.swift */,
@@ -309,6 +312,7 @@
 				D72EA3312C0B2FF500B1BA93 /* FileBookmark.swift in Sources */,
 				D72EA3402C0C5E5800B1BA93 /* View+errorAlert.swift in Sources */,
 				D7723A672C0336C70031CD0C /* AppError.swift in Sources */,
+				D702E0D72C0CC6F5006D9667 /* SceneState.swift in Sources */,
 				D72EA32F2C0B2E9400B1BA93 /* CustomFile.swift in Sources */,
 				D72EA33C2C0BB24600B1BA93 /* LogView.swift in Sources */,
 				D75E5FFC2C04D3620083F96F /* Logger.swift in Sources */,

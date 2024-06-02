@@ -10,6 +10,8 @@ import SwiftUI
 struct StatusView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
+    /// The observable state of the scene
+    @EnvironmentObject private var sceneState: SceneState
     /// The body of the `View`
     var body: some View {
         HStack {
@@ -23,8 +25,9 @@ struct StatusView: View {
             }
             Spacer()
             Button("Log") {
-                appState.showLog = true
+                sceneState.showLog = true
             }
+            .disabled(!sceneState.logIsAvailable)
         }
         .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -109,10 +109,10 @@ extension Terminal {
 
 extension Terminal {
 
-    // swiftlint:disable:next function_body_length
     static func exportDocument(
         document: ChordProDocument,
-        settings: AppSettings
+        settings: AppSettings,
+        sceneState: SceneState
     ) async throws -> (data: Data, exportURL: URL) {
         /// We are using the official **ChordPro** binary to create the PDF
         /// - Note: The executable is packed in this application
@@ -121,16 +121,10 @@ extension Terminal {
         else {
             throw AppError.binaryNotFound
         }
-        /// Get he temporarily directory
-        let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        /// Create a source URL
-        let sourceURL = temporaryDirectoryURL.appendingPathComponent(document.fileID, conformingTo: .chordProSong)
-        /// Create an export URL
-        let exportURL = temporaryDirectoryURL.appendingPathComponent(document.fileID, conformingTo: .pdf)
         /// Write the song to the source URL
         /// - Note: I don't read the file URL directly because it might not be saved yet
         do {
-            try document.text.write(to: sourceURL, atomically: true, encoding: String.Encoding.utf8)
+            try document.text.write(to: sceneState.sourceURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
             throw AppError.writeDocumentError
         }
@@ -149,7 +143,7 @@ extension Terminal {
         /// The **ChordPro** binary
         arguments.append("'\(chordProApp.path)'")
         /// Add the source file
-        arguments.append("'\(sourceURL.path)'")
+        arguments.append("'\(sceneState.sourceURL.path)'")
         /// Add the config file
         if settings.useCustomConfig, let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customConfig) {
             /// Get access to the URL
@@ -164,7 +158,7 @@ extension Terminal {
         /// Get the user settings that are simple and do not need sandbox help
         arguments.append(contentsOf: AppState.getUserSettings(settings: settings))
         /// Add the output file
-        arguments.append("--output='\(exportURL.path)'")
+        arguments.append("--output='\(sceneState.exportURL.path)'")
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
@@ -173,14 +167,14 @@ extension Terminal {
         /// Write to the log
         let log: String = "OUTPUT:\n \(output.standardOutput)\n\nERROR:\n\(output.standardError)"
         do {
-            try log.write(to: AppState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
+            try log.write(to: sceneState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
             throw AppError.writeDocumentError
         }
         do {
-            let data = try Data(contentsOf: exportURL)
+            let data = try Data(contentsOf: sceneState.exportURL)
             /// Return the created PDF
-            return (data, exportURL)
+            return (data, sceneState.exportURL)
         } catch {
             throw AppError.pdfCreationError
         }

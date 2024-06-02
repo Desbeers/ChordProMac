@@ -13,6 +13,8 @@ struct ContentView: View {
     @Binding var document: ChordProDocument
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
+    /// The observable state of the scene
+    @StateObject private var sceneState = SceneState()
     /// The body of the `View`
     var body: some View {
         VStack {
@@ -22,13 +24,16 @@ struct ContentView: View {
             StatusView()
                 .padding([.horizontal])
         }
-        .errorAlert(error: $appState.alertError, log: $appState.showLog)
+        .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .toolbar {
             ExportSongView(label: "Export")
             QuickLookView()
         }
-        .sheet(isPresented: $appState.showLog) {
+        .sheet(isPresented: $sceneState.showLog) {
             LogView()
         }
+        .environmentObject(sceneState)
+        /// Give the application access to the scene.
+        .focusedSceneValue(\.sceneState, sceneState)
     }
 }

@@ -9,13 +9,16 @@ import SwiftUI
 import OSLog
 
 /// SwiftUI `View` for an export button
+/// - Note: This button is also in the App Menu to it needs focused values for the document and the scene
 struct ExportSongView: View {
     /// The label for the button
     let label: String
     /// The document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
-    /// The app settings
+    /// The observable state of the application
     @EnvironmentObject private var appState: AppState
+    /// The scene
+    @FocusedValue(\.sceneState) private var sceneState: SceneState?
     /// Present an export dialog
     @State private var exportFile = false
     /// The song as PDF
@@ -24,13 +27,14 @@ struct ExportSongView: View {
     var body: some View {
         Button(
             action: {
-                if let document {
+                if let document, let sceneState {
                     Task {
                         do {
                             /// Create the PDF with **ChordPro**
                             let pdf = try await Terminal.exportDocument(
                                 document: document.document,
-                                settings: appState.settings
+                                settings: appState.settings,
+                                sceneState: sceneState
                             )
                             /// Set the PDF as Data
                             self.pdf = pdf.data
@@ -38,8 +42,10 @@ struct ExportSongView: View {
                             exportFile = true
                         } catch {
                             /// Show an error
-                            appState.alertError = error
+                            sceneState.alertError = error
                         }
+                        /// Something has happen and there should be a log available
+                        sceneState.logIsAvailable = true
                     }
                 }
             },
@@ -47,8 +53,8 @@ struct ExportSongView: View {
                 Text(label)
             }
         )
-        /// Disable the button when there is no document window in focus
-        .disabled(document == nil)
+        /// Disable the button when there is no document window in focus and no scene state available
+        .disabled(document == nil || sceneState == nil)
         .fileExporter(
             isPresented: $exportFile,
             document: ExportDocument(pdf: pdf),

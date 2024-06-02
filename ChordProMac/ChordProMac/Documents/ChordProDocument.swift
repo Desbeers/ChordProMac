@@ -17,8 +17,6 @@ extension UTType {
 
 /// Define the  **ChordPro** document
 struct ChordProDocument: FileDocument {
-    /// Give the file an unique ID
-    let fileID = UUID().uuidString
     /// The text of the file
     var text: String
     /// Init the text

@@ -11,10 +11,12 @@ import SwiftUI
 struct LogView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
+    /// The observable state of the scene
+    @EnvironmentObject private var sceneState: SceneState
     /// Get the latest log
     var log: [String] {
         do {
-            return try String(contentsOf: AppState.logFileURL, encoding: .utf8).components(separatedBy: .newlines)
+            return try String(contentsOf: sceneState.logFileURL, encoding: .utf8).components(separatedBy: .newlines)
         } catch {
             /// There is no log
             return ["There is no log available"]
@@ -35,7 +37,7 @@ struct LogView: View {
                 }
             }
             Button("Close") {
-                appState.showLog = false
+                sceneState.showLog = false
             }
         }
         .frame(width: 500, height: 500)
