@@ -67,7 +67,7 @@ extension SettingsView {
     /// SwiftUI `View` with editor settings
     var editor: some View {
         ScrollView {
-            Group {
+            VStack {
                 Toggle("Use a custom template", isOn: $appState.settings.useCustomSongTemplate)
                 FileButtonView(
                     bookmark: CustomFile.customSongTemplate
@@ -75,7 +75,7 @@ extension SettingsView {
                 .disabled(!appState.settings.useCustomSongTemplate)
             }
             .wrapSection(title: "Template for a new song")
-            Group {
+            VStack {
                 Picker("The font size of the editor:", selection: $appState.settings.fontSize) {
                     ForEach(12...24, id: \.self) { value in
                         Text("\(value)px")
@@ -102,7 +102,7 @@ extension SettingsView {
     /// SwiftUI `View` with templates settings
     var templates: some View {
         ScrollView {
-            Group {
+            VStack {
                 Picker("Build-in:", selection: $appState.settings.systemConfig) {
                     ForEach(systemConfigurations) { template in
                         Text(template.label.capitalized)
@@ -119,7 +119,7 @@ extension SettingsView {
                 .disabled(!appState.settings.useCustomConfig)
             }
             .wrapSection(title: "Configuration template")
-            Group {
+            VStack {
                 Toggle("Add a custom library", isOn: $appState.settings.useAdditionalLibrary)
                 FileButtonView(
                     bookmark: CustomFile.customLibrary
@@ -139,7 +139,19 @@ extension SettingsView {
     /// SwiftUI `View` with configuration settings
     var options: some View {
         ScrollView {
-            Group {
+            VStack(alignment: .leading) {
+                Toggle("Show only lyrics", isOn: $appState.settings.lyricsOnly)
+                Text("This option will hide all chords, ABC and LilyPonds")
+                    .font(.caption)
+                Toggle("Suppress chord diagrams", isOn: $appState.settings.noChordGrids)
+                Text("This hide diagrams but still shows inline chords")
+                    .font(.caption)
+                Toggle("Eliminate capo settings", isOn: $appState.settings.deCapo)
+                Text("This will be done by transposing the song")
+                    .font(.caption)
+            }
+            .wrapSection(title: "General")
+            VStack {
                 Toggle("Transpose the song", isOn: $appState.settings.transpose)
                 if appState.settings.transpose {
                     VStack {
@@ -165,7 +177,7 @@ extension SettingsView {
                 }
             }
             .wrapSection(title: "Transpose")
-            Group {
+            VStack {
                 Toggle("Transcode the notation", isOn: $appState.settings.transcode)
                 if appState.settings.transcode {
                     Picker("Transcode to:", selection: $appState.settings.transcodeNotation) {
@@ -178,8 +190,8 @@ extension SettingsView {
                 }
             }
             .wrapSection(title: "Transcode")
+            .padding(.bottom)
         }
-        .padding(.top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }

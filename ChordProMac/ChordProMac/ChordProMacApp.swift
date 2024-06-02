@@ -38,7 +38,7 @@ import SwiftUI
         }
         Settings {
             SettingsView()
-                .frame(width: 300, height: 380)
+                .frame(width: 300, height: 420)
                 .environmentObject(appState)
         }
     }

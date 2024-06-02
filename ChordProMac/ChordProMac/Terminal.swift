@@ -161,14 +161,8 @@ extension Terminal {
             /// Use the system config
             arguments.append("--config=\(settings.systemConfig)")
         }
-        /// Add the optional  transcode
-        if settings.transcode {
-            arguments.append("--transcode=\(settings.transcodeNotation)")
-        }
-        /// Add the optional transpose value
-        if settings.transpose, let transpose = settings.transposeValue {
-            arguments.append("--transpose=\(transpose)")
-        }
+        /// Get the user settings that are simple and do not need sandbox help
+        arguments.append(contentsOf: AppState.getUserSettings(settings: settings))
         /// Add the output file
         arguments.append("--output='\(exportURL.path)'")
         /// Run **ChordPro** in the shell

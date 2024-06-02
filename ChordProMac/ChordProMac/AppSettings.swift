@@ -75,6 +75,15 @@ struct AppSettings: Codable, Equatable {
         }
         return transpose == 0 ? nil : transpose
     }
+
+    // MARK: Other
+
+    /// Show only lyrics
+    var lyricsOnly: Bool = false
+    /// Suppress chord diagrams
+    var noChordGrids: Bool = false
+    /// Eliminate capo settings by transposing the song
+    var deCapo: Bool = false
 }
 
 extension AppSettings {
