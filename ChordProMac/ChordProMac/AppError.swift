@@ -21,6 +21,12 @@ enum AppError: String, LocalizedError {
     case customFileNotFound
     /// An error when **chordpro** did not create a PDF
     case pdfCreationError
+    /// An error when **chordpro** did  create a PDF but gave errors
+    case pdfCreatedWithErrors
+    /// Not an error, all is well
+    /// - Note: Used for PDF export
+    case noErrorOccurred
+
 }
 
 // MARK: Protocol implementations
@@ -37,6 +43,10 @@ extension AppError {
         switch self {
         case .pdfCreationError:
             return "ChordPro was unable to create a PDF"
+        case .pdfCreatedWithErrors:
+            return "There where warnings when creating the PDF"
+        case .noErrorOccurred:
+            return "All is well"
         default:
             ///  This should not happen
             return "ChordPro is sorry"

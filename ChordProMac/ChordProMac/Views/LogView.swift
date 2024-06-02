@@ -14,12 +14,20 @@ struct LogView: View {
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneState
     /// Get the latest log
-    var log: [String] {
+    var logItems: [LogItem] {
         do {
-            return try String(contentsOf: sceneState.logFileURL, encoding: .utf8).components(separatedBy: .newlines)
+            let log = try String(contentsOf: sceneState.logFileURL, encoding: .utf8)
+            /// Since the document is created in the temporarily directory, it has a very long path and name so strip it
+            let strippedLog = log
+                .replacingOccurrences(of: "\(sceneState.sourceURL.path)", with: "SONG")
+                .components(separatedBy: .newlines)
+            /// Return the log in its mapped ``LogItem`` array
+            return strippedLog.map { strippedLog -> LogItem in
+                LogItem(line: strippedLog)
+            }
         } catch {
-            /// There is no log
-            return ["There is no log available"]
+            /// There is no log (this should not happen)
+            return [LogItem(line: "There is no log available")]
         }
     }
     /// The body of the `View`
@@ -28,19 +36,37 @@ struct LogView: View {
             Text("Log")
                 .font(.title)
             ScrollView {
-                ForEach(log, id: \.self) { logLine in
-                    HStack {
-                        Image(systemName: "pencil.line")
-                        Text(logLine)
+                VStack(alignment: .leading, spacing: 10) {
+                    ForEach(logItems) { log in
+                        /// Skip empty lines
+                        if !log.line.isEmpty {
+                            HStack {
+                                Image(systemName: "pencil.line")
+                                Text(log.line)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .padding()
+            }
+            .border(Color.accentColor)
+            HStack {
+                ExportLogView(label: "Save Log")
+                Button("Close") {
+                    sceneState.showLog = false
                 }
             }
-            Button("Close") {
-                sceneState.showLog = false
-            }
         }
-        .frame(width: 500, height: 500)
+        .frame(
+            minWidth: 300,
+            idealWidth: 400,
+            maxWidth: 500,
+            minHeight: 200,
+            idealHeight: 300,
+            maxHeight: 800
+            )
+        //.frame(minWidth: 500, minHeight: 300, maxHeight: 500)
         .padding()
     }
 }

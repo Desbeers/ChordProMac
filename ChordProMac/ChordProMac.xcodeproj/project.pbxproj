@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		D702E0D72C0CC6F5006D9667 /* SceneState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0D62C0CC6F5006D9667 /* SceneState.swift */; };
+		D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */; };
+		D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DC2C0CEA27006D9667 /* LogDocument.swift */; };
+		D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DE2C0CEF42006D9667 /* LogItem.swift */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
@@ -46,6 +49,9 @@
 
 /* Begin PBXFileReference section */
 		D702E0D62C0CC6F5006D9667 /* SceneState.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneState.swift; sourceTree = "<group>"; };
+		D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogView.swift; sourceTree = "<group>"; };
+		D702E0DC2C0CEA27006D9667 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
+		D702E0DE2C0CEF42006D9667 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
@@ -117,6 +123,7 @@
 				D72EA32E2C0B2E9400B1BA93 /* CustomFile.swift */,
 				D72EA3342C0B68B600B1BA93 /* FontStyle.swift */,
 				D72EA33D2C0C5C3F00B1BA93 /* LocalizedAlertError.swift */,
+				D702E0DE2C0CEF42006D9667 /* LogItem.swift */,
 			);
 			path = Structures;
 			sourceTree = "<group>";
@@ -178,6 +185,7 @@
 				D774F2842C05F2B900CC4E3E /* StatusView.swift */,
 				D7723A6E2C0354250031CD0C /* QuickLookView.swift */,
 				D7723A682C03442F0031CD0C /* ExportSongView.swift */,
+				D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */,
 				D74002CA2C04711000291BE7 /* SettingsView.swift */,
 				D72EA3322C0B31A600B1BA93 /* FileButtonView.swift */,
 				D72EA3372C0B8E2C00B1BA93 /* HelpButtonsView.swift */,
@@ -192,6 +200,7 @@
 			children = (
 				D7723A4E2C0326120031CD0C /* ChordProDocument.swift */,
 				D7723A642C0336910031CD0C /* ExportDocument.swift */,
+				D702E0DC2C0CEA27006D9667 /* LogDocument.swift */,
 			);
 			path = Documents;
 			sourceTree = "<group>";
@@ -311,7 +320,10 @@
 				D774F2812C05E07E00CC4E3E /* Note.swift in Sources */,
 				D72EA3312C0B2FF500B1BA93 /* FileBookmark.swift in Sources */,
 				D72EA3402C0C5E5800B1BA93 /* View+errorAlert.swift in Sources */,
+				D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */,
 				D7723A672C0336C70031CD0C /* AppError.swift in Sources */,
+				D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */,
+				D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */,
 				D702E0D72C0CC6F5006D9667 /* SceneState.swift in Sources */,
 				D72EA32F2C0B2E9400B1BA93 /* CustomFile.swift in Sources */,
 				D72EA33C2C0BB24600B1BA93 /* LogView.swift in Sources */,

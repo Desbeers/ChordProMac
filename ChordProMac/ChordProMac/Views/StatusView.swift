@@ -24,14 +24,22 @@ struct StatusView: View {
                 Text("**Transcode:** \(appState.settings.transcodeNotation)")
             }
             Spacer()
-            Button("Log") {
-                sceneState.showLog = true
+            HStack {
+                Text(sceneState.exportStatus.recoverySuggestion ?? "")
+                    .font(.caption)
+                /// - Note: Just show it with the accent color. I considered *red* but that's a bit rude and not needed. The PDF *is* created.
+                    .foregroundColor(.accentColor)
+                Button("View Log") {
+                    sceneState.showLog = true
+                }
             }
-            .disabled(!sceneState.logIsAvailable)
+            /// - Note: Just hide the log-stuff like this to get a nice animation
+            .opacity(sceneState.exportStatus == .noErrorOccurred ? 0 : 1)
         }
         .font(.callout)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.bottom, 4)
         .animation(.default, value: appState.settings)
+        .animation(.default, value: sceneState.exportStatus)
     }
 }

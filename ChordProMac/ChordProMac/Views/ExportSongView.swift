@@ -40,12 +40,14 @@ struct ExportSongView: View {
                             self.pdf = pdf.data
                             /// Show the export dialog
                             exportFile = true
+                            /// Set the status
+                            sceneState.exportStatus = pdf.status
                         } catch {
                             /// Show an error
                             sceneState.alertError = error
+                            /// Set the status
+                            sceneState.exportStatus = .pdfCreationError
                         }
-                        /// Something has happen and there should be a log available
-                        sceneState.logIsAvailable = true
                     }
                 }
             },
@@ -63,6 +65,5 @@ struct ExportSongView: View {
         ) { _ in
             Logger.pdfBuild.notice("Export completed")
         }
-
     }
 }

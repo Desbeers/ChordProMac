@@ -14,8 +14,8 @@ final class SceneState: ObservableObject {
     @Published var alertError: Error?
     /// Bool if we have a log available
     @Published var showLog: Bool = false
-    /// Bool to show the log of the last **ChordPro** output
-    @Published var logIsAvailable: Bool = false
+    /// Status of the last **ChordPro** export
+    @Published var exportStatus: AppError = .noErrorOccurred
     /// The unique ID of the scene
     let sceneID: String
     /// The URL of the source file

@@ -113,7 +113,7 @@ extension Terminal {
         document: ChordProDocument,
         settings: AppSettings,
         sceneState: SceneState
-    ) async throws -> (data: Data, exportURL: URL) {
+    ) async throws -> (data: Data, status: AppError) {
         /// We are using the official **ChordPro** binary to create the PDF
         /// - Note: The executable is packed in this application
         guard
@@ -162,10 +162,9 @@ extension Terminal {
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        Logger.pdfBuild.log("OUTPUT: \(output.standardOutput, privacy: .public)")
         Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
         /// Write to the log
-        let log: String = "OUTPUT:\n \(output.standardOutput)\n\nERROR:\n\(output.standardError)"
+        let log = output.standardError.isEmpty ? "No errors occurred" : output.standardError
         do {
             try log.write(to: sceneState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
@@ -174,7 +173,7 @@ extension Terminal {
         do {
             let data = try Data(contentsOf: sceneState.exportURL)
             /// Return the created PDF
-            return (data, sceneState.exportURL)
+            return (data, output.standardError.isEmpty ? .noErrorOccurred : .pdfCreatedWithErrors)
         } catch {
             throw AppError.pdfCreationError
         }

@@ -18,15 +18,17 @@ struct ContentView: View {
     /// The body of the `View`
     var body: some View {
         VStack {
+            /// - Note: `TextEditor` is very (very) limited this is a compromise
             TextEditor(text: $document.text)
                 .font(appState.settings.fontStyle.font(size: appState.settings.fontSize))
-                .padding([.top, .horizontal])
+                .padding(4)
+                .background(Color(nsColor: .textBackgroundColor))
             StatusView()
                 .padding([.horizontal])
         }
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .toolbar {
-            ExportSongView(label: "Export")
+            ExportSongView(label: "Export as PDF")
             QuickLookView()
         }
         .sheet(isPresented: $sceneState.showLog) {

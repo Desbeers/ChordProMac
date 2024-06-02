@@ -30,12 +30,16 @@ struct QuickLookView: View {
                                 settings: appState.settings,
                                 sceneState: sceneState
                             )
-                            quickLookURL = pdf.exportURL
+                            /// Show the Quick Look
+                            quickLookURL = sceneState.exportURL
+                            /// Set the status
+                            sceneState.exportStatus = pdf.status
                         } catch {
+                            /// Show an `Alert`
                             sceneState.alertError = error
+                            /// Set the status
+                            sceneState.exportStatus = .pdfCreationError
                         }
-                        /// Something has happen and there should be a log available
-                        sceneState.logIsAvailable = true
                     }
                 }
             },
