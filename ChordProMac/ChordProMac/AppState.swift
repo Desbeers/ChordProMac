@@ -48,6 +48,10 @@ final class AppState: ObservableObject {
         if settings.deCapo {
             arguments.append("--decapo")
         }
+        /// Optional not use default configurations
+        if settings.noDefaultConfigs {
+            arguments.append("--nodefaultconfigs")
+        }
         /// Return the basic settings
         return arguments
     }

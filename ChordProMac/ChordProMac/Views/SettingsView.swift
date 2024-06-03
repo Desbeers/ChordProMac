@@ -118,6 +118,10 @@ extension SettingsView {
                     appState.settings.customConfig = try? FileBookmark.getBookmarkURL(CustomFile.customConfig)
                 }
                 .disabled(!appState.settings.useCustomConfig)
+                Toggle("Ignore default configurations", isOn: $appState.settings.noDefaultConfigs)
+                // swiftlint:disable:next line_length
+                Text("This prevents **ChordPro** from using system wide, user specific and song specific configurations. Checking this will make sure that **ChordPro** only uses the configuration as set in the _application_.")
+                    .font(.caption)
             }
             .wrapSection(title: "Configuration template")
             VStack {

@@ -39,6 +39,9 @@ struct AppSettings: Codable, Equatable {
         return systemConfig
     }
 
+    /// Bool not to use default configurations
+    var noDefaultConfigs: Bool = false
+
     // MARK: Transpose
 
     /// Bool if the song should be transcoded
