@@ -17,6 +17,7 @@ chordpro:
 	cd "${DEST}/ChordProSource/pp/macos" && make ppl TARGET=chordpro
 	@echo "Code signing..."
 	codesign --force -s - "${DEST}/ChordProSource/pp/macos/build/libperl.dylib"
+	find  "${DEST}/ChordProSource/pp/macos/build/" -name '*.bundle' -type f | while read bundle; do codesign --force -s - "$$bundle"; done
 	@echo "Copy core to the wrapper..."
 	rm -fr "${WRAPPERBIN}"
 	$(MKDIR) -p "${WRAPPERBIN}"
