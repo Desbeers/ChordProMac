@@ -126,6 +126,8 @@ extension Terminal {
         else {
             throw AppError.binaryNotFound
         }
+        /// Remove previous export (if any)
+        try? FileManager.default.removeItem(atPath: sceneState.exportURL.path)
         /// Write the song to the source URL
         /// - Note: We don't read the file URL directly because it might not be saved yet
         do {
