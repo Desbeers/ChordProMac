@@ -169,7 +169,7 @@ extension Terminal {
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
         Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
         /// Write to the log file
-        let log = output.standardError.isEmpty ? "No errors occurred" : output.standardError
+        let log = output.standardError.isEmpty ? "No errors occurred but the song might be empty" : output.standardError
         do {
             try log.write(to: sceneState.logFileURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
@@ -183,7 +183,7 @@ extension Terminal {
             return (data, output.standardError.isEmpty ? .noErrorOccurred : .pdfCreatedWithErrors)
         } catch {
             /// There is no data, throw an ``AppError``
-            throw AppError.pdfCreationError
+            throw AppError.emptySong
         }
     }
 }

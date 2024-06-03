@@ -23,6 +23,8 @@ enum AppError: String, LocalizedError {
     case pdfCreationError
     /// An error when **chordpro** did  create a PDF but gave errors
     case pdfCreatedWithErrors
+    /// An error when **chordpro** did  not complain but the PDF is not created because the song is empty
+    case emptySong
     /// Not an error, all is well
     /// - Note: Used for PDF export
     case noErrorOccurred
@@ -35,7 +37,12 @@ extension AppError {
 
     /// The description of the error
     var errorDescription: String? {
-        return "Something went wrong"
+        switch self {
+        case .emptySong:
+            return "The song is empty"
+        default:
+            return "Something went wrong"
+        }
     }
 
     /// The recovery suggestion
@@ -45,6 +52,8 @@ extension AppError {
             return "ChordPro was unable to create a PDF"
         case .pdfCreatedWithErrors:
             return "There where warnings when creating the PDF"
+        case .emptySong:
+            return "You cannot create a PDF when the song does not have content"
         case .noErrorOccurred:
             return "All is well"
         default:
