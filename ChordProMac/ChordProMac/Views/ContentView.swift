@@ -26,6 +26,7 @@ struct ContentView: View {
             StatusView()
                 .padding(.horizontal)
         }
+        .quickLookPreview($sceneState.quickLookURL)
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .toolbar {
             ExportSongView(label: "Export as PDF")

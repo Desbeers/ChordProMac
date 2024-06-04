@@ -22,30 +22,41 @@ struct QuickLookView: View {
     var body: some View {
         Button(
             action: {
-                Task {
-                    do {
-                        let pdf = try await Terminal.exportDocument(
-                            document: document,
-                            settings: appState.settings,
-                            sceneState: sceneState
-                        )
-                        /// Show the Quick Look
-                        quickLookURL = sceneState.exportURL
-                        /// Set the status
-                        sceneState.exportStatus = pdf.status
-                    } catch {
-                        /// Show an `Alert`
-                        sceneState.alertError = error
-                        /// Set the status
-                        sceneState.exportStatus = .pdfCreationError
-                    }
-                }
+                showQuickView()
             },
             label: {
                 Label("PDF preview", systemImage: quickLookURL == nil ? "eye" : "eye.fill")
             }
         )
         .labelStyle(.iconOnly)
-        .quickLookPreview($quickLookURL)
+        .task(id: sceneState.customTask) {
+            if sceneState.customTask != nil {
+                /// Show a Quick View of the task
+                showQuickView()
+            }
+        }
+    }
+    /// Show a Quick View of the PDF
+    @MainActor private func showQuickView() {
+        Task {
+            do {
+                let pdf = try await Terminal.exportDocument(
+                    document: document,
+                    settings: appState.settings,
+                    sceneState: sceneState
+                )
+                /// Show the Quick Look
+                sceneState.quickLookURL = sceneState.exportURL
+                /// Set the status
+                sceneState.exportStatus = pdf.status
+            } catch {
+                /// Show an `Alert`
+                sceneState.alertError = error
+                /// Set the status
+                sceneState.exportStatus = .pdfCreationError
+            }
+            /// Remove the task (if any)
+            sceneState.customTask = nil
+        }
     }
 }

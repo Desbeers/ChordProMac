@@ -152,6 +152,10 @@ extension Terminal {
         /// Add the source file
         arguments.append("'\(sceneState.sourceURL.path)'")
         /// Add the config file
+        ///
+        /// This can be one of the following
+        /// - A user selected **Custom Config File**
+        /// - A system provided configuration
         if settings.useCustomConfig, let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customConfig) {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
@@ -164,6 +168,10 @@ extension Terminal {
         }
         /// Get the user settings that are simple and do not need sandbox help
         arguments.append(contentsOf: AppState.getUserSettings(settings: settings))
+        /// Add the optional selected ``CustomTask``
+        if let taskConfig = sceneState.customTask {
+            arguments.append("--config='\(taskConfig.url.path)'")
+        }
         /// Add the output file
         arguments.append("--output='\(sceneState.exportURL.path)'")
         /// Run **ChordPro** in the shell

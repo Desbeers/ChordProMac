@@ -24,6 +24,10 @@ final class SceneState: ObservableObject {
     let exportURL: URL
     /// The URL of the log file
     let logFileURL: URL
+    /// The optional custom task to run
+    @Published var customTask: CustomTask?
+    /// The optional URL for the QuickView
+    @Published var quickLookURL: URL?
     /// Init the class
     init() {
         /// Give it an unique ID
