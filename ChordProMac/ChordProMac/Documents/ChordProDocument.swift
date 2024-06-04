@@ -22,7 +22,7 @@ struct ChordProDocument: FileDocument {
     /// The text of the song
     var text: String
     /// Init the song
-    init(text: String = "{title: New Song}") {
+    init(text: String = "{title: New Song}\n") {
         let settings = AppSettings.load()
         /// Check if we have to use a custom template
         if
