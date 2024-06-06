@@ -14,17 +14,11 @@ chordpro:
 	rm -fr "${DEST}/ChordProSource"
 	$(MKDIR) -p "${DEST}/ChordProSource"
 	git clone --branch dev https://github.com/ChordPro/chordpro.git "${DEST}/ChordProSource"
-	cd "${DEST}/ChordProSource/pp/macos" && make ppl TARGET=chordpro
-	@echo "Code signing..."
-	codesign --force -s - "${DEST}/ChordProSource/pp/macos/build/libperl.dylib"
-	find  "${DEST}/ChordProSource/pp/macos/build/" -name '*.bundle' -type f | while read bundle; do codesign --force -s - "$$bundle"; done
+	cd "${DEST}/ChordProSource/pp/macosswift" && make chordpro
 	@echo "Copy core to the wrapper..."
 	rm -fr "${WRAPPERBIN}"
 	$(MKDIR) -p "${WRAPPERBIN}"
-	cp -r "${DEST}/ChordProSource/pp/macos/build/chordpro" "${WRAPPERBIN}"
-	cp -r "${DEST}/ChordProSource/pp/macos/build/libperl.dylib" "${WRAPPERBIN}"
-	cp -r "${DEST}/ChordProSource/pp/macos/build/lib" "${WRAPPERBIN}"
-	cp -r "${DEST}/ChordProSource/pp/macos/build/script" "${WRAPPERBIN}"
+	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
 
 xcodebuild:
 	@echo "Building ChordProMac"
