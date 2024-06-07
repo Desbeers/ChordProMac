@@ -47,7 +47,6 @@ struct SettingsView: View {
             while let item = items.nextObject() as? URL {
                 /// Check if it is a JSON file
                 if item.pathExtension == UTType.json.preferredFilenameExtension ?? ".json" {
-
                     if item.absoluteString.contains("notes") {
                         /// It is a notation
                         notations.append(Notation(url: item))
@@ -110,8 +109,8 @@ extension SettingsView {
             VStack {
                 Picker("Build-in:", selection: $appState.settings.systemConfig) {
                     ForEach(systemConfigurations) { template in
-                        Text(template.label.capitalized)
-                            .tag(template.label)
+                        Text(template.label)
+                            .tag(template.fileName)
                     }
                 }
                 .disabled(appState.settings.useCustomConfig)
