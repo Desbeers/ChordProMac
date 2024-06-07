@@ -83,12 +83,16 @@ extension SettingsView {
                             .tag(Double(value))
                     }
                 }
+                /// Give it a random ID to avoid random crashes on macOS Monterey
+                .id(UUID())
                 Picker("The font style of the editor", selection: $appState.settings.fontStyle) {
                     ForEach(FontStyle.allCases, id: \.self) { font in
                         Text("\(font.rawValue)")
                             .font(font.font(size: appState.settings.fontSize))
                     }
                 }
+                /// Give it a random ID to avoid random crashes on macOS Monterey
+                .id(UUID())
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
                 .padding()
@@ -166,17 +170,23 @@ extension SettingsView {
                                     Text(note.rawValue)
                                 }
                             }
+                            /// Give it a random ID to avoid random crashes on macOS Monterey
+                            .id(UUID())
                             Picker("To:", selection: $appState.settings.transposeTo) {
                                 ForEach(Note.allCases, id: \.self) { note in
                                     Text(note.rawValue)
                                 }
                             }
+                            /// Give it a random ID to avoid random crashes on macOS Monterey
+                            .id(UUID())
                         }
                         Picker("Accents:", selection: $appState.settings.transposeAccents) {
                             ForEach(Accents.allCases, id: \.self) { accents in
                                 Text(accents.rawValue)
                             }
                         }
+                        /// Give it a random ID to avoid random crashes on macOS Monterey
+                        .id(UUID())
                     }
                     .padding(.top)
                 }
@@ -191,6 +201,8 @@ extension SettingsView {
                                 .tag(notation.label)
                         }
                     }
+                    /// Give it a random ID to avoid random crashes on macOS Monterey
+                    .id(UUID())
                     .padding(.top)
                 }
             }
