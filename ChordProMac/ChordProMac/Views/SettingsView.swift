@@ -73,10 +73,12 @@ extension SettingsView {
                     bookmark: CustomFile.customSongTemplate
                 ) {}
                 .disabled(!appState.settings.useCustomSongTemplate)
+                Text("You can use your own **ChordPro** file as a starting point when you create a new song")
+                    .font(.caption)
             }
-            .wrapSection(title: "Template for a new song")
+            .wrapSection(title: "Template for a New Song")
             VStack {
-                Picker("The font size of the editor:", selection: $appState.settings.fontSize) {
+                Picker("Size of the font:", selection: $appState.settings.fontSize) {
                     ForEach(12...24, id: \.self) { value in
                         Text("\(value)px")
                             .tag(Double(value))
@@ -96,7 +98,7 @@ extension SettingsView {
                 .labelsHidden()
                 .padding()
             }
-            .wrapSection(title: "Font")
+            .wrapSection(title: "Editor Font")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -126,7 +128,7 @@ extension SettingsView {
                 Text("This prevents **ChordPro** from using system wide, user specific and song specific configurations. Checking this will make sure that **ChordPro** only uses the configuration as set in the _application_.")
                     .font(.caption)
             }
-            .wrapSection(title: "Configuration template")
+            .wrapSection(title: "Configuration Template")
             VStack {
                 Toggle("Add a custom library", isOn: $appState.settings.useAdditionalLibrary)
                 FileButtonView(
@@ -137,7 +139,7 @@ extension SettingsView {
                 Text("**ChordPro** has a built-in library with configs and other data. With *custom library* you can add an additional location where to look for data.")
                     .font(.caption)
             }
-            .wrapSection(title: "Custom library")
+            .wrapSection(title: "Custom Library")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
