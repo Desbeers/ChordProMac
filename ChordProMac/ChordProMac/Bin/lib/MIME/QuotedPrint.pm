@@ -1,13 +1,13 @@
 package MIME::QuotedPrint;
 
 use strict;
-use warnings;
+use vars qw(@ISA @EXPORT $VERSION);
 
 require Exporter;
-our @ISA = qw(Exporter);
-our @EXPORT = qw(encode_qp decode_qp);
+@ISA = qw(Exporter);
+@EXPORT = qw(encode_qp decode_qp);
 
-our $VERSION = '3.16';
+$VERSION = "3.13";
 
 use MIME::Base64;  # will load XS version of {en,de}code_qp()
 

@@ -14,7 +14,7 @@
 
 package Pod::Text;
 
-use 5.008;
+use 5.006;
 use strict;
 use warnings;
 
@@ -30,7 +30,7 @@ use Pod::Simple ();
 # We have to export pod2text for backward compatibility.
 @EXPORT = qw(pod2text);
 
-$VERSION = '4.14';
+$VERSION = '4.11';
 
 # Ensure that $Pod::Simple::nbsp and $Pod::Simple::shy are available.  Code
 # taken from Pod::Simple 3.32, but was only added in 3.30.
@@ -39,8 +39,16 @@ if ($Pod::Simple::VERSION ge 3.30) {
     $NBSP = $Pod::Simple::nbsp;
     $SHY  = $Pod::Simple::shy;
 } else {
-    $NBSP = chr utf8::unicode_to_native(0xA0);
-    $SHY  = chr utf8::unicode_to_native(0xAD);
+    if ($] ge 5.007_003) {
+        $NBSP = chr utf8::unicode_to_native(0xA0);
+        $SHY  = chr utf8::unicode_to_native(0xAD);
+    } elsif (Pod::Simple::ASCII) {
+        $NBSP = "\xA0";
+        $SHY  = "\xAD";
+    } else {
+        $NBSP = "\x41";
+        $SHY  = "\xCA";
+    }
 }
 
 ##############################################################################
@@ -239,7 +247,7 @@ sub wrap {
     my $spaces = ' ' x $$self{MARGIN};
     my $width = $$self{opt_width} - $$self{MARGIN};
     while (length > $width) {
-        if (s/^([^\n]{0,$width})[ \t\n]+// || s/^([^\n]{$width})//) {
+        if (s/^([^\n]{0,$width})\s+// || s/^([^\n]{$width})//) {
             $output .= $spaces . $1 . "\n";
         } else {
             last;
@@ -257,16 +265,14 @@ sub reformat {
     local $_ = shift;
 
     # If we're trying to preserve two spaces after sentences, do some munging
-    # to support that.  Otherwise, smash all repeated whitespace.  Be careful
-    # not to use \s here, which in Unicode input may match non-breaking spaces
-    # that we don't want to smash.
+    # to support that.  Otherwise, smash all repeated whitespace.
     if ($$self{opt_sentence}) {
         s/ +$//mg;
         s/\.\n/. \n/g;
         s/\n/ /g;
         s/   +/  /g;
     } else {
-        s/[ \t\n]+/ /g;
+        s/\s+/ /g;
     }
     return $self->wrap ($_);
 }
@@ -327,14 +333,15 @@ sub start_document {
 
     # When UTF-8 output is set, check whether our output file handle already
     # has a PerlIO encoding layer set.  If it does not, we'll need to encode
-    # our output before printing it (handled in the output() sub).
+    # our output before printing it (handled in the output() sub).  Wrap the
+    # check in an eval to handle versions of Perl without PerlIO.
     $$self{ENCODE} = 0;
     if ($$self{opt_utf8}) {
         $$self{ENCODE} = 1;
         eval {
             my @options = (output => 1, details => 1);
             my $flag = (PerlIO::get_layers ($$self{output_fh}, @options))[-1];
-            if ($flag && ($flag & PerlIO::F_UTF8 ())) {
+            if ($flag & PerlIO::F_UTF8 ()) {
                 $$self{ENCODE} = 0;
                 $$self{ENCODING} = 'UTF-8';
             }
@@ -912,9 +919,7 @@ being the file to write the formatted output to.
 You can also call parse_lines() to parse an array of lines or
 parse_string_document() to parse a document already in memory.  As with
 parse_file(), parse_lines() and parse_string_document() default to sending
-their output to C<STDOUT> unless changed with the output_fh() method.  Be
-aware that parse_lines() and parse_string_document() both expect raw bytes,
-not decoded characters.
+their output to C<STDOUT> unless changed with the output_fh() method.
 
 To put the output from any parse method into a string instead of a file
 handle, call the output_string() method instead of output_fh().
@@ -1001,7 +1006,7 @@ how to use Pod::Simple.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 1999-2002, 2004, 2006, 2008-2009, 2012-2016, 2018-2019 Russ Allbery
+Copyright 1999-2002, 2004, 2006, 2008-2009, 2012-2016, 2018 Russ Allbery
 <rra@cpan.org>
 
 This program is free software; you may redistribute it and/or modify it

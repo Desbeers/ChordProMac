@@ -11,7 +11,7 @@ use strict;
 use warnings;
 our ( %Config, $VERSION );
 
-$VERSION = "5.034001";
+$VERSION = "5.030003";
 
 # Skip @Config::EXPORT because it only contains %Config, which we special
 # case below as it's not a function. @Config::EXPORT won't change in the
@@ -57,11 +57,11 @@ sub import {
     return;
 }
 
-die "$0: Perl lib version (5.34.1) doesn't match executable '$^X' version ($])"
+die "$0: Perl lib version (5.30.3) doesn't match executable '$^X' version ($])"
     unless $^V;
 
-$^V eq 5.34.1
-    or die sprintf "%s: Perl lib version (5.34.1) doesn't match executable '$^X' version (%vd)", $0, $^V;
+$^V eq 5.30.3
+    or die sprintf "%s: Perl lib version (5.30.3) doesn't match executable '$^X' version (%vd)", $0, $^V;
 
 
 sub FETCH {
@@ -85,7 +85,7 @@ sub AUTOLOAD {
 
 # tie returns the object, so the value returned to require will be true.
 tie %Config, 'Config', {
-    archlibexp => '/System/Library/Perl/5.34/darwin-thread-multi-2level',
+    archlibexp => '/System/Library/Perl/5.30/darwin-thread-multi-2level',
     archname => 'darwin-thread-multi-2level',
     cc => 'cc',
     d_readlink => 'define',
@@ -97,16 +97,16 @@ tie %Config, 'Config', {
     inc_version_list => ' ',
     intsize => '4',
     ldlibpthname => 'DYLD_LIBRARY_PATH',
-    libpth => '/AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.Internal.sdk/usr/local/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Toolchains/OSX14.5.xctoolchain/usr/lib/clang/15.0.0/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.Internal.sdk/usr/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib /usr/lib /usr/local/lib',
+    libpth => '/AppleInternal/Library/BuildRoots/bc10cbcd-3cda-11ee-b8ac-16228a05f5d2/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.7.Internal.sdk/usr/local/lib /AppleInternal/Library/BuildRoots/bc10cbcd-3cda-11ee-b8ac-16228a05f5d2/Applications/Xcode.app/Contents/Developer/Toolchains/OSX12.7.xctoolchain/usr/lib/clang/13.1.6/lib /AppleInternal/Library/BuildRoots/bc10cbcd-3cda-11ee-b8ac-16228a05f5d2/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX12.7.Internal.sdk/usr/lib /AppleInternal/Library/BuildRoots/bc10cbcd-3cda-11ee-b8ac-16228a05f5d2/Applications/Xcode.app/Contents/Developer/Toolchains/OSX12.7.xctoolchain/usr/lib /AppleInternal/Library/BuildRoots/bc10cbcd-3cda-11ee-b8ac-16228a05f5d2/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib /usr/lib /usr/local/lib',
     osname => 'darwin',
-    osvers => '23.0',
+    osvers => '21.0',
     path_sep => ':',
-    privlibexp => '/System/Library/Perl/5.34',
+    privlibexp => '/System/Library/Perl/5.30',
     scriptdir => '/usr/bin',
-    sitearchexp => '/Library/Perl/5.34/darwin-thread-multi-2level',
-    sitelibexp => '/Library/Perl/5.34',
+    sitearchexp => '/Library/Perl/5.30/darwin-thread-multi-2level',
+    sitelibexp => '/Library/Perl/5.30',
     so => 'dylib',
     useithreads => 'define',
     usevendorprefix => 'define',
-    version => '5.34.1',
+    version => '5.30.3',
 };

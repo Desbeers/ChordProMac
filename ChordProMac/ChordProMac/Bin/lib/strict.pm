@@ -1,7 +1,7 @@
 #line 1 "<embedded>/strict.pm"
 package strict;
 
-$strict::VERSION = "1.12";
+$strict::VERSION = "1.11";
 
 my ( %bitmask, %explicit_bitmask );
 
@@ -78,4 +78,4 @@ sub unimport {
 1;
 __END__
 
-#line 186
+#line 185

@@ -4,15 +4,15 @@ use strict ;
 use warnings;
 use bytes;
 
-use IO::Compress::Base::Common 2.101 qw(:Status );
+use IO::Compress::Base::Common 2.084 qw(:Status );
 
-use IO::Uncompress::Base 2.101 ;
-use IO::Uncompress::Adapter::Bunzip2 2.101 ;
+use IO::Uncompress::Base 2.084 ;
+use IO::Uncompress::Adapter::Bunzip2 2.084 ;
 
 require Exporter ;
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, $Bunzip2Error);
 
-$VERSION = '2.102';
+$VERSION = '2.084';
 $Bunzip2Error = '';
 
 @ISA    = qw(IO::Uncompress::Base Exporter);
@@ -72,7 +72,7 @@ sub mkUncomp
 
     return $self->saveErrorString(undef, $errstr, $errno)
         if ! defined $obj;
-
+    
     *$self->{Uncomp} = $obj;
 
     return 1;
@@ -88,15 +88,15 @@ sub ckMagic
     $self->smartReadExact(\$magic, 4);
 
     *$self->{HeaderPending} = $magic ;
-
-    return $self->HeaderError("Header size is " .
-                                        4 . " bytes")
+    
+    return $self->HeaderError("Header size is " . 
+                                        4 . " bytes") 
         if length $magic != 4;
 
     return $self->HeaderError("Bad Magic.")
         if ! isBzip2Magic($magic) ;
-
-
+                      
+        
     *$self->{Type} = 'bzip2';
     return $magic;
 }
@@ -117,7 +117,7 @@ sub readHeader
         'TrailerLength'     => 0,
         'Header'            => '$magic'
         };
-
+    
 }
 
 sub chkTrailer
@@ -149,7 +149,7 @@ IO::Uncompress::Bunzip2 - Read bzip2 files/buffers
     my $status = bunzip2 $input => $output [,OPTS]
         or die "bunzip2 failed: $Bunzip2Error\n";
 
-    my $z = IO::Uncompress::Bunzip2->new( $input [OPTS] )
+    my $z = new IO::Uncompress::Bunzip2 $input [OPTS]
         or die "bunzip2 failed: $Bunzip2Error\n";
 
     $status = $z->read($buffer)
@@ -209,8 +209,7 @@ The functional interface needs Perl5.005 or better.
 =head2 bunzip2 $input_filename_or_reference => $output_filename_or_reference [, OPTS]
 
 C<bunzip2> expects at least two parameters,
-C<$input_filename_or_reference> and C<$output_filename_or_reference>
-and zero or more optional parameters (see L</Optional Parameters>)
+C<$input_filename_or_reference> and C<$output_filename_or_reference>.
 
 =head3 The C<$input_filename_or_reference> parameter
 
@@ -223,7 +222,7 @@ It can take one of the following forms:
 
 =item A filename
 
-If the C<$input_filename_or_reference> parameter is a simple scalar, it is
+If the <$input_filename_or_reference> parameter is a simple scalar, it is
 assumed to be a filename. This file will be opened for reading and the
 input data will be read from it.
 
@@ -320,9 +319,9 @@ files/buffers.
 
 =head2 Optional Parameters
 
-The optional parameters for the one-shot function C<bunzip2>
-are (for the most part) identical to those used with the OO interface defined in the
-L</"Constructor Options"> section. The exceptions are listed below
+Unless specified below, the optional parameters for C<bunzip2>,
+C<OPTS>, are the same as those used with the OO interface defined in the
+L</"Constructor Options"> section below.
 
 =over 5
 
@@ -440,7 +439,7 @@ uncompressed data to a buffer, C<$buffer>.
     use IO::Uncompress::Bunzip2 qw(bunzip2 $Bunzip2Error) ;
     use IO::File ;
 
-    my $input = IO::File->new( "<file1.txt.bz2" )
+    my $input = new IO::File "<file1.txt.bz2"
         or die "Cannot open 'file1.txt.bz2': $!\n" ;
     my $buffer ;
     bunzip2 $input => \$buffer
@@ -475,7 +474,7 @@ and if you want to compress each file one at a time, this will do the trick
 
 The format of the constructor for IO::Uncompress::Bunzip2 is shown below
 
-    my $z = IO::Uncompress::Bunzip2->new( $input [OPTS] )
+    my $z = new IO::Uncompress::Bunzip2 $input [OPTS]
         or die "IO::Uncompress::Bunzip2 failed: $Bunzip2Error\n";
 
 Returns an C<IO::Uncompress::Bunzip2> object on success and undef on failure.
@@ -858,7 +857,7 @@ C<InputLength> option in the constructor.
 
 =head1 Importing
 
-No symbolic constants are required by IO::Uncompress::Bunzip2 at present.
+No symbolic constants are required by this IO::Uncompress::Bunzip2 at present.
 
 =over 5
 
@@ -877,12 +876,6 @@ Same as doing this
 
 See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
-=head1 SUPPORT
-
-General feedback/questions/bug reports should be sent to
-L<https://github.com/pmqs/IO-Compress/issues> (preferred) or
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=IO-Compress>.
-
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Compress::Deflate>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
@@ -893,7 +886,7 @@ L<File::GlobMapper|File::GlobMapper>, L<Archive::Zip|Archive::Zip>,
 L<Archive::Tar|Archive::Tar>,
 L<IO::Zlib|IO::Zlib>
 
-The primary site for the bzip2 program is L<https://sourceware.org/bzip2/>.
+The primary site for the bzip2 program is L<http://www.bzip.org>.
 
 See the module L<Compress::Bzip2|Compress::Bzip2>
 
@@ -907,7 +900,8 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2021 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
+

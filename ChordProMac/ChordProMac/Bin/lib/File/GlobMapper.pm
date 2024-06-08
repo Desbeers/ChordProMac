@@ -52,7 +52,7 @@ sub globmap ($$;)
     my $inputGlob = shift ;
     my $outputGlob = shift ;
 
-    my $obj = File::GlobMapper->new($inputGlob, $outputGlob, @_)
+    my $obj = new File::GlobMapper($inputGlob, $outputGlob, @_)
         or croak "globmap: $Error" ;
     return $obj->getFileMap();
 }

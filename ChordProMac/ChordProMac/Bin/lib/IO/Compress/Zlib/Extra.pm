@@ -9,9 +9,9 @@ use bytes;
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS);
 
-$VERSION = '2.102';
+$VERSION = '2.084';
 
-use IO::Compress::Gzip::Constants 2.101 ;
+use IO::Compress::Gzip::Constants 2.084 ;
 
 sub ExtraFieldError
 {
@@ -37,11 +37,11 @@ sub validateExtraFieldPair
     return ExtraFieldError("SubField Data is a reference")
         if ref $pair->[1] ;
 
-    # ID is exactly two chars
+    # ID is exactly two chars   
     return ExtraFieldError("SubField ID not two chars long")
         unless length $pair->[0] == GZIP_FEXTRA_SUBFIELD_ID_SIZE ;
 
-    # Check that the 2nd byte of the ID isn't 0
+    # Check that the 2nd byte of the ID isn't 0    
     return ExtraFieldError("SubField ID 2nd byte is 0x00")
         if $strict && $gzipMode && substr($pair->[0], 1, 1) eq "\x00" ;
 
@@ -75,7 +75,7 @@ sub parseRawExtra
         return ExtraFieldError("Truncated in FEXTRA Body Section")
             if $offset + GZIP_FEXTRA_SUBFIELD_HEADER_SIZE  > $XLEN ;
 
-        my $id = substr($data, $offset, GZIP_FEXTRA_SUBFIELD_ID_SIZE);
+        my $id = substr($data, $offset, GZIP_FEXTRA_SUBFIELD_ID_SIZE);    
         $offset += GZIP_FEXTRA_SUBFIELD_ID_SIZE;
 
         my $subLen =  unpack("v", substr($data, $offset,
@@ -85,8 +85,8 @@ sub parseRawExtra
         return ExtraFieldError("Truncated in FEXTRA Body Section")
             if $offset + $subLen > $XLEN ;
 
-        my $bad = validateExtraFieldPair( [$id,
-                                           substr($data, $offset, $subLen)],
+        my $bad = validateExtraFieldPair( [$id, 
+                                           substr($data, $offset, $subLen)], 
                                            $strict, $gzipMode );
         return $bad if $bad ;
         push @$extraRef, [$id => substr($data, $offset, $subLen)]
@@ -95,7 +95,7 @@ sub parseRawExtra
         $offset += $subLen ;
     }
 
-
+        
     return undef ;
 }
 
@@ -112,7 +112,7 @@ sub findID
         return undef
             if $offset + GZIP_FEXTRA_SUBFIELD_HEADER_SIZE  > $XLEN ;
 
-        my $id = substr($data, $offset, GZIP_FEXTRA_SUBFIELD_ID_SIZE);
+        my $id = substr($data, $offset, GZIP_FEXTRA_SUBFIELD_ID_SIZE);    
         $offset += GZIP_FEXTRA_SUBFIELD_ID_SIZE;
 
         my $subLen =  unpack("v", substr($data, $offset,
@@ -127,7 +127,7 @@ sub findID
 
         $offset += $subLen ;
     }
-
+        
     return undef ;
 }
 
@@ -166,7 +166,7 @@ sub parseExtraField
     #                     $id2 => $data2,
     #                     ...
     #                   }
-
+    
     if ( ! ref $dataRef ) {
 
         return undef
@@ -178,7 +178,7 @@ sub parseExtraField
     my $data = $dataRef;
     my $out = '' ;
 
-    if (ref $data eq 'ARRAY') {
+    if (ref $data eq 'ARRAY') {    
         if (ref $data->[0]) {
 
             foreach my $pair (@$data) {
@@ -189,30 +189,30 @@ sub parseExtraField
                 return $bad if $bad ;
 
                 $out .= mkSubField(@$pair);
-            }
-        }
+            }   
+        }   
         else {
             return ExtraFieldError("Not even number of elements")
                 unless @$data % 2  == 0;
 
             for (my $ix = 0; $ix <= @$data -1 ; $ix += 2) {
                 my $bad = validateExtraFieldPair([$data->[$ix],
-                                                  $data->[$ix+1]],
+                                                  $data->[$ix+1]], 
                                                  $strict, $gzipMode) ;
                 return $bad if $bad ;
 
                 $out .= mkSubField($data->[$ix], $data->[$ix+1]);
-            }
+            }   
         }
-    }
-    elsif (ref $data eq 'HASH') {
+    }   
+    elsif (ref $data eq 'HASH') {    
         while (my ($id, $info) = each %$data) {
             my $bad = validateExtraFieldPair([$id, $info], $strict, $gzipMode);
             return $bad if $bad ;
 
             $out .= mkSubField($id, $info);
-        }
-    }
+        }   
+    }   
     else {
         return ExtraFieldError("Not a scalar, array ref or hash ref") ;
     }

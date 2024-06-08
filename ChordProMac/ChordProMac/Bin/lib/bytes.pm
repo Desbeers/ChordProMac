@@ -1,10 +1,7 @@
 #line 1 "<embedded>/bytes.pm"
 package bytes;
 
-use strict;
-use warnings;
-
-our $VERSION = '1.08';
+our $VERSION = '1.07';
 
 $bytes::hint_bits = 0x00000008;
 
@@ -16,7 +13,6 @@ sub unimport {
     $^H &= ~$bytes::hint_bits;
 }
 
-our $AUTOLOAD;
 sub AUTOLOAD {
     require "bytes_heavy.pl";
     goto &$AUTOLOAD if defined &$AUTOLOAD;
@@ -34,4 +30,4 @@ sub rindex ($$;$);
 1;
 __END__
 
-#line 129
+#line 125

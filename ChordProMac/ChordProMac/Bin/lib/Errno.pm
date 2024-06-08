@@ -11,10 +11,10 @@ use strict;
 
 use Config;
 "$Config{'archname'}-$Config{'osvers'}" eq
-"darwin-thread-multi-2level-23.0" or
-	die "Errno architecture (darwin-thread-multi-2level-23.0) does not match executable architecture ($Config{'archname'}-$Config{'osvers'})";
+"darwin-thread-multi-2level-21.0" or
+	die "Errno architecture (darwin-thread-multi-2level-21.0) does not match executable architecture ($Config{'archname'}-$Config{'osvers'})";
 
-our $VERSION = "1.33";
+our $VERSION = "1.30";
 $VERSION = eval $VERSION;
 our @ISA = 'Exporter';
 

@@ -1,5 +1,5 @@
 package experimental;
-$experimental::VERSION = '0.024';
+$experimental::VERSION = '0.020';
 use strict;
 use warnings;
 use version ();
@@ -26,7 +26,6 @@ my %min_version = (
 	declared_refs   => '5.26.0',
 	evalbytes       => '5.16.0',
 	fc              => '5.16.0',
-	isa             => '5.31.7',
 	lexical_topic   => '5.10.0',
 	lexical_subs    => '5.18.0',
 	postderef       => '5.20.0',
@@ -38,18 +37,16 @@ my %min_version = (
 	signatures      => '5.20.0',
 	state           => '5.10.0',
 	switch          => '5.10.0',
-	try             => '5.33.6',
 	unicode_eval    => '5.16.0',
 	unicode_strings => '5.12.0',
 );
-my %removed_in_version = (
-	array_base      => '5.29.4',
+my %max_version = (
 	autoderef       => '5.23.1',
 	lexical_topic   => '5.23.4',
 );
 
 $_ = version->new($_) for values %min_version;
-$_ = version->new($_) for values %removed_in_version;
+$_ = version->new($_) for values %max_version;
 
 my %additional = (
 	postderef     => ['postderef_qq'],
@@ -80,8 +77,8 @@ sub _enable {
 		}
 		croak "Need perl $stable or later for feature $pragma";
 	}
-	elsif ($] >= ($removed_in_version{$pragma} || 7)) {
-		croak "Experimental feature $pragma has been removed from perl in version $removed_in_version{$pragma}";
+	elsif ($] >= ($max_version{$pragma} || 7)) {
+		croak "Experimental feature $pragma has been removed from perl in version $max_version{$pragma}";
 	}
 }
 
@@ -135,7 +132,7 @@ experimental - Experimental features made easy
 
 =head1 VERSION
 
-version 0.024
+version 0.020
 
 =head1 SYNOPSIS
 
@@ -184,14 +181,6 @@ This was added in perl 5.22.0.
 
 This was added in perl 5.22.0.
 
-=item * C<declared_refs> - enables aliasing via assignment to references
-
-This was added in perl 5.26.0.
-
-=item * C<isa> - allow the use of the C<isa> infix operator
-
-This was added in perl 5.32.0.
-
 =item * C<lexical_topic> - allow the use of lexical C<$_> via C<my $_>.
 
 This was added in perl 5.10.0 and removed in perl 5.23.4.
@@ -200,13 +189,10 @@ This was added in perl 5.10.0 and removed in perl 5.23.4.
 
 This was added in 5.18.0.
 
-=item * C<postderef> - allow the use of postfix dereferencing expressions
+=item * C<postderef> - allow the use of postfix dereferencing expressions,
+including in interpolating strings
 
-This was added in perl 5.20.0, and became non-experimental (and always enabled) in 5.24.0.
-
-=item * C<postderef_qq> - allow the use of postfix dereferencing expressions inside interpolating strings
-
-This was added in perl 5.20.0, and became non-experimental (and always enabled) in 5.24.0.
+This was added in perl 5.20.0.
 
 =item * C<re_strict> - enables strict mode in regular expressions
 
@@ -266,7 +252,7 @@ be guaranteed in any way.
 
 =head1 SEE ALSO
 
-L<perlexperiment|perlexperiment> contains more information about experimental features.
+L<perlexperimental|perlexperimental> contains more information about experimental features.
 
 =head1 AUTHOR
 

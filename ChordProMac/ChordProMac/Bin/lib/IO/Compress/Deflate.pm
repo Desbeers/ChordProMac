@@ -8,16 +8,16 @@ use bytes;
 
 require Exporter ;
 
-use IO::Compress::RawDeflate 2.101 ();
-use IO::Compress::Adapter::Deflate 2.101 ;
+use IO::Compress::RawDeflate 2.084 ();
+use IO::Compress::Adapter::Deflate 2.084 ;
 
-use IO::Compress::Zlib::Constants 2.101 ;
-use IO::Compress::Base::Common  2.101 qw();
+use IO::Compress::Zlib::Constants 2.084 ;
+use IO::Compress::Base::Common  2.084 qw();
 
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $DeflateError);
 
-$VERSION = '2.102';
+$VERSION = '2.084';
 $DeflateError = '';
 
 @ISA    = qw(IO::Compress::RawDeflate Exporter);
@@ -80,7 +80,7 @@ sub mkDeflateHdr($$$;$)
     return $hdr;
 }
 
-sub mkHeader
+sub mkHeader 
 {
     my $self = shift ;
     my $param = shift ;
@@ -89,7 +89,7 @@ sub mkHeader
     my $strategy = $param->getValue('strategy');
 
     my $lflag ;
-    $level = 6
+    $level = 6 
         if $level == Z_DEFAULT_COMPRESSION ;
 
     if (ZLIB_VERNUM >= 0x1210)
@@ -118,7 +118,7 @@ sub ckParams
 {
     my $self = shift ;
     my $got = shift;
-
+    
     $got->setValue('adler32' => 1);
     return 1 ;
 }
@@ -149,7 +149,6 @@ sub getExtraParams
 
 sub getInverseClass
 {
-    no warnings 'once';
     return ('IO::Uncompress::Inflate',
                 \$IO::Uncompress::Inflate::InflateError);
 }
@@ -159,7 +158,7 @@ sub getFileInfo
     my $self = shift ;
     my $params = shift;
     my $file = shift ;
-
+    
 }
 
 
@@ -179,7 +178,7 @@ IO::Compress::Deflate - Write RFC 1950 files/buffers
     my $status = deflate $input => $output [,OPTS]
         or die "deflate failed: $DeflateError\n";
 
-    my $z = IO::Compress::Deflate->new( $output [,OPTS] )
+    my $z = new IO::Compress::Deflate $output [,OPTS]
         or die "deflate failed: $DeflateError\n";
 
     $z->print($string);
@@ -213,6 +212,7 @@ IO::Compress::Deflate - Write RFC 1950 files/buffers
     binmode $z
     fileno $z
     close $z ;
+ 
 
 =head1 DESCRIPTION
 
@@ -239,8 +239,7 @@ The functional interface needs Perl5.005 or better.
 =head2 deflate $input_filename_or_reference => $output_filename_or_reference [, OPTS]
 
 C<deflate> expects at least two parameters,
-C<$input_filename_or_reference> and C<$output_filename_or_reference>
-and zero or more optional parameters (see L</Optional Parameters>)
+C<$input_filename_or_reference> and C<$output_filename_or_reference>.
 
 =head3 The C<$input_filename_or_reference> parameter
 
@@ -253,7 +252,7 @@ It can take one of the following forms:
 
 =item A filename
 
-If the C<$input_filename_or_reference> parameter is a simple scalar, it is
+If the <$input_filename_or_reference> parameter is a simple scalar, it is
 assumed to be a filename. This file will be opened for reading and the
 input data will be read from it.
 
@@ -349,9 +348,9 @@ in C<$output_filename_or_reference> as a concatenated series of compressed data 
 
 =head2 Optional Parameters
 
-The optional parameters for the one-shot function C<deflate>
-are (for the most part) identical to those used with the OO interface defined in the
-L</"Constructor Options"> section. The exceptions are listed below
+Unless specified below, the optional parameters for C<deflate>,
+C<OPTS>, are the same as those used with the OO interface defined in the
+L</"Constructor Options"> section below.
 
 =over 5
 
@@ -419,22 +418,6 @@ Defaults to 0.
 
 =head2 Examples
 
-Here are a few example that show the capabilities of the module.
-
-=head3 Streaming
-
-This very simple command line example demonstrates the streaming capabilities of the module.
-The code reads data from STDIN, compresses it, and writes the compressed data to STDOUT.
-
-    $ echo hello world | perl -MIO::Compress::Deflate=deflate -e 'deflate \*STDIN => \*STDOUT' >output.1950
-
-The special filename "-" can be used as a standin for both C<\*STDIN> and C<\*STDOUT>,
-so the above can be rewritten as
-
-    $ echo hello world | perl -MIO::Compress::Deflate=deflate -e 'deflate "-" => "-"' >output.1950
-
-=head3 Compressing a file from the filesystem
-
 To read the contents of the file C<file1.txt> and write the compressed
 data to the file C<file1.txt.1950>.
 
@@ -446,8 +429,6 @@ data to the file C<file1.txt.1950>.
     deflate $input => "$input.1950"
         or die "deflate failed: $DeflateError\n";
 
-=head3 Reading from a Filehandle and writing to an in-memory buffer
-
 To read from an existing Perl filehandle, C<$input>, and write the
 compressed data to a buffer, C<$buffer>.
 
@@ -456,13 +437,11 @@ compressed data to a buffer, C<$buffer>.
     use IO::Compress::Deflate qw(deflate $DeflateError) ;
     use IO::File ;
 
-    my $input = IO::File->new( "<file1.txt" )
+    my $input = new IO::File "<file1.txt"
         or die "Cannot open 'file1.txt': $!\n" ;
     my $buffer ;
     deflate $input => \$buffer
         or die "deflate failed: $DeflateError\n";
-
-=head3 Compressing multiple files
 
 To compress all files in the directory "/my/home" that match "*.txt"
 and store the compressed data in the same directory
@@ -493,7 +472,7 @@ and if you want to compress each file one at a time, this will do the trick
 
 The format of the constructor for C<IO::Compress::Deflate> is shown below
 
-    my $z = IO::Compress::Deflate->new( $output [,OPTS] )
+    my $z = new IO::Compress::Deflate $output [,OPTS]
         or die "IO::Compress::Deflate failed: $DeflateError\n";
 
 It returns an C<IO::Compress::Deflate> object on success and undef on failure.
@@ -538,7 +517,7 @@ return undef.
 
 =head2 Constructor Options
 
-C<OPTS> is any combination of zero or more the following options:
+C<OPTS> is any combination of the following options:
 
 =over 5
 
@@ -913,12 +892,6 @@ See L<IO::Compress::FAQ|IO::Compress::FAQ/"Apache::GZip Revisited">
 
 See L<IO::Compress::FAQ|IO::Compress::FAQ/"Compressed files and Net::FTP">
 
-=head1 SUPPORT
-
-General feedback/questions/bug reports should be sent to
-L<https://github.com/pmqs/IO-Compress/issues> (preferred) or
-L<https://rt.cpan.org/Public/Dist/Display.html?Name=IO-Compress>.
-
 =head1 SEE ALSO
 
 L<Compress::Zlib>, L<IO::Compress::Gzip>, L<IO::Uncompress::Gunzip>, L<IO::Uncompress::Inflate>, L<IO::Compress::RawDeflate>, L<IO::Uncompress::RawInflate>, L<IO::Compress::Bzip2>, L<IO::Uncompress::Bunzip2>, L<IO::Compress::Lzma>, L<IO::Uncompress::UnLzma>, L<IO::Compress::Xz>, L<IO::Uncompress::UnXz>, L<IO::Compress::Lzip>, L<IO::Uncompress::UnLzip>, L<IO::Compress::Lzop>, L<IO::Uncompress::UnLzop>, L<IO::Compress::Lzf>, L<IO::Uncompress::UnLzf>, L<IO::Compress::Zstd>, L<IO::Uncompress::UnZstd>, L<IO::Uncompress::AnyInflate>, L<IO::Uncompress::AnyUncompress>
@@ -952,7 +925,8 @@ See the Changes file.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (c) 2005-2021 Paul Marquess. All rights reserved.
+Copyright (c) 2005-2019 Paul Marquess. All rights reserved.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
+

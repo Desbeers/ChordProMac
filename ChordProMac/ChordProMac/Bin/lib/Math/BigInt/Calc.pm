@@ -7,7 +7,7 @@ use warnings;
 use Carp qw< carp croak >;
 use Math::BigInt::Lib;
 
-our $VERSION = '1.999818';
+our $VERSION = '1.999816';
 
 our @ISA = ('Math::BigInt::Lib');
 
@@ -35,6 +35,9 @@ our @ISA = ('Math::BigInt::Lib');
 ##############################################################################
 # global constants, flags and accessory
 
+# announce that we are compatible with MBI v1.83 and up
+sub api_version () { 2; }
+
 # constants for easier life
 my ($BASE, $BASE_LEN, $RBASE, $MAX_VAL);
 my ($AND_BITS, $XOR_BITS, $OR_BITS);
@@ -47,7 +50,9 @@ sub _base_len {
 
     my ($class, $b, $int) = @_;
     if (defined $b) {
-        no warnings "redefine";
+        # avoid redefinitions
+        undef &_mul;
+        undef &_div;
 
         if ($] >= 5.008 && $int && $b > 7) {
             $BASE_LEN = $b;
@@ -398,14 +403,13 @@ sub _mul_use_mul {
     my ($c, $xv, $yv) = @_;
 
     if (@$yv == 1) {
-        # shortcut for two very short numbers (improved by Nathan Zook) works
-        # also if xv and yv are the same reference, and handles also $x == 0
+        # shortcut for two very short numbers (improved by Nathan Zook)
+        # works also if xv and yv are the same reference, and handles also $x == 0
         if (@$xv == 1) {
             if (($xv->[0] *= $yv->[0]) >= $BASE) {
-                my $rem = $xv->[0] % $BASE;
-                $xv->[1] = ($xv->[0] - $rem) * $RBASE;
-                $xv->[0] = $rem;
+                $xv->[0] = $xv->[0] - ($xv->[1] = int($xv->[0] * $RBASE)) * $BASE;
             }
+            ;
             return $xv;
         }
         # $x * 0 => 0
@@ -413,44 +417,56 @@ sub _mul_use_mul {
             @$xv = (0);
             return $xv;
         }
-
         # multiply a large number a by a single element one, so speed up
         my $y = $yv->[0];
         my $car = 0;
-        my $rem;
         foreach my $i (@$xv) {
             $i = $i * $y + $car;
-            $rem = $i % $BASE;
-            $car = ($i - $rem) * $RBASE;
-            $i = $rem;
+            $car = int($i * $RBASE);
+            $i -= $car * $BASE;
         }
         push @$xv, $car if $car != 0;
         return $xv;
     }
-
     # shortcut for result $x == 0 => result = 0
     return $xv if @$xv == 1 && $xv->[0] == 0;
 
     # since multiplying $x with $x fails, make copy in this case
-    $yv = $c->_copy($xv) if $xv == $yv;         # same references?
+    $yv = [ @$xv ] if $xv == $yv; # same references?
 
     my @prod = ();
-    my ($prod, $rem, $car, $cty, $xi, $yi);
+    my ($prod, $car, $cty, $xi, $yi);
+
     for $xi (@$xv) {
         $car = 0;
         $cty = 0;
+
+        # slow variant
+        #    for $yi (@$yv)
+        #      {
+        #      $prod = $xi * $yi + ($prod[$cty] || 0) + $car;
+        #      $prod[$cty++] =
+        #       $prod - ($car = int($prod * RBASE)) * $BASE;  # see USE_MUL
+        #      }
+        #    $prod[$cty] += $car if $car; # need really to check for 0?
+        #    $xi = shift @prod;
+
+        # faster variant
         # looping through this if $xi == 0 is silly - so optimize it away!
-        $xi = (shift(@prod) || 0), next if $xi == 0;
+        $xi = (shift @prod || 0), next if $xi == 0;
         for $yi (@$yv) {
             $prod = $xi * $yi + ($prod[$cty] || 0) + $car;
-            $rem = $prod % $BASE;
-            $car = int(($prod - $rem) * $RBASE);
-            $prod[$cty++] = $rem;
+            ##     this is actually a tad slower
+            ##        $prod = $prod[$cty]; $prod += ($car + $xi * $yi);     # no ||0 here
+            $prod[$cty++] =
+              $prod - ($car = int($prod * $RBASE)) * $BASE; # see USE_MUL
         }
-        $prod[$cty] += $car if $car;    # need really to check for 0?
-        $xi = shift(@prod) || 0;        # || 0 makes v5.005_3 happy
+        $prod[$cty] += $car if $car; # need really to check for 0?
+        $xi = shift @prod || 0;      # || 0 makes v5.005_3 happy
     }
     push @$xv, @prod;
+    # can't have leading zeros
+    #  __strip_zeros($xv);
     $xv;
 }
 
@@ -462,11 +478,11 @@ sub _mul_use_div_64 {
     my ($c, $xv, $yv) = @_;
 
     use integer;
-
     if (@$yv == 1) {
-        # shortcut for two very short numbers (improved by Nathan Zook) works
-        # also if xv and yv are the same reference, and handles also $x == 0
+        # shortcut for two small numbers, also handles $x == 0
         if (@$xv == 1) {
+            # shortcut for two very short numbers (improved by Nathan Zook)
+            # works also if xv and yv are the same reference, and handles also $x == 0
             if (($xv->[0] *= $yv->[0]) >= $BASE) {
                 $xv->[0] =
                   $xv->[0] - ($xv->[1] = $xv->[0] / $BASE) * $BASE;
@@ -478,7 +494,6 @@ sub _mul_use_div_64 {
             @$xv = (0);
             return $xv;
         }
-
         # multiply a large number a by a single element one, so speed up
         my $y = $yv->[0];
         my $car = 0;
@@ -490,12 +505,11 @@ sub _mul_use_div_64 {
         push @$xv, $car if $car != 0;
         return $xv;
     }
-
     # shortcut for result $x == 0 => result = 0
-    return $xv if @$xv == 1 && $xv->[0] == 0;
+    return $xv if ( ((@$xv == 1) && ($xv->[0] == 0)) );
 
     # since multiplying $x with $x fails, make copy in this case
-    $yv = $c->_copy($xv) if $xv == $yv;         # same references?
+    $yv = $c->_copy($xv) if $xv == $yv; # same references?
 
     my @prod = ();
     my ($prod, $car, $cty, $xi, $yi);
@@ -503,13 +517,13 @@ sub _mul_use_div_64 {
         $car = 0;
         $cty = 0;
         # looping through this if $xi == 0 is silly - so optimize it away!
-        $xi = (shift(@prod) || 0), next if $xi == 0;
+        $xi = (shift @prod || 0), next if $xi == 0;
         for $yi (@$yv) {
             $prod = $xi * $yi + ($prod[$cty] || 0) + $car;
             $prod[$cty++] = $prod - ($car = $prod / $BASE) * $BASE;
         }
-        $prod[$cty] += $car if $car;    # need really to check for 0?
-        $xi = shift(@prod) || 0;        # || 0 makes v5.005_3 happy
+        $prod[$cty] += $car if $car; # need really to check for 0?
+        $xi = shift @prod || 0;      # || 0 makes v5.005_3 happy
     }
     push @$xv, @prod;
     $xv;
@@ -522,14 +536,15 @@ sub _mul_use_div {
     my ($c, $xv, $yv) = @_;
 
     if (@$yv == 1) {
-        # shortcut for two very short numbers (improved by Nathan Zook) works
-        # also if xv and yv are the same reference, and handles also $x == 0
+        # shortcut for two small numbers, also handles $x == 0
         if (@$xv == 1) {
+            # shortcut for two very short numbers (improved by Nathan Zook)
+            # works also if xv and yv are the same reference, and handles also $x == 0
             if (($xv->[0] *= $yv->[0]) >= $BASE) {
-                my $rem = $xv->[0] % $BASE;
-                $xv->[1] = ($xv->[0] - $rem) / $BASE;
-                $xv->[0] = $rem;
+                $xv->[0] =
+                  $xv->[0] - ($xv->[1] = int($xv->[0] / $BASE)) * $BASE;
             }
+            ;
             return $xv;
         }
         # $x * 0 => 0
@@ -537,44 +552,42 @@ sub _mul_use_div {
             @$xv = (0);
             return $xv;
         }
-
         # multiply a large number a by a single element one, so speed up
         my $y = $yv->[0];
         my $car = 0;
-        my $rem;
         foreach my $i (@$xv) {
             $i = $i * $y + $car;
-            $rem = $i % $BASE;
-            $car = ($i - $rem) / $BASE;
-            $i = $rem;
+            $car = int($i / $BASE);
+            $i -= $car * $BASE;
+            # This (together with use integer;) does not work on 32-bit Perls
+            #$i = $i * $y + $car; $i -= ($car = $i / $BASE) * $BASE;
         }
         push @$xv, $car if $car != 0;
         return $xv;
     }
-
     # shortcut for result $x == 0 => result = 0
-    return $xv if @$xv == 1 && $xv->[0] == 0;
+    return $xv if ( ((@$xv == 1) && ($xv->[0] == 0)) );
 
     # since multiplying $x with $x fails, make copy in this case
-    $yv = $c->_copy($xv) if $xv == $yv;         # same references?
+    $yv = $c->_copy($xv) if $xv == $yv; # same references?
 
     my @prod = ();
-    my ($prod, $rem, $car, $cty, $xi, $yi);
+    my ($prod, $car, $cty, $xi, $yi);
     for $xi (@$xv) {
         $car = 0;
         $cty = 0;
         # looping through this if $xi == 0 is silly - so optimize it away!
-        $xi = (shift(@prod) || 0), next if $xi == 0;
+        $xi = (shift @prod || 0), next if $xi == 0;
         for $yi (@$yv) {
             $prod = $xi * $yi + ($prod[$cty] || 0) + $car;
-            $rem = $prod % $BASE;
-            $car = ($prod - $rem) / $BASE;
-            $prod[$cty++] = $rem;
+            $prod[$cty++] = $prod - ($car = int($prod / $BASE)) * $BASE;
         }
-        $prod[$cty] += $car if $car;    # need really to check for 0?
-        $xi = shift(@prod) || 0;        # || 0 makes v5.005_3 happy
+        $prod[$cty] += $car if $car; # need really to check for 0?
+        $xi = shift @prod || 0;      # || 0 makes v5.005_3 happy
     }
     push @$xv, @prod;
+    # can't have leading zeros
+    #  __strip_zeros($xv);
     $xv;
 }
 
@@ -582,19 +595,28 @@ sub _div_use_mul {
     # ref to array, ref to array, modify first array and return remainder if
     # in list context
 
+    # see comments in _div_use_div() for more explanations
+
     my ($c, $x, $yorg) = @_;
 
     # the general div algorithm here is about O(N*N) and thus quite slow, so
     # we first check for some special cases and use shortcuts to handle them.
 
+    # This works, because we store the numbers in a chunked format where each
+    # element contains 5..7 digits (depending on system).
+
     # if both numbers have only one element:
     if (@$x == 1 && @$yorg == 1) {
         # shortcut, $yorg and $x are two small numbers
-        my $rem = [ $x->[0] % $yorg->[0] ];
-        bless $rem, $c;
-        $x->[0] = ($x->[0] - $rem->[0]) / $yorg->[0];
-        return ($x, $rem) if wantarray;
-        return $x;
+        if (wantarray) {
+            my $rem = [ $x->[0] % $yorg->[0] ];
+            bless $rem, $c;
+            $x->[0] = int($x->[0] / $yorg->[0]);
+            return ($x, $rem);
+        } else {
+            $x->[0] = int($x->[0] / $yorg->[0]);
+            return $x;
+        }
     }
 
     # if x has more than one, but y has only one element:
@@ -609,120 +631,120 @@ sub _div_use_mul {
         my $b;
         while ($j-- > 0) {
             $b = $r * $BASE + $x->[$j];
+            $x->[$j] = int($b/$y);
             $r = $b % $y;
-            $x->[$j] = ($b - $r) / $y;
         }
-        pop(@$x) if @$x > 1 && $x->[-1] == 0;   # remove any trailing zero
+        pop @$x if @$x > 1 && $x->[-1] == 0; # splice up a leading zero
         return ($x, $rem) if wantarray;
         return $x;
     }
 
     # now x and y have more than one element
 
-    # check whether y has more elements than x, if so, the result is 0
+    # check whether y has more elements than x, if yet, the result will be 0
     if (@$yorg > @$x) {
         my $rem;
-        $rem = $c->_copy($x) if wantarray;      # make copy
-        @$x = 0;                                # set to 0
-        return ($x, $rem) if wantarray;         # including remainder?
-        return $x;                              # only x, which is [0] now
+        $rem = $c->_copy($x) if wantarray;    # make copy
+        @$x = 0;                        # set to 0
+        return ($x, $rem) if wantarray; # including remainder?
+        return $x;                      # only x, which is [0] now
     }
-
     # check whether the numbers have the same number of elements, in that case
     # the result will fit into one element and can be computed efficiently
     if (@$yorg == @$x) {
-        my $cmp = 0;
-        for (my $j = $#$x ; $j >= 0 ; --$j) {
-            last if $cmp = $x->[$j] - $yorg->[$j];
-        }
 
-        if ($cmp == 0) {        # x = y
-            @$x = 1;
-            return $x, $c->_zero() if wantarray;
+        # if $yorg has more digits than $x (it's leading element is longer than
+        # the one from $x), the result will also be 0:
+        if (length(int($yorg->[-1])) > length(int($x->[-1]))) {
+            my $rem = $c->_copy($x) if wantarray;        # make copy
+            @$x = 0;                            # set to 0
+            return ($x, $rem) if wantarray;     # including remainder?
             return $x;
         }
+        # now calculate $x / $yorg
+        if (length(int($yorg->[-1])) == length(int($x->[-1]))) {
+            # same length, so make full compare
 
-        if ($cmp < 0) {         # x < y
-            if (wantarray) {
-                my $rem = $c->_copy($x);
-                @$x = 0;
-                return $x, $rem;
+            my $a = 0;
+            my $j = @$x - 1;
+            # manual way (abort if unequal, good for early ne)
+            while ($j >= 0) {
+                last if ($a = $x->[$j] - $yorg->[$j]);
+                $j--;
             }
-            @$x = 0;
-            return $x;
+            # $a contains the result of the compare between X and Y
+            # a < 0: x < y, a == 0: x == y, a > 0: x > y
+            if ($a <= 0) {
+                # a = 0 => x == y => rem 0
+                # a < 0 => x < y => rem = x
+                my $rem = $a == 0 ? $c->_zero() : $c->_copy($x);
+                @$x = 0;             # if $a < 0
+                $x->[0] = 1 if $a == 0;  # $x == $y
+                return ($x, $rem) if wantarray;
+                return $x;
+            }
+            # $x >= $y, so proceed normally
         }
     }
 
     # all other cases:
 
-    my $y = $c->_copy($yorg);           # always make copy to preserve
+    my $y = $c->_copy($yorg);         # always make copy to preserve
 
-    my $tmp = $y->[-1] + 1;
-    my $rem = $BASE % $tmp;
-    my $dd  = ($BASE - $rem) / $tmp;
-    if ($dd != 1) {
-        my $car = 0;
-        for my $xi (@$x) {
+    my ($car, $bar, $prd, $dd, $xi, $yi, @q, $v2, $v1, $tmp, $q, $u2, $u1, $u0);
+
+    $car = $bar = $prd = 0;
+    if (($dd = int($BASE / ($y->[-1] + 1))) != 1) {
+        for $xi (@$x) {
             $xi = $xi * $dd + $car;
-            $xi -= ($car = int($xi * $RBASE)) * $BASE;          # see USE_MUL
+            $xi -= ($car = int($xi * $RBASE)) * $BASE; # see USE_MUL
         }
         push(@$x, $car);
         $car = 0;
-        for my $yi (@$y) {
+        for $yi (@$y) {
             $yi = $yi * $dd + $car;
-            $yi -= ($car = int($yi * $RBASE)) * $BASE;          # see USE_MUL
+            $yi -= ($car = int($yi * $RBASE)) * $BASE; # see USE_MUL
         }
     } else {
         push(@$x, 0);
     }
-
-    # @q will accumulate the final result, $q contains the current computed
-    # part of the final result
-
-    my @q = ();
-    my ($v2, $v1) = @$y[-2, -1];
+    @q = ();
+    ($v2, $v1) = @$y[-2, -1];
     $v2 = 0 unless $v2;
     while ($#$x > $#$y) {
-        my ($u2, $u1, $u0) = @$x[-3 .. -1];
+        ($u2, $u1, $u0) = @$x[-3 .. -1];
         $u2 = 0 unless $u2;
         #warn "oups v1 is 0, u0: $u0 $y->[-2] $y->[-1] l ",scalar @$y,"\n"
         # if $v1 == 0;
-        my $tmp = $u0 * $BASE + $u1;
-        my $rem = $tmp % $v1;
-        my $q = $u0 == $v1 ? $MAX_VAL : (($tmp - $rem) / $v1);
-        --$q while $v2 * $q > ($u0 * $BASE + $u1 - $q * $v1) * $BASE + $u2;
+        $q = (($u0 == $v1) ? $MAX_VAL : int(($u0 * $BASE + $u1) / $v1));
+        --$q while ($v2 * $q > ($u0 * $BASE + $u1 - $q * $v1) * $BASE + $u2);
         if ($q) {
-            my $prd;
-            my ($car, $bar) = (0, 0);
-            for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+            ($car, $bar) = (0, 0);
+            for ($yi = 0, $xi = $#$x - $#$y-1; $yi <= $#$y; ++$yi, ++$xi) {
                 $prd = $q * $y->[$yi] + $car;
-                $prd -= ($car = int($prd * $RBASE)) * $BASE;    # see USE_MUL
-                $x->[$xi] += $BASE if $bar = (($x->[$xi] -= $prd + $bar) < 0);
+                $prd -= ($car = int($prd * $RBASE)) * $BASE; # see USE_MUL
+                $x->[$xi] += $BASE if ($bar = (($x->[$xi] -= $prd + $bar) < 0));
             }
             if ($x->[-1] < $car + $bar) {
                 $car = 0;
                 --$q;
-                for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+                for ($yi = 0, $xi = $#$x - $#$y-1; $yi <= $#$y; ++$yi, ++$xi) {
                     $x->[$xi] -= $BASE
-                      if $car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE);
+                      if ($car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE));
                 }
             }
         }
         pop(@$x);
         unshift(@q, $q);
     }
-
     if (wantarray) {
         my $d = bless [], $c;
         if ($dd != 1) {
-            my $car = 0;
-            my ($prd, $rem);
-            for my $xi (reverse @$x) {
+            $car = 0;
+            for $xi (reverse @$x) {
                 $prd = $car * $BASE + $xi;
-                $rem = $prd % $dd;
-                $tmp = ($prd - $rem) / $dd;
-                $car = $rem;
-                unshift @$d, $tmp;
+                $car = $prd - ($tmp = int($prd / $dd)) * $dd; # see USE_MUL
+                unshift(@$d, $tmp);
             }
         } else {
             @$d = @$x;
@@ -740,14 +762,15 @@ sub _div_use_mul {
 sub _div_use_div_64 {
     # ref to array, ref to array, modify first array and return remainder if
     # in list context
-
-    # This version works on integers
-    use integer;
-
+    # This version works on 64 bit integers
     my ($c, $x, $yorg) = @_;
 
+    use integer;
     # the general div algorithm here is about O(N*N) and thus quite slow, so
     # we first check for some special cases and use shortcuts to handle them.
+
+    # This works, because we store the numbers in a chunked format where each
+    # element contains 5..7 digits (depending on system).
 
     # if both numbers have only one element:
     if (@$x == 1 && @$yorg == 1) {
@@ -755,14 +778,13 @@ sub _div_use_div_64 {
         if (wantarray) {
             my $rem = [ $x->[0] % $yorg->[0] ];
             bless $rem, $c;
-            $x->[0] = $x->[0] / $yorg->[0];
+            $x->[0] = int($x->[0] / $yorg->[0]);
             return ($x, $rem);
         } else {
-            $x->[0] = $x->[0] / $yorg->[0];
+            $x->[0] = int($x->[0] / $yorg->[0]);
             return $x;
         }
     }
-
     # if x has more than one, but y has only one element:
     if (@$yorg == 1) {
         my $rem;
@@ -775,67 +797,78 @@ sub _div_use_div_64 {
         my $b;
         while ($j-- > 0) {
             $b = $r * $BASE + $x->[$j];
+            $x->[$j] = int($b/$y);
             $r = $b % $y;
-            $x->[$j] = $b / $y;
         }
-        pop(@$x) if @$x > 1 && $x->[-1] == 0;   # remove any trailing zero
+        pop @$x if @$x > 1 && $x->[-1] == 0; # splice up a leading zero
         return ($x, $rem) if wantarray;
         return $x;
     }
-
     # now x and y have more than one element
 
-    # check whether y has more elements than x, if so, the result is 0
+    # check whether y has more elements than x, if yet, the result will be 0
     if (@$yorg > @$x) {
         my $rem;
-        $rem = $c->_copy($x) if wantarray;      # make copy
-        @$x = 0;                                # set to 0
-        return ($x, $rem) if wantarray;         # including remainder?
-        return $x;                              # only x, which is [0] now
+        $rem = $c->_copy($x) if wantarray;    # make copy
+        @$x = 0;                        # set to 0
+        return ($x, $rem) if wantarray; # including remainder?
+        return $x;                      # only x, which is [0] now
     }
-
     # check whether the numbers have the same number of elements, in that case
     # the result will fit into one element and can be computed efficiently
     if (@$yorg == @$x) {
-        my $cmp = 0;
-        for (my $j = $#$x ; $j >= 0 ; --$j) {
-            last if $cmp = $x->[$j] - $yorg->[$j];
-        }
-
-        if ($cmp == 0) {        # x = y
-            @$x = 1;
-            return $x, $c->_zero() if wantarray;
+        my $rem;
+        # if $yorg has more digits than $x (it's leading element is longer than
+        # the one from $x), the result will also be 0:
+        if (length(int($yorg->[-1])) > length(int($x->[-1]))) {
+            $rem = $c->_copy($x) if wantarray;     # make copy
+            @$x = 0;                          # set to 0
+            return ($x, $rem) if wantarray; # including remainder?
             return $x;
         }
+        # now calculate $x / $yorg
 
-        if ($cmp < 0) {         # x < y
-            if (wantarray) {
-                my $rem = $c->_copy($x);
-                @$x = 0;
-                return $x, $rem;
+        if (length(int($yorg->[-1])) == length(int($x->[-1]))) {
+            # same length, so make full compare
+
+            my $a = 0;
+            my $j = @$x - 1;
+            # manual way (abort if unequal, good for early ne)
+            while ($j >= 0) {
+                last if ($a = $x->[$j] - $yorg->[$j]);
+                $j--;
             }
-            @$x = 0;
-            return $x;
+            # $a contains the result of the compare between X and Y
+            # a < 0: x < y, a == 0: x == y, a > 0: x > y
+            if ($a <= 0) {
+                $rem = $c->_zero();                  # a = 0 => x == y => rem 0
+                $rem = $c->_copy($x) if $a != 0;       # a < 0 => x < y => rem = x
+                @$x = 0;                       # if $a < 0
+                $x->[0] = 1 if $a == 0;        # $x == $y
+                return ($x, $rem) if wantarray; # including remainder?
+                return $x;
+            }
+            # $x >= $y, so proceed normally
         }
     }
 
     # all other cases:
 
-    my $y = $c->_copy($yorg);           # always make copy to preserve
+    my $y = $c->_copy($yorg);         # always make copy to preserve
 
-    my $tmp;
-    my $dd = $BASE / ($y->[-1] + 1);
-    if ($dd != 1) {
-        my $car = 0;
-        for my $xi (@$x) {
+    my ($car, $bar, $prd, $dd, $xi, $yi, @q, $v2, $v1, $tmp, $q, $u2, $u1, $u0);
+
+    $car = $bar = $prd = 0;
+    if (($dd = int($BASE / ($y->[-1] + 1))) != 1) {
+        for $xi (@$x) {
             $xi = $xi * $dd + $car;
-            $xi -= ($car = $xi / $BASE) * $BASE;
+            $xi -= ($car = int($xi / $BASE)) * $BASE;
         }
         push(@$x, $car);
         $car = 0;
-        for my $yi (@$y) {
+        for $yi (@$y) {
             $yi = $yi * $dd + $car;
-            $yi -= ($car = $yi / $BASE) * $BASE;
+            $yi -= ($car = int($yi / $BASE)) * $BASE;
         }
     } else {
         push(@$x, 0);
@@ -844,48 +877,43 @@ sub _div_use_div_64 {
     # @q will accumulate the final result, $q contains the current computed
     # part of the final result
 
-    my @q = ();
-    my ($v2, $v1) = @$y[-2, -1];
+    @q = ();
+    ($v2, $v1) = @$y[-2, -1];
     $v2 = 0 unless $v2;
     while ($#$x > $#$y) {
-        my ($u2, $u1, $u0) = @$x[-3 .. -1];
+        ($u2, $u1, $u0) = @$x[-3..-1];
         $u2 = 0 unless $u2;
         #warn "oups v1 is 0, u0: $u0 $y->[-2] $y->[-1] l ",scalar @$y,"\n"
         # if $v1 == 0;
-        my $tmp = $u0 * $BASE + $u1;
-        my $rem = $tmp % $v1;
-        my $q = $u0 == $v1 ? $MAX_VAL : (($tmp - $rem) / $v1);
-        --$q while $v2 * $q > ($u0 * $BASE + $u1 - $q * $v1) * $BASE + $u2;
+        $q = (($u0 == $v1) ? $MAX_VAL : int(($u0 * $BASE + $u1) / $v1));
+        --$q while ($v2 * $q > ($u0 * $BASE +$ u1- $q*$v1) * $BASE + $u2);
         if ($q) {
-            my $prd;
-            my ($car, $bar) = (0, 0);
-            for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+            ($car, $bar) = (0, 0);
+            for ($yi = 0, $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
                 $prd = $q * $y->[$yi] + $car;
                 $prd -= ($car = int($prd / $BASE)) * $BASE;
-                $x->[$xi] += $BASE if $bar = (($x->[$xi] -= $prd + $bar) < 0);
+                $x->[$xi] += $BASE if ($bar = (($x->[$xi] -= $prd + $bar) < 0));
             }
             if ($x->[-1] < $car + $bar) {
                 $car = 0;
                 --$q;
-                for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+                for ($yi = 0, $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
                     $x->[$xi] -= $BASE
-                      if $car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE);
+                      if ($car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE));
                 }
             }
         }
         pop(@$x);
         unshift(@q, $q);
     }
-
     if (wantarray) {
         my $d = bless [], $c;
         if ($dd != 1) {
-            my $car = 0;
-            my $prd;
-            for my $xi (reverse @$x) {
+            $car = 0;
+            for $xi (reverse @$x) {
                 $prd = $car * $BASE + $xi;
-                $car = $prd - ($tmp = $prd / $dd) * $dd;
-                unshift @$d, $tmp;
+                $car = $prd - ($tmp = int($prd / $dd)) * $dd;
+                unshift(@$d, $tmp);
             }
         } else {
             @$d = @$x;
@@ -903,22 +931,27 @@ sub _div_use_div_64 {
 sub _div_use_div {
     # ref to array, ref to array, modify first array and return remainder if
     # in list context
-
     my ($c, $x, $yorg) = @_;
 
     # the general div algorithm here is about O(N*N) and thus quite slow, so
     # we first check for some special cases and use shortcuts to handle them.
 
+    # This works, because we store the numbers in a chunked format where each
+    # element contains 5..7 digits (depending on system).
+
     # if both numbers have only one element:
     if (@$x == 1 && @$yorg == 1) {
         # shortcut, $yorg and $x are two small numbers
-        my $rem = [ $x->[0] % $yorg->[0] ];
-        bless $rem, $c;
-        $x->[0] = ($x->[0] - $rem->[0]) / $yorg->[0];
-        return ($x, $rem) if wantarray;
-        return $x;
+        if (wantarray) {
+            my $rem = [ $x->[0] % $yorg->[0] ];
+            bless $rem, $c;
+            $x->[0] = int($x->[0] / $yorg->[0]);
+            return ($x, $rem);
+        } else {
+            $x->[0] = int($x->[0] / $yorg->[0]);
+            return $x;
+        }
     }
-
     # if x has more than one, but y has only one element:
     if (@$yorg == 1) {
         my $rem;
@@ -931,72 +964,80 @@ sub _div_use_div {
         my $b;
         while ($j-- > 0) {
             $b = $r * $BASE + $x->[$j];
+            $x->[$j] = int($b/$y);
             $r = $b % $y;
-            $x->[$j] = ($b - $r) / $y;
         }
-        pop(@$x) if @$x > 1 && $x->[-1] == 0;   # remove any trailing zero
+        pop @$x if @$x > 1 && $x->[-1] == 0; # splice up a leading zero
         return ($x, $rem) if wantarray;
         return $x;
     }
-
     # now x and y have more than one element
 
-    # check whether y has more elements than x, if so, the result is 0
+    # check whether y has more elements than x, if yet, the result will be 0
     if (@$yorg > @$x) {
         my $rem;
-        $rem = $c->_copy($x) if wantarray;      # make copy
-        @$x = 0;                                # set to 0
-        return ($x, $rem) if wantarray;         # including remainder?
-        return $x;                              # only x, which is [0] now
+        $rem = $c->_copy($x) if wantarray;    # make copy
+        @$x = 0;                        # set to 0
+        return ($x, $rem) if wantarray; # including remainder?
+        return $x;                      # only x, which is [0] now
     }
-
     # check whether the numbers have the same number of elements, in that case
     # the result will fit into one element and can be computed efficiently
     if (@$yorg == @$x) {
-        my $cmp = 0;
-        for (my $j = $#$x ; $j >= 0 ; --$j) {
-            last if $cmp = $x->[$j] - $yorg->[$j];
-        }
-
-        if ($cmp == 0) {        # x = y
-            @$x = 1;
-            return $x, $c->_zero() if wantarray;
+        my $rem;
+        # if $yorg has more digits than $x (it's leading element is longer than
+        # the one from $x), the result will also be 0:
+        if (length(int($yorg->[-1])) > length(int($x->[-1]))) {
+            $rem = $c->_copy($x) if wantarray;        # make copy
+            @$x = 0;                            # set to 0
+            return ($x, $rem) if wantarray;     # including remainder?
             return $x;
         }
+        # now calculate $x / $yorg
 
-        if ($cmp < 0) {         # x < y
-            if (wantarray) {
-                my $rem = $c->_copy($x);
-                @$x = 0;
-                return $x, $rem;
+        if (length(int($yorg->[-1])) == length(int($x->[-1]))) {
+            # same length, so make full compare
+
+            my $a = 0;
+            my $j = @$x - 1;
+            # manual way (abort if unequal, good for early ne)
+            while ($j >= 0) {
+                last if ($a = $x->[$j] - $yorg->[$j]);
+                $j--;
             }
-            @$x = 0;
-            return $x;
+            # $a contains the result of the compare between X and Y
+            # a < 0: x < y, a == 0: x == y, a > 0: x > y
+            if ($a <= 0) {
+                $rem = $c->_zero();                   # a = 0 => x == y => rem 0
+                $rem = $c->_copy($x) if $a != 0;      # a < 0 => x < y => rem = x
+                @$x = 0;
+                $x->[0] = 0;                    # if $a < 0
+                $x->[0] = 1 if $a == 0;         # $x == $y
+                return ($x, $rem) if wantarray; # including remainder?
+                return $x;
+            }
+            # $x >= $y, so proceed normally
+
         }
     }
 
     # all other cases:
 
-    my $y = $c->_copy($yorg);           # always make copy to preserve
+    my $y = $c->_copy($yorg);         # always make copy to preserve
 
-    my $tmp = $y->[-1] + 1;
-    my $rem = $BASE % $tmp;
-    my $dd  = ($BASE - $rem) / $tmp;
-    if ($dd != 1) {
-        my $car = 0;
-        for my $xi (@$x) {
+    my ($car, $bar, $prd, $dd, $xi, $yi, @q, $v2, $v1, @d, $tmp, $q, $u2, $u1, $u0);
+
+    $car = $bar = $prd = 0;
+    if (($dd = int($BASE / ($y->[-1] + 1))) != 1) {
+        for $xi (@$x) {
             $xi = $xi * $dd + $car;
-            $rem = $xi % $BASE;
-            $car = ($xi - $rem) / $BASE;
-            $xi = $rem;
+            $xi -= ($car = int($xi / $BASE)) * $BASE;
         }
         push(@$x, $car);
         $car = 0;
-        for my $yi (@$y) {
+        for $yi (@$y) {
             $yi = $yi * $dd + $car;
-            $rem = $yi % $BASE;
-            $car = ($yi - $rem) / $BASE;
-            $yi = $rem;
+            $yi -= ($car = int($yi / $BASE)) * $BASE;
         }
     } else {
         push(@$x, 0);
@@ -1005,52 +1046,43 @@ sub _div_use_div {
     # @q will accumulate the final result, $q contains the current computed
     # part of the final result
 
-    my @q = ();
-    my ($v2, $v1) = @$y[-2, -1];
+    @q = ();
+    ($v2, $v1) = @$y[-2, -1];
     $v2 = 0 unless $v2;
     while ($#$x > $#$y) {
-        my ($u2, $u1, $u0) = @$x[-3 .. -1];
+        ($u2, $u1, $u0) = @$x[-3..-1];
         $u2 = 0 unless $u2;
         #warn "oups v1 is 0, u0: $u0 $y->[-2] $y->[-1] l ",scalar @$y,"\n"
         # if $v1 == 0;
-        my $tmp = $u0 * $BASE + $u1;
-        my $rem = $tmp % $v1;
-        my $q = $u0 == $v1 ? $MAX_VAL : (($tmp - $rem) / $v1);
-        --$q while $v2 * $q > ($u0 * $BASE + $u1 - $q * $v1) * $BASE + $u2;
+        $q = (($u0 == $v1) ? $MAX_VAL : int(($u0 * $BASE + $u1) / $v1));
+        --$q while ($v2 * $q > ($u0 * $BASE + $u1 - $q * $v1) * $BASE + $u2);
         if ($q) {
-            my $prd;
-            my ($car, $bar) = (0, 0);
-            for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+            ($car, $bar) = (0, 0);
+            for ($yi = 0, $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
                 $prd = $q * $y->[$yi] + $car;
-                $rem = $prd % $BASE;
-                $car = ($prd - $rem) / $BASE;
-                $prd -= $car * $BASE;
-                $x->[$xi] += $BASE if $bar = (($x->[$xi] -= $prd + $bar) < 0);
+                $prd -= ($car = int($prd / $BASE)) * $BASE;
+                $x->[$xi] += $BASE if ($bar = (($x->[$xi] -= $prd + $bar) < 0));
             }
             if ($x->[-1] < $car + $bar) {
                 $car = 0;
                 --$q;
-                for (my $yi = 0, my $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
+                for ($yi = 0, $xi = $#$x - $#$y - 1; $yi <= $#$y; ++$yi, ++$xi) {
                     $x->[$xi] -= $BASE
-                      if $car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE);
+                      if ($car = (($x->[$xi] += $y->[$yi] + $car) >= $BASE));
                 }
             }
         }
         pop(@$x);
         unshift(@q, $q);
     }
-
     if (wantarray) {
         my $d = bless [], $c;
         if ($dd != 1) {
-            my $car = 0;
-            my ($prd, $rem);
-            for my $xi (reverse @$x) {
+            $car = 0;
+            for $xi (reverse @$x) {
                 $prd = $car * $BASE + $xi;
-                $rem = $prd % $dd;
-                $tmp = ($prd - $rem) / $dd;
-                $car = $rem;
-                unshift @$d, $tmp;
+                $car = $prd - ($tmp = int($prd / $dd)) * $dd;
+                unshift(@$d, $tmp);
             }
         } else {
             @$d = @$x;
@@ -1353,7 +1385,7 @@ sub _rsft {
             $dst++;
         }
         splice(@$x, $dst) if $dst > 0;       # kill left-over array elems
-        pop(@$x) if $x->[-1] == 0 && @$x > 1; # kill last element if 0
+        pop @$x if $x->[-1] == 0 && @$x > 1; # kill last element if 0
     }                                        # else rem == 0
     $x;
 }
@@ -1361,64 +1393,49 @@ sub _rsft {
 sub _lsft {
     my ($c, $x, $n, $b) = @_;
 
-    return $x if $c->_is_zero($x) || $c->_is_zero($n);
+    return $x if $c->_is_zero($x);
 
-    # For backwards compatibility, allow the base $b to be a scalar.
+    # Handle the special case when the base is a power of 10. Don't check
+    # whether log($b)/log(10) is an integer, because log(1000)/log(10) is not
+    # exactly 3.
 
-    $b = $c->_new($b) unless ref $b;
+    my $log10 = sprintf "%.0f", log($b) / log(10);
+    if ($b == 10 ** $log10) {
+        $b = 10;
+        $n = $c->_mul($n, $c->_new($log10));
 
-    # If the base is a power of 10, use shifting, since the internal
-    # representation is in base 10eX.
-
-    my $bstr = $c->_str($b);
-    if ($bstr =~ /^1(0+)\z/) {
-
-        # Adjust $n so that we're shifting in base 10. Do this by multiplying
-        # $n by the base 10 logarithm of $b: $b ** $n = 10 ** (log10($b) * $n).
-
-        my $log10b = length($1);
-        $n = $c->_mul($c->_new($log10b), $n);
-        $n = $c->_num($n);              # shift-len as normal int
-
-        # $q is the number of places to shift the elements within the array,
-        # and $r is the number of places to shift the values within the
-        # elements.
-
-        my $r = $n % $BASE_LEN;
-        my $q = ($n - $r) / $BASE_LEN;
-
-        # If we must shift the values within the elements ...
-
-        if ($r) {
-            my $i = @$x;                # index
-            $x->[$i] = 0;               # initialize most significant element
-            my $z = '0' x $BASE_LEN;
-            my $vd;
-            while ($i >= 0) {
-                $vd = $x->[$i];
-                $vd = $z . $vd;
-                $vd = substr($vd, $r - $BASE_LEN, $BASE_LEN - $r);
-                $vd .= $i > 0 ? substr($z . $x->[$i - 1], -$BASE_LEN, $r)
-                              : '0' x $r;
-                $vd = substr($vd, -$BASE_LEN, $BASE_LEN) if length($vd) > $BASE_LEN;
-                $x->[$i] = int($vd);    # e.g., "0...048" -> 48 etc.
-                $i--;
-            }
-
-            pop(@$x) if $x->[-1] == 0;  # if most significant element is zero
+        # shortcut (faster) for shifting by 10) since we are in base 10eX
+        # multiples of $BASE_LEN:
+        my $src = @$x;                      # source
+        my $len = $c->_num($n);             # shift-len as normal int
+        my $rem = $len % $BASE_LEN;         # remainder to shift
+        my $dst = $src + int($len / $BASE_LEN); # destination
+        my $vd;                                 # further speedup
+        $x->[$src] = 0;                         # avoid first ||0 for speed
+        my $z = '0' x $BASE_LEN;
+        while ($src >= 0) {
+            $vd = $x->[$src];
+            $vd = $z . $vd;
+            $vd = substr($vd, -$BASE_LEN + $rem, $BASE_LEN - $rem);
+            $vd .= $src > 0 ? substr($z . $x->[$src - 1], -$BASE_LEN, $rem)
+              : '0' x $rem;
+            $vd = substr($vd, -$BASE_LEN, $BASE_LEN) if length($vd) > $BASE_LEN;
+            $x->[$dst] = int($vd);
+            $dst--;
+            $src--;
         }
-
-        # If we must shift the elements within the array ...
-
-        if ($q) {
-            unshift @$x, (0) x $q;
+        # set lowest parts to 0
+        while ($dst >= 0) {
+            $x->[$dst--] = 0;
         }
-
+        # fix spurious last zero element
+        splice @$x, -1 if $x->[-1] == 0;
+        return $x;
     } else {
-        $x = $c->_mul($x, $c->_pow($b, $n));
+        $b = $c->_new($b);
+        #print $c->_str($b);
+        return $c->_mul($x, $c->_pow($b, $n));
     }
-
-    return $x;
 }
 
 sub _pow {

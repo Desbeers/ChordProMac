@@ -9,24 +9,24 @@ use bytes;
 
 require Exporter ;
 
-use IO::Compress::RawDeflate 2.101 () ;
-use IO::Compress::Adapter::Deflate 2.101 ;
+use IO::Compress::RawDeflate 2.084 () ; 
+use IO::Compress::Adapter::Deflate 2.084 ;
 
-use IO::Compress::Base::Common  2.101 qw(:Status );
-use IO::Compress::Gzip::Constants 2.101 ;
-use IO::Compress::Zlib::Extra 2.101 ;
+use IO::Compress::Base::Common  2.084 qw(:Status );
+use IO::Compress::Gzip::Constants 2.084 ;
+use IO::Compress::Zlib::Extra 2.084 ;
 
 BEGIN
 {
-    if (defined &utf8::downgrade )
+    if (defined &utf8::downgrade ) 
       { *noUTF8 = \&utf8::downgrade }
     else
-      { *noUTF8 = sub {} }
+      { *noUTF8 = sub {} }  
 }
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $GzipError);
 
-$VERSION = '2.102';
+$VERSION = '2.084';
 $GzipError = '' ;
 
 @ISA    = qw(IO::Compress::RawDeflate Exporter);
@@ -66,7 +66,7 @@ sub getExtraParams
     return (
             # zlib behaviour
             $self->getZlibParams(),
-
+           
             # Gzip header fields
             'minimal'   => [IO::Compress::Base::Common::Parse_boolean,   0],
             'comment'   => [IO::Compress::Base::Common::Parse_any,       undef],
@@ -106,7 +106,7 @@ sub ckParams
         # Also check that they only contain ISO 8859-1 chars.
         if ($got->parsed('name') && defined $got->getValue('name')) {
             my $name = $got->getValue('name');
-
+                
             return $self->saveErrorString(undef, "Null Character found in Name",
                                                 Z_DATA_ERROR)
                 if $strict && $name =~ /\x00/ ;
@@ -133,16 +133,16 @@ sub ckParams
 
             return $self->saveErrorString(undef, "OS_Code must be between 0 and 255, got '$value'")
                 if $value < 0 || $value > 255 ;
-
+            
         }
 
         # gzip only supports Deflate at present
         $got->setValue('method' => Z_DEFLATED) ;
 
         if ( ! $got->parsed('extraflags')) {
-            $got->setValue('extraflags' => 2)
+            $got->setValue('extraflags' => 2) 
                 if $got->getValue('level') == Z_BEST_COMPRESSION ;
-            $got->setValue('extraflags' => 4)
+            $got->setValue('extraflags' => 4) 
                 if $got->getValue('level') == Z_BEST_SPEED ;
         }
 
@@ -162,13 +162,12 @@ sub ckParams
 sub mkTrailer
 {
     my $self = shift ;
-    return pack("V V", *$self->{Compress}->crc32(),
+    return pack("V V", *$self->{Compress}->crc32(), 
                        *$self->{UnCompSize}->get32bit());
 }
 
 sub getInverseClass
 {
-    no warnings 'once';
     return ('IO::Uncompress::Gunzip',
                 \$IO::Uncompress::Gunzip::GunzipError);
 }
@@ -186,7 +185,7 @@ sub getFileInfo
     $params->setValue('name' => $filename)
         if ! $params->parsed('name') ;
 
-    $params->setValue('time' => $defaultTime)
+    $params->setValue('time' => $defaultTime) 
         if ! $params->parsed('time') ;
 }
 
@@ -209,7 +208,7 @@ sub mkHeader
     $flags |= GZIP_FLG_FEXTRA   if $param->wantValue('extrafield') ;
     $flags |= GZIP_FLG_FNAME    if $param->wantValue('name') ;
     $flags |= GZIP_FLG_FCOMMENT if $param->wantValue('comment') ;
-
+    
     # MTIME
     my $time = $param->valueOrDefault('time', GZIP_MTIME_DEFAULT) ;
 
@@ -220,7 +219,7 @@ sub mkHeader
     my $os_code = $param->valueOrDefault('os_code', GZIP_OS_DEFAULT) ;
 
 
-    my $out = pack("C4 V C C",
+    my $out = pack("C4 V C C", 
             GZIP_ID1,   # ID1
             GZIP_ID2,   # ID2
             $method,    # Compression Method
@@ -242,7 +241,7 @@ sub mkHeader
         $name =~ s/\x00.*$//;
         $out .= $name ;
         # Terminate the filename with NULL unless it already is
-        $out .= GZIP_NULL_BYTE
+        $out .= GZIP_NULL_BYTE 
             if !length $name or
                substr($name, 1, -1) ne GZIP_NULL_BYTE ;
     }
@@ -259,7 +258,7 @@ sub mkHeader
     }
 
     # HEADER CRC
-    $out .= pack("v", Compress::Raw::Zlib::crc32($out) & 0x00FF )
+    $out .= pack("v", Compress::Raw::Zlib::crc32($out) & 0x00FF ) 
         if $param->getValue('headercrc') ;
 
     noUTF8($out);
@@ -272,8 +271,8 @@ sub mkFinalTrailer
     return '';
 }
 
-1;
+1; 
 
 __END__
 
-#line 1271
+#line 1245
