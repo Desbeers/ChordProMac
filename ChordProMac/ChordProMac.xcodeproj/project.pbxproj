@@ -47,7 +47,7 @@
 		D7723A6B2C0348590031CD0C /* DocumentFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A6A2C0348590031CD0C /* DocumentFocus.swift */; };
 		D7723A6F2C0354250031CD0C /* QuickLookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A6E2C0354250031CD0C /* QuickLookView.swift */; };
 		D774F2812C05E07E00CC4E3E /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2802C05E07E00CC4E3E /* Note.swift */; };
-		D774F2832C05E18B00CC4E3E /* Accents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2822C05E18B00CC4E3E /* Accents.swift */; };
+		D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2822C05E18B00CC4E3E /* Accidentals.swift */; };
 		D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2842C05F2B900CC4E3E /* StatusView.swift */; };
 		D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2862C05F6CB00CC4E3E /* Notation.swift */; };
 /* End PBXBuildFile section */
@@ -96,7 +96,7 @@
 		D7723A6A2C0348590031CD0C /* DocumentFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentFocus.swift; sourceTree = "<group>"; };
 		D7723A6E2C0354250031CD0C /* QuickLookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookView.swift; sourceTree = "<group>"; };
 		D774F2802C05E07E00CC4E3E /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
-		D774F2822C05E18B00CC4E3E /* Accents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accents.swift; sourceTree = "<group>"; };
+		D774F2822C05E18B00CC4E3E /* Accidentals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accidentals.swift; sourceTree = "<group>"; };
 		D774F2842C05F2B900CC4E3E /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		D774F2862C05F6CB00CC4E3E /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -127,7 +127,7 @@
 			isa = PBXGroup;
 			children = (
 				D75E5FFE2C04FEF00083F96F /* Template.swift */,
-				D774F2822C05E18B00CC4E3E /* Accents.swift */,
+				D774F2822C05E18B00CC4E3E /* Accidentals.swift */,
 				D774F2802C05E07E00CC4E3E /* Note.swift */,
 				D774F2862C05F6CB00CC4E3E /* Notation.swift */,
 				D72EA32E2C0B2E9400B1BA93 /* CustomFile.swift */,
@@ -354,7 +354,7 @@
 				D75E5FFC2C04D3620083F96F /* Logger.swift in Sources */,
 				D72EA3382C0B8E2C00B1BA93 /* HelpButtonsView.swift in Sources */,
 				D7723A652C0336910031CD0C /* ExportDocument.swift in Sources */,
-				D774F2832C05E18B00CC4E3E /* Accents.swift in Sources */,
+				D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */,
 				D72EA33E2C0C5C3F00B1BA93 /* LocalizedAlertError.swift in Sources */,
 				D7484C0F2C18179D00D47D1A /* MacEditorView.swift in Sources */,
 				D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */,

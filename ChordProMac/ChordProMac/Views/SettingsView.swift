@@ -181,9 +181,9 @@ extension SettingsView {
                             /// Give it a random ID to avoid random crashes on macOS Monterey
                             .id(UUID())
                         }
-                        Picker("Accents:", selection: $appState.settings.transposeAccents) {
-                            ForEach(Accents.allCases, id: \.self) { accents in
-                                Text(accents.rawValue)
+                        Picker("Accidentals:", selection: $appState.settings.transposeAccidentals) {
+                            ForEach(Accidentals.allCases, id: \.self) { accidental in
+                                Text(accidental.rawValue)
                             }
                         }
                         /// Give it a random ID to avoid random crashes on macOS Monterey
