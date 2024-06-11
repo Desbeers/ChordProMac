@@ -15,6 +15,7 @@ struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
     @StateObject private var sceneState = SceneState()
+
     /// The font for the editor
     var nsFont: NSFont {
         return appState.settings.fontStyle.nsFont(size: appState.settings.fontSize)
@@ -22,20 +23,37 @@ struct ContentView: View {
     /// The body of the `View`
     var body: some View {
         VStack {
-            MacEditorView(
-                text: $document.text,
-                font: nsFont
-            )
-            /// - Note: Below is needed or else new files to not 'quick-view' for some unknown reason...
-            .disabled(sceneState.quickLookURL != nil)
+            HStack {
+                MacEditorView(
+                    text: $document.text,
+                    font: nsFont
+                )
+                if let quickView = sceneState.quickLookURL {
+                    QuickLookView.Preview(url: quickView)
+                        .id(sceneState.quickLookID)
+                        .overlay(alignment: .top) {
+                            if sceneState.quickLookOutdated {
+                                QuickLookView.UpdatePreview(document: document)
+
+                            }
+                        }
+                }
+            }
             StatusView()
                 .padding(.horizontal)
         }
-        .quickLookPreview($sceneState.quickLookURL)
+        .animation(.default, value: sceneState.quickLookURL)
+        .animation(.default, value: sceneState.quickLookOutdated)
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
+        .onChange(of: document.text) { _ in
+            if sceneState.quickLookURL != nil {
+                sceneState.quickLookOutdated = true
+            }
+        }
         .toolbar {
             ExportSongView(label: "Export as PDF")
-            QuickLookView(document: document)
+            QuickLookView(label: "Show Preview", document: document)
+                .labelStyle(.iconOnly)
         }
         .sheet(isPresented: $sceneState.showLog) {
             LogView()
@@ -46,11 +64,3 @@ struct ContentView: View {
     }
 }
 
-///  Work-around the smart quote issue
-extension NSTextView {
-    open override var frame: CGRect {
-        didSet {
-            self.isAutomaticQuoteSubstitutionEnabled = false
-        }
-    }
-}

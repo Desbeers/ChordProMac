@@ -14,6 +14,8 @@ extension MacEditorView {
     static let directiveRegex = try! NSRegularExpression(pattern: "\\{.*\\}")
     /// The regex for comments
     static let commentsRegex = try! NSRegularExpression(pattern: "#.*\\s")
+    /// The regex for pango
+    static let pangoRegex = try! NSRegularExpression(pattern: "\\<.*\\>")
     /// The line height multiplier for the editor text
     static let lineHeightMultiple: Double = 1.2
     /// The style of a paragraph in the editor
@@ -57,6 +59,15 @@ extension MacEditorView {
                     value: NSColor.systemRed,
                     range: chord.range
                 )
+        }
+        /// Highlight pango
+        let pangos = pangoRegex.matches(in: text, options: [], range: range)
+        pangos.forEach { pango in
+            view.textStorage?.addAttribute(
+                .foregroundColor,
+                value: NSColor.systemTeal,
+                range: pango.range
+            )
         }
         /// Highlight comments
         let comments = commentsRegex.matches(in: text, options: [], range: range)

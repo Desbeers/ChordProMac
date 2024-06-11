@@ -115,7 +115,7 @@ extension Terminal {
     ///   - sceneState: The current ``SceneState``
     /// - Returns: The PDF as `Data` and the status as ``AppError``
     static func exportDocument(
-        document: ChordProDocument,
+        text: String,
         settings: AppSettings,
         sceneState: SceneState
     ) async throws -> (data: Data, status: AppError) {
@@ -131,7 +131,7 @@ extension Terminal {
         /// Write the song to the source URL
         /// - Note: We don't read the file URL directly because it might not be saved yet
         do {
-            try document.text.write(to: sceneState.sourceURL, atomically: true, encoding: String.Encoding.utf8)
+            try text.write(to: sceneState.sourceURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
             throw AppError.writeDocumentError
         }
