@@ -15,14 +15,19 @@ struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
     @StateObject private var sceneState = SceneState()
+    /// The font for the editor
+    var nsFont: NSFont {
+        return appState.settings.fontStyle.nsFont(size: appState.settings.fontSize)
+    }
     /// The body of the `View`
     var body: some View {
         VStack {
-            /// - Note: `TextEditor` is very (very) limited this is a compromise
-            TextEditor(text: $document.text)
-                .font(appState.settings.fontStyle.font(size: appState.settings.fontSize))
-                .padding(4)
-                .background(Color(nsColor: .textBackgroundColor))
+            MacEditorView(
+                text: $document.text,
+                font: nsFont
+            )
+            /// - Note: Below is needed or else new files to not 'quick-view' for some unknown reason...
+            .disabled(sceneState.quickLookURL != nil)
             StatusView()
                 .padding(.horizontal)
         }
@@ -38,5 +43,14 @@ struct ContentView: View {
         .environmentObject(sceneState)
         /// Give the application access to the scene.
         .focusedSceneValue(\.sceneState, sceneState)
+    }
+}
+
+///  Work-around the smart quote issue
+extension NSTextView {
+    open override var frame: CGRect {
+        didSet {
+            self.isAutomaticQuoteSubstitutionEnabled = false
+        }
     }
 }

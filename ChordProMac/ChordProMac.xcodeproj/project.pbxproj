@@ -28,6 +28,8 @@
 		D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CC2C04725D00291BE7 /* AppSettings.swift */; };
 		D74002CF2C04728600291BE7 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CE2C04728600291BE7 /* AppState.swift */; };
 		D74002D12C049B1800291BE7 /* Cache.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002D02C049B1800291BE7 /* Cache.swift */; };
+		D7484C0F2C18179D00D47D1A /* MacEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7484C0E2C18179D00D47D1A /* MacEditorView.swift */; };
+		D7484C162C18426A00D47D1A /* MacEditorView+highlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */; };
 		D75E5FFC2C04D3620083F96F /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75E5FFB2C04D3620083F96F /* Logger.swift */; };
 		D75E5FFF2C04FEF00083F96F /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75E5FFE2C04FEF00083F96F /* Template.swift */; };
 		D75F410E2C0EFDA200F0413B /* TaskMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */; };
@@ -72,6 +74,8 @@
 		D74002CC2C04725D00291BE7 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		D74002CE2C04728600291BE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
 		D74002D02C049B1800291BE7 /* Cache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Cache.swift; sourceTree = "<group>"; };
+		D7484C0E2C18179D00D47D1A /* MacEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEditorView.swift; sourceTree = "<group>"; };
+		D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacEditorView+highlight.swift"; sourceTree = "<group>"; };
 		D75E5FFB2C04D3620083F96F /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		D75E5FFE2C04FEF00083F96F /* Template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template.swift; sourceTree = "<group>"; };
 		D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskMenuView.swift; sourceTree = "<group>"; };
@@ -190,6 +194,8 @@
 			isa = PBXGroup;
 			children = (
 				D7723A502C0326120031CD0C /* ContentView.swift */,
+				D7484C0E2C18179D00D47D1A /* MacEditorView.swift */,
+				D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */,
 				D774F2842C05F2B900CC4E3E /* StatusView.swift */,
 				D7723A6E2C0354250031CD0C /* QuickLookView.swift */,
 				D7723A682C03442F0031CD0C /* ExportSongView.swift */,
@@ -231,6 +237,8 @@
 			dependencies = (
 			);
 			name = ChordProMac;
+			packageProductDependencies = (
+			);
 			productName = ChordProMac;
 			productReference = D7723A492C0326120031CD0C /* ChordPro.app */;
 			productType = "com.apple.product-type.application";
@@ -259,6 +267,8 @@
 				Base,
 			);
 			mainGroup = D7723A402C0326120031CD0C;
+			packageReferences = (
+			);
 			productRefGroup = D7723A4A2C0326120031CD0C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -327,6 +337,7 @@
 				D72EA3332C0B31A600B1BA93 /* FileButtonView.swift in Sources */,
 				D74002D12C049B1800291BE7 /* Cache.swift in Sources */,
 				D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */,
+				D7484C162C18426A00D47D1A /* MacEditorView+highlight.swift in Sources */,
 				D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */,
 				D7723A4F2C0326120031CD0C /* ChordProDocument.swift in Sources */,
 				D774F2812C05E07E00CC4E3E /* Note.swift in Sources */,
@@ -345,6 +356,7 @@
 				D7723A652C0336910031CD0C /* ExportDocument.swift in Sources */,
 				D774F2832C05E18B00CC4E3E /* Accents.swift in Sources */,
 				D72EA33E2C0C5C3F00B1BA93 /* LocalizedAlertError.swift in Sources */,
+				D7484C0F2C18179D00D47D1A /* MacEditorView.swift in Sources */,
 				D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */,
 				D7723A512C0326120031CD0C /* ContentView.swift in Sources */,
 			);

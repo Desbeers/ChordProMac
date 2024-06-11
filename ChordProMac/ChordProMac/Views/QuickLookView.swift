@@ -16,8 +16,6 @@ struct QuickLookView: View {
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneState
-    /// The optional QuickLook URL
-    @State private var quickLookURL: URL?
     /// The body of the `View`
     var body: some View {
         Button(
@@ -25,7 +23,7 @@ struct QuickLookView: View {
                 showQuickView()
             },
             label: {
-                Label("PDF preview", systemImage: quickLookURL == nil ? "eye" : "eye.fill")
+                Label("PDF preview", systemImage: sceneState.quickLookURL == nil ? "eye" : "eye.fill")
             }
         )
         .labelStyle(.iconOnly)
