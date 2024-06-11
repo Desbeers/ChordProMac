@@ -17,10 +17,7 @@ struct MacEditorView: NSViewRepresentable {
     }
 
     func makeNSView(context: Context) -> CustomTextView {
-        let textView = CustomTextView(
-            text: text,
-            font: font
-        )
+        let textView = CustomTextView()
         textView.delegate = context.coordinator
 
         return textView
@@ -32,8 +29,8 @@ struct MacEditorView: NSViewRepresentable {
             let all = NSRange(location: 0, length: text.utf16.count)
             MacEditorView.highlight(view: view.textView, font: font, range: all)
         }
-        if view.font != font {
-            view.font = font
+        if view.textView.font != font {
+            view.textView.font = font
         }
     }
 }
@@ -99,29 +96,7 @@ extension MacEditorView {
     // MARK: CustomTextView
 
     final class CustomTextView: NSView {
-
-        var font: NSFont {
-            didSet {
-                textView.font = font
-            }
-        }
-
         weak var delegate: NSTextViewDelegate?
-
-        var text: String {
-            didSet {
-                textView.string = text
-            }
-        }
-
-        var selectedRanges: [NSValue] = [] {
-            didSet {
-                guard selectedRanges.count > 0 else {
-                    return
-                }
-                textView.selectedRanges = selectedRanges
-            }
-        }
 
         private lazy var scrollView: NSScrollView = {
             let scrollView = NSScrollView()
@@ -153,7 +128,7 @@ extension MacEditorView {
             textView.backgroundColor = NSColor.textBackgroundColor
             textView.delegate = self.delegate
             textView.drawsBackground = true
-            textView.font = self.font
+            textView.font = .systemFont(ofSize: 14)
             textView.isEditable = true
             textView.isHorizontallyResizable = false
             textView.isVerticallyResizable = true
@@ -166,21 +141,6 @@ extension MacEditorView {
 
             return textView
         }()
-
-        // MARK: Init
-
-        init(text: String, font: NSFont) {
-            self.font = font
-            self.text = text
-
-            super.init(frame: .zero)
-        }
-
-        required init?(coder: NSCoder) {
-            fatalError("init(coder:) has not been implemented")
-        }
-
-        // MARK: Life cycle
 
         override func viewWillDraw() {
             super.viewWillDraw()
