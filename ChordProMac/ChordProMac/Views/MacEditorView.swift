@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// The editor for **ChordPro**
 struct MacEditorView: NSViewRepresentable {
     @Binding var text: String
     var font: NSFont
@@ -26,14 +27,14 @@ struct MacEditorView: NSViewRepresentable {
     }
 
     func updateNSView(_ view: CustomTextView, context: Context) {
-        
         if view.textView.string != text {
             view.textView.string = text
-            view.selectedRanges = context.coordinator.selectedRanges
             let all = NSRange(location: 0, length: text.utf16.count)
             MacEditorView.highlight(view: view.textView, font: font, range: all)
         }
-        view.font = font
+        if view.font != font {
+            view.font = font
+        }
     }
 }
 
@@ -44,8 +45,7 @@ extension MacEditorView {
     class Coordinator: NSObject, NSTextViewDelegate {
         var parent: MacEditorView
         var selectedRanges: [NSValue] = []
-
-        var highlightRange = NSRange()
+        var fullHighlight: Bool = true
 
         init(_ parent: MacEditorView) {
             self.parent = parent
@@ -56,15 +56,8 @@ extension MacEditorView {
             shouldChangeTextIn affectedCharRange: NSRange,
             replacementString: String?
         ) -> Bool {
-            let composeText = textView.string as NSString
-            highlightRange = NSRange(location: 0, length: composeText.length)
-            if replacementString?.count ?? 0 > 1 {
-                /// Full highlighting
-                highlightRange = NSRange(location: 0, length: composeText.length)
-            } else {
-                /// Highlight only the current paragraph
-                highlightRange = composeText.paragraphRange(for: textView.selectedRange)
-            }
+            /// For performance, don't highlight all text when not needed
+            fullHighlight = replacementString?.count ?? 0 > 1
             return true
         }
 
@@ -79,8 +72,16 @@ extension MacEditorView {
             guard let textView = notification.object as? NSTextView else {
                 return
             }
-            MacEditorView.highlight(view: textView, font: parent.font, range: highlightRange)
-            self.selectedRanges = textView.selectedRanges
+            let composeText = textView.string as NSString
+            var highlightRange = NSRange()
+            if fullHighlight {
+                /// Full highlighting of the document
+                highlightRange = NSRange(location: 0, length: composeText.length)
+            } else {
+                /// Highlight only the current paragraph
+                highlightRange = composeText.paragraphRange(for: textView.selectedRange)
+            }
+            MacEditorView.highlight(view: textView, font: textView.font ?? .systemFont(ofSize: 14), range: highlightRange)
             parent.text = textView.string
         }
 
@@ -136,22 +137,16 @@ extension MacEditorView {
 
         lazy var textView: NSTextView = {
             let contentSize = scrollView.contentSize
-            let textStorage = NSTextStorage()
-
-
-            let layoutManager = NSLayoutManager()
-            textStorage.addLayoutManager(layoutManager)
-
-
+            let textContentStorage = NSTextContentStorage()
+            let textLayoutManager = NSTextLayoutManager()
+            textContentStorage.addTextLayoutManager(textLayoutManager)
             let textContainer = NSTextContainer(containerSize: scrollView.frame.size)
             textContainer.widthTracksTextView = true
             textContainer.containerSize = NSSize(
                 width: contentSize.width,
                 height: CGFloat.greatestFiniteMagnitude
             )
-
-            layoutManager.addTextContainer(textContainer)
-
+            textLayoutManager.textContainer = textContainer
 
             let textView = NSTextView(frame: .zero, textContainer: textContainer)
             textView.autoresizingMask = .width
