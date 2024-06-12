@@ -15,7 +15,7 @@ extension MacEditorView {
     /// The regex for comments
     static let commentsRegex = try! NSRegularExpression(pattern: "#.*\\s")
     /// The regex for pango
-    static let pangoRegex = try! NSRegularExpression(pattern: "\\<.*\\>")
+    static let pangoRegex = try! NSRegularExpression(pattern: "<\\/?[^>]*>")
     /// The line height multiplier for the editor text
     static let lineHeightMultiple: Double = 1.2
     /// The style of a paragraph in the editor
@@ -24,6 +24,14 @@ extension MacEditorView {
         style.lineHeightMultiple = MacEditorView.lineHeightMultiple
         return style
     }()
+
+    static let regexes: [(regex: NSRegularExpression, color: NSColor)] =
+    [
+        (chordRegex, NSColor.systemRed),
+        (directiveRegex, NSColor.systemIndigo),
+        (commentsRegex, NSColor.systemGray),
+        (pangoRegex, NSColor.systemTeal)
+    ]
 
     /// Highlight the text in the editor
     /// - Parameters:
@@ -42,41 +50,16 @@ extension MacEditorView {
             ], 
             range: range
         )
-        /// Highlight directives
-        let directives = directiveRegex.matches(in: text, options: [], range: range)
-        directives.forEach { directive in
-            view.textStorage?.addAttribute(
-                .foregroundColor,
-                value: NSColor.systemIndigo,
-                range: directive.range
-            )
-        }
-        /// Highlight chords
-        let chords = chordRegex.matches(in: text, options: [], range: range)
-        chords.forEach { chord in
+        /// Go to all the regex definitions
+        MacEditorView.regexes.forEach { regex in
+            let matches = regex.regex.matches(in: text, options: [], range: range)
+            matches.forEach { match in
                 view.textStorage?.addAttribute(
                     .foregroundColor,
-                    value: NSColor.systemRed,
-                    range: chord.range
+                    value: regex.color,
+                    range: match.range
                 )
-        }
-        /// Highlight pango
-        let pangos = pangoRegex.matches(in: text, options: [], range: range)
-        pangos.forEach { pango in
-            view.textStorage?.addAttribute(
-                .foregroundColor,
-                value: NSColor.systemTeal,
-                range: pango.range
-            )
-        }
-        /// Highlight comments
-        let comments = commentsRegex.matches(in: text, options: [], range: range)
-        comments.forEach { comment in
-            view.textStorage?.addAttribute(
-                .foregroundColor,
-                value: NSColor.systemGray,
-                range: comment.range
-            )
+            }
         }
         /// The attributes for the next typing
         view.typingAttributes = [
