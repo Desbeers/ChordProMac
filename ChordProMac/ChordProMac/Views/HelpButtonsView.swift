@@ -11,6 +11,8 @@ import SwiftUI
 struct HelpButtonsView: View {
     /// The document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    /// The observable state of the application
+    @EnvironmentObject private var appState: AppState
     /// The body of the `View`
     var body: some View {
         if let url = URL(string: "https://www.chordpro.org/chordpro/") {
@@ -31,6 +33,10 @@ struct HelpButtonsView: View {
                 }
             }
             .disabled(document == nil)
+        }
+        Divider()
+        Toggle(isOn: $appState.settings.debug) {
+            Text("Enable debug info in the PDF")
         }
         Divider()
         if let url = URL(string: "https://github.com/ChordPro/chordpro") {
