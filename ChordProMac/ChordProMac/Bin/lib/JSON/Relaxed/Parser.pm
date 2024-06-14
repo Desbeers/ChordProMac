@@ -6,7 +6,7 @@ use utf8;
 
 package JSON::Relaxed::Parser;
 
-our $VERSION = "0.094";
+our $VERSION = "0.095";
 
 class JSON::Relaxed::Parser;
 
@@ -22,7 +22,7 @@ field @tokens;			# string as tokens
 # Strict false (default) -> RRJSON. Everything goes :).
 field $strict		   :mutator :param = 0;
 
-# Allow extra stiff after the JSON structure.
+# Allow extra stuff after the JSON structure.
 # Strict mode only.
 field $extra_tokens_ok	   :mutator :param = 0;
 
@@ -588,19 +588,11 @@ method encode(%opts) {
 	$ckeys = $prpmode = $impoh = 0;
     }
 
+    $schema = resolve( $schema, $schema ) if $schema;
+
     my $s = "";
     my $i = 0;
     my $props = $schema->{properties};
-    for my $a ( @{ $props->{allOf} // [] } ) {
-	for my $k ( keys(%$a) ) {
-	    if ( $k eq '$ref' ) {
-	    }
-	    else {
-		$props->{$k} = $a->{$k};
-	    }
-	}
-	use DDP; p($props);
-    }
     #warn("L$level - ", join(" ", sort keys(%$props)),"\n");
 
     # Add comments from schema, if any.
@@ -756,15 +748,6 @@ method encode(%opts) {
 		elsif ( !$prpmode ) {
 		    $s .=  ":";
 		}
-		for my $a ( @{ $props->{$k}->{allOf} // [] } ) {
-		    for my $kx ( keys(%$a) ) {
-			if ( $kx eq '$ref' ) {
-			}
-			else {
-			    $props->{$k}->{$kx} = $a->{$kx};
-			}
-		    }
-		}
 
 		$s .= $pr_hash->( $v, $level+1, $props->{$k}->{properties} );
 	    }
@@ -774,10 +757,37 @@ method encode(%opts) {
 		$s .= $pr_array->( $v, $level+1, $props->{$k}->{items} );
 	    }
 
+	    elsif ( $pretty ) {
+		my $t = $pr_string->($v);
+		$s .= "$in : ";
+
+		# Break quoted strings that contain pseudo-newlines.
+		if ( $t =~ /^["'`].*\\n/ ) {
+		    # Remove the quotes/
+		    my $quote = substr( $t, 0, 1, '');
+		    chop($t);
+
+		    # Determine current indent.
+		    $s =~ /^(.*)\Z/m;
+		    my $sep = " \\\n" . (" " x length($1));
+
+		    # Get string parts.
+		    my @a = split( /\\n/, $t, -1 );
+		    while ( @a ) {
+			$s .= $quote.shift(@a);
+			$s .= "\\n" if @a;
+			$s .= $quote;
+			$s .= $sep if @a;
+		    }
+		}
+
+		# Just a string.
+		else {
+		    $s .= $t;
+		}
+	    }
 	    else {
-		$s .= $pretty ? "$in : " : ":";
-		$s .= $pr_string->($v);
-		$s .= "," unless $pretty;
+		$s .= ":" . $pr_string->($v) . ",";
 	    }
 	    $s .= "\n" if $pretty;
 	}
@@ -815,6 +825,69 @@ method encode(%opts) {
 	$s .= "\n" if $s !~ /\n$/;
     }
     return $s;
+}
+
+################ Subroutines ################
+
+# resolve processes $ref, allOf etc nodes.
+
+sub resolve( $d, $schema ) {
+
+    if ( is_hash($d) ) {
+	while ( my ($k,$v) = each %$d ) {
+	    if ( $k eq 'allOf' ) {
+		delete $d->{$k}; # yes, safe to do
+		$d = merge( resolve( $_, $schema ), $d ) for @$v;
+	    }
+	    elsif ( $k eq 'oneOf' || $k eq 'anyOf' ) {
+		delete $d->{$k}; # yes, safe to do
+		$d = merge( resolve( $v->[0], $schema ), $d );
+	    }
+	    elsif ( $k eq '$ref' ) {
+		delete $d->{$k}; # yes, safe to do
+		if ( $v =~ m;^#/definitions/(.*); ) {
+		    $d = merge( resolve( $schema->{definitions}->{$1}, $schema ), $d );
+		}
+		else {
+		    die("Invalid \$ref: $v\n");
+		}
+	    }
+	    else {
+		$d->{$k} = resolve( $v, $schema );
+	    }
+	}
+    }
+    elsif ( is_array($d) ) {
+	$d = [ map { resolve( $_, $schema ) } @$d ];
+    }
+    else {
+    }
+
+    return $d;
+}
+
+sub is_hash($o)  { UNIVERSAL::isa( $o, 'HASH'  ) }
+sub is_array($o) { UNIVERSAL::isa( $o, 'ARRAY' ) }
+
+sub merge ( $left, $right ) {
+
+    return $left unless $right;
+
+    my %merged = %$left;
+
+    for my $key ( keys %$right ) {
+
+        my ($hr, $hl) = map { is_hash($_->{$key}) } $right, $left;
+
+        if ( $hr and $hl ) {
+            $merged{$key} = merge( $left->{$key}, $right->{$key} );
+        }
+        else {
+            $merged{$key} = $right->{$key};
+        }
+    }
+
+    return \%merged;
 }
 
 ################ Tokens ################
@@ -1044,29 +1117,26 @@ method _data_printer( $ddp ) {
 
 # This class distinguises booleans true and false from numeric 1 and 0.
 
-class JSON::Boolean;
+use JSON::PP ();
 
-field $value		:param = undef;
-field $from		:param;
+package JSON::Boolean {
 
-ADJUST {
-    $value = $from eq "true" ? 1 : 0;
-};
+    sub as_perl( $self, %options ) { $self }
 
-method as_perl( %options ) { $self }
+    sub _data_printer( $self, $ddp ) { "Bool($self)" }
 
-method _data_printer( $ddp ) { "Bool($from)" }
+    use overload '""'     => sub { ${$_[0]} ? "true" : "false" },
+		 "bool"   => sub { !!${$_[0]} },
+		 fallback => 1;
 
-use overload '""'     => method { $from },
-	     "bool"   => method { $value },
-	     fallback => 1;
+    # For JSON::PP export.
+    sub TO_JSON { ${$_[0]} ? $JSON::PP::true : $JSON::PP::false }
 
-# For JSON::PP export.
-method TO_JSON { $value ? $JSON::PP::true : $JSON::PP::false }
+    # Boolean values.
+    our $true  = do { bless \(my $dummy = 1) => __PACKAGE__ };
+    our $false = do { bless \(my $dummy = 0) => __PACKAGE__ };
 
-# Boolean values.
-our $true  = JSON::Boolean->new( from => 'true'  );
-our $false = JSON::Boolean->new( from => 'false' );
+}
 
 ################
 

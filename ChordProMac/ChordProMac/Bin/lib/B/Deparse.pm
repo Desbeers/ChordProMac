@@ -52,7 +52,7 @@ use B qw(class main_root main_start main_cv svref_2object opnumber perlstring
         MDEREF_SHIFT
     );
 
-$VERSION = '1.49';
+$VERSION = '1.57';
 use strict;
 our $AUTOLOAD;
 use warnings ();
@@ -271,13 +271,16 @@ BEGIN {
 
 
 BEGIN { for (qw[ const stringify rv2sv list glob pushmark null aelem
-		 kvaslice kvhslice padsv
+		 kvaslice kvhslice padsv argcheck
                  nextstate dbstate rv2av rv2hv helem custom ]) {
     eval "sub OP_\U$_ () { " . opnumber($_) . "}"
 }}
 
 # _pessimise_walk(): recursively walk the optree of a sub,
 # possibly undoing optimisations along the way.
+
+sub DEBUG { 0 }
+use if DEBUG, 'Data::Dumper';
 
 sub _pessimise_walk {
     my ($self, $startop) = @_;
@@ -1176,42 +1179,68 @@ sub pad_subs {
 # or altered. In this case we return "()" and fall back to general
 # deparsing of the individual sigelems as 'my $x = $_[N]' etc.
 #
-# We're only called if the first two ops are nextstate and argcheck.
+# We're only called if the top is an ex-argcheck, which is a placeholder
+# indicating a signature subtree.
+#
+# Return a signature string, or an empty list if no deparseable as a
+# signature
 
 sub deparse_argops {
-    my ($self, $firstop, $cv) = @_;
+    my ($self, $topop, $cv) = @_;
 
     my @sig;
-    my $o = $firstop;
-    return if $o->label; #first nextstate;
+
+
+    $topop = $topop->first;
+    return unless $$topop and $topop->name eq 'lineseq';
+
+
+    # last op should be nextstate
+    my $last = $topop->last;
+    return unless $$last
+                    and (   _op_is_or_was($last, OP_NEXTSTATE)
+                         or _op_is_or_was($last, OP_DBSTATE));
+
+    # first OP_NEXTSTATE
+
+    my $o = $topop->first;
+    return unless $$o;
+    return if $o->label;
 
     # OP_ARGCHECK
 
     $o = $o->sibling;
+    return unless $$o and $o->name eq 'argcheck';
+
     my ($params, $opt_params, $slurpy) = $o->aux_list($cv);
     my $mandatory = $params - $opt_params;
     my $seen_slurpy = 0;
     my $last_ix = -1;
 
-    # keep looking for valid nextstate + argelem pairs
+    # keep looking for valid nextstate + argelem pairs, terminated
+    # by a final nextstate
 
     while (1) {
-        # OP_NEXTSTATE
         $o = $o->sibling;
-        last unless $$o;
-        last unless $o->name =~ /^(next|db)state$/;
-        last if $o->label;
+        return unless $$o;
+
+        # skip trailing nextstate
+        last if $$o == $$last;
+
+        # OP_NEXTSTATE
+        return unless $o->name =~ /^(next|db)state$/;
+        return if $o->label;
 
         # OP_ARGELEM
-        my $o2 = $o->sibling;
-        last unless $$o2;
+        $o = $o->sibling;
+        last unless $$o;
 
-        if ($o2->name eq 'argelem') {
-            my $ix  = $o2->string($cv);
+        if ($o->name eq 'argelem') {
+            my $ix  = $o->string($cv);
             while (++$last_ix < $ix) {
                 push @sig, $last_ix <  $mandatory ? '$' : '$=';
             }
-            my $var = $self->padname($o2->targ);
+            my $var = $self->padname($o->targ);
             if ($var =~ /^[@%]/) {
                 return if $seen_slurpy;
                 $seen_slurpy = 1;
@@ -1221,8 +1250,8 @@ sub deparse_argops {
             else {
                 return if $ix >= $params;
             }
-            if ($o2->flags & OPf_KIDS) {
-                my $kid = $o2->first;
+            if ($o->flags & OPf_KIDS) {
+                my $kid = $o->first;
                 return unless $$kid and $kid->name eq 'argdefelem';
                 my $def = $self->deparse($kid->first, 7);
                 $def = "($def)" if $kid->first->flags & OPf_PARENS;
@@ -1230,13 +1259,13 @@ sub deparse_argops {
             }
             push @sig, $var;
         }
-        elsif ($o2->name eq 'null'
-               and ($o2->flags & OPf_KIDS)
-               and $o2->first->name eq 'argdefelem')
+        elsif ($o->name eq 'null'
+               and ($o->flags & OPf_KIDS)
+               and $o->first->name eq 'argdefelem')
         {
             # special case - a void context default expression: $ = expr
 
-            my $defop = $o2->first;
+            my $defop = $o->first;
             my $ix = $defop->targ;
             while (++$last_ix < $ix) {
                 push @sig, $last_ix <  $mandatory ? '$' : '$=';
@@ -1248,10 +1277,9 @@ sub deparse_argops {
             push @sig, '$ = ' . $def;
         }
         else {
-            last;
+            return;
         }
 
-        $o = $o2;
     }
 
     while (++$last_ix < $params) {
@@ -1259,8 +1287,9 @@ sub deparse_argops {
     }
     push @sig, $slurpy if $slurpy and !$seen_slurpy;
 
-    return ($o, join(', ', @sig));
+    return (join(', ', @sig));
 }
+
 
 # Deparse a sub. Returns everything except the 'sub foo',
 # e.g.  ($$) : method { ...; }
@@ -1304,27 +1333,26 @@ Carp::confess("SPECIAL in deparse_sub") if $cv->isa("B::SPECIAL");
 	$self->pad_subs($cv);
 	$self->pessimise($root, $cv->START);
 	my $lineseq = $root->first;
-	if ($lineseq->name eq "lineseq") {
-	    my $firstop = $lineseq->first;
 
-            if ($has_sig) {
-                my $o2;
-                # try to deparse first few ops as a signature if possible
-                if (     $$firstop
-                     and $firstop->name =~  /^(next|db)state$/
-                     and (($o2 = $firstop->sibling))
-                     and $$o2)
-                {
-                    if ($o2->name eq 'argcheck') {
-                        my ($nexto, $mysig) = $self->deparse_argops($firstop, $cv);
-                        if (defined $nexto) {
-                            $firstop = $nexto;
-                            $sig = $mysig;
-                        }
-                    }
-                }
+        # stub sub may have single op rather than list of ops
+        my $is_list = ($lineseq->name eq "lineseq");
+        my $firstop = $is_list ? $lineseq->first : $lineseq;
+
+        # Try to deparse first subtree as a signature if possible.
+        # Top of signature subtree has an ex-argcheck as a placeholder
+        if (    $has_sig
+            and $$firstop
+            and $firstop->name eq 'null'
+            and $firstop->targ == OP_ARGCHECK
+        ) {
+            my ($mysig) = $self->deparse_argops($firstop, $cv);
+            if (defined $mysig) {
+                $sig = $mysig;
+                $firstop = $is_list ? $firstop->sibling : undef;
             }
+        }
 
+        if ($is_list && $firstop) {
             my @ops;
 	    for (my $o = $firstop; $$o; $o=$o->sibling) {
 		push @ops, $o;
@@ -1341,9 +1369,12 @@ Carp::confess("SPECIAL in deparse_sub") if $cv->isa("B::SPECIAL");
 		$body .= ";\n$subs" if length($subs);
 	    }
 	}
-	else {
+	elsif ($firstop) {
 	    $body = $self->deparse($root->first, 0);
 	}
+        else {
+            $body = ';'; # stub sub
+        }
 
         my $l = '';
         if ($self->{'linenums'}) {
@@ -2184,6 +2215,7 @@ my %ignored_hints = (
     'strict/refs' => 1,
     'strict/subs' => 1,
     'strict/vars' => 1,
+    'feature/bits' => 1,
 );
 
 my %rev_feature;
@@ -2272,6 +2304,8 @@ my %feature_keywords = (
     evalbytes=>'evalbytes',
     __SUB__ => '__SUB__',
    fc       => 'fc',
+   try      => 'try',
+   catch    => 'try',
 );
 
 # keywords that are strong and also have a prototype
@@ -2304,7 +2338,7 @@ sub keyword {
     }
     # This sub may be called for a program that has no nextstate ops.  In
     # that case we may have a lexical sub named no/use/sub in scope but
-    # but $self->lex_in_scope will return false because it depends on the
+    # $self->lex_in_scope will return false because it depends on the
     # current nextstate op.  So we need this alternate method if there is
     # no current cop.
     if (!$self->{'curcop'}) {
@@ -2440,7 +2474,7 @@ sub unop {
 	    return $self->maybe_parens(
 			$self->keyword($name) . " $kid", $cx, 16
 		   );
-	}   
+	}
 	return $self->maybe_parens_unop($name, $kid, $cx);
     } else {
 	return $self->maybe_parens(
@@ -2480,7 +2514,7 @@ sub pp_each { unop(@_, "each") }
 sub pp_values { unop(@_, "values") }
 sub pp_keys { unop(@_, "keys") }
 { no strict 'refs'; *{"pp_r$_"} = *{"pp_$_"} for qw< keys each values >; }
-sub pp_boolkeys { 
+sub pp_boolkeys {
     # no name because its an optimisation op that has no keyword
     unop(@_,"");
 }
@@ -3029,6 +3063,8 @@ sub pp_sge { binop(@_, "ge", 15) }
 sub pp_sle { binop(@_, "le", 15) }
 sub pp_scmp { maybe_targmy(@_, \&binop, "cmp", 14) }
 
+sub pp_isa { binop(@_, "isa", 15) }
+
 sub pp_sassign { binop(@_, "=", 7, SWAP_CHILDREN) }
 sub pp_aassign { binop(@_, "=", 7, SWAP_CHILDREN | LIST_CONTEXT) }
 
@@ -3166,6 +3202,64 @@ sub logassignop {
 sub pp_andassign { logassignop(@_, "&&=") }
 sub pp_orassign  { logassignop(@_, "||=") }
 sub pp_dorassign { logassignop(@_, "//=") }
+
+my %cmpchain_cmpops = (
+	eq => ["==", 14],
+	i_eq => ["==", 14],
+	ne => ["!=", 14],
+	i_ne => ["!=", 14],
+	seq => ["eq", 14],
+	sne => ["ne", 14],
+	lt => ["<", 15],
+	i_lt => ["<", 15],
+	gt => [">", 15],
+	i_gt => [">", 15],
+	le => ["<=", 15],
+	i_le => ["<=", 15],
+	ge => [">=", 15],
+	i_ge => [">=", 15],
+	slt => ["lt", 15],
+	sgt => ["gt", 15],
+	sle => ["le", 15],
+	sge => ["ge", 15],
+);
+sub pp_cmpchain_and {
+    my($self, $op, $cx) = @_;
+    my($prec, $dep);
+    while(1) {
+	my($thiscmp, $rightcond);
+	if($op->name eq "cmpchain_and") {
+	    $thiscmp = $op->first;
+	    $rightcond = $thiscmp->sibling;
+	} else {
+	    $thiscmp = $op;
+	}
+	my $thiscmptype = $cmpchain_cmpops{$thiscmp->name} // (return "XXX");
+	if(defined $prec) {
+	    $thiscmptype->[1] == $prec or return "XXX";
+	    $thiscmp->first->name eq "null" &&
+		    !($thiscmp->first->flags & OPf_KIDS)
+		or return "XXX";
+	} else {
+	    $prec = $thiscmptype->[1];
+	    $dep = $self->deparse($thiscmp->first, $prec);
+	}
+	$dep .= " ".$thiscmptype->[0]." ";
+	my $operand = $thiscmp->last;
+	if(defined $rightcond) {
+	    $operand->name eq "cmpchain_dup" or return "XXX";
+	    $operand = $operand->first;
+	}
+	$dep .= $self->deparse($operand, $prec);
+	last unless defined $rightcond;
+	if($rightcond->name eq "null" && ($rightcond->flags & OPf_KIDS) &&
+		$rightcond->first->name eq "cmpchain_and") {
+	    $rightcond = $rightcond->first;
+	}
+	$op = $rightcond;
+    }
+    return $self->maybe_parens($dep, $cx, $prec);
+}
 
 sub rv2gv_or_string {
     my($self,$op) = @_;
@@ -3360,7 +3454,7 @@ sub pp_glob {
     my $kid = $op->first->sibling;  # skip pushmark
     my $keyword =
 	$op->flags & OPf_SPECIAL ? 'glob' : $self->keyword('glob');
-    my $text = $self->deparse($kid);
+    my $text = $self->deparse($kid, $cx);
     return $cx >= 5 || $self->{'parens'}
 	? "$keyword($text)"
 	: "$keyword $text";
@@ -3961,6 +4055,35 @@ sub for_loop {
 sub pp_leavetry {
     my $self = shift;
     return "eval {\n\t" . $self->pp_leave(@_) . "\n\b}";
+}
+
+sub pp_leavetrycatch {
+    my $self = shift;
+    my ($op) = @_;
+
+    # Expect that the first three kids should be (entertrycatch, poptry, catch)
+    my $entertrycatch = $op->first;
+    $entertrycatch->name eq "entertrycatch" or die "Expected entertrycatch as first child of leavetrycatch";
+
+    my $tryblock = $entertrycatch->sibling;
+    $tryblock->name eq "poptry" or die "Expected poptry as second child of leavetrycatch";
+
+    my $catch = $tryblock->sibling;
+    $catch->name eq "catch" or die "Expected catch as third child of leavetrycatch";
+
+    my $catchblock = $catch->first->sibling;
+    my $name = $catchblock->name;
+    unless ($name eq "scope" || $name eq "leave") {
+      die "Expected scope or leave as second child of catch, got $name instead";
+    }
+
+    my $trycode = scopeop(0, $self, $tryblock);
+    my $catchvar = $self->padname($catch->targ);
+    my $catchcode = $name eq 'scope' ? scopeop(0, $self, $catchblock)
+                                     : scopeop(1, $self, $catchblock);
+
+    return "try {\n\t$trycode\n\b}\n" .
+           "catch($catchvar) {\n\t$catchcode\n\b}\cK";
 }
 
 sub _op_is_or_was {
@@ -5567,38 +5690,24 @@ sub double_delim {
 # Escape a characrter.
 # Only used by tr///, so backslashes hyphens
 
-sub pchr { # ASCII
+sub pchr {
     my($n) = @_;
-    if ($n == ord '\\') {
-	return '\\\\';
-    } elsif ($n == ord "-") {
-	return "\\-";
-    } elsif (utf8::native_to_unicode($n) >= utf8::native_to_unicode(ord(' '))
-             and utf8::native_to_unicode($n) <= utf8::native_to_unicode(ord('~')))
-    {
-        # I'm presuming a regex is not ok here, otherwise we could have used
-        # /[[:print:]]/a to get here
-	return chr($n);
-    } elsif ($n == ord "\a") {
-	return '\\a';
-    } elsif ($n == ord "\b") {
-	return '\\b';
-    } elsif ($n == ord "\t") {
-	return '\\t';
-    } elsif ($n == ord "\n") {
-	return '\\n';
-    } elsif ($n == ord "\e") {
-	return '\\e';
-    } elsif ($n == ord "\f") {
-	return '\\f';
-    } elsif ($n == ord "\r") {
-	return '\\r';
-    } elsif ($n >= ord("\cA") and $n <= ord("\cZ")) {
-	return '\\c' . $unctrl{chr $n};
-    } else {
-#	return '\x' . sprintf("%02x", $n);
-	return '\\' . sprintf("%03o", $n);
-    }
+    return sprintf("\\x{%X}", $n) if $n > 255;
+    return '\\\\' if $n == ord '\\';
+    return "\\-" if $n == ord "-";
+    # I'm presuming a regex is not ok here, otherwise we could have used
+    # /[[:print:]]/a to get here
+    return chr($n) if (        utf8::native_to_unicode($n)
+                            >= utf8::native_to_unicode(ord(' '))
+                        and    utf8::native_to_unicode($n)
+                            <= utf8::native_to_unicode(ord('~')));
+
+    my $mnemonic_pos = index("\a\b\e\f\n\r\t", chr($n));
+    return "\\" . substr("abefnrt", $mnemonic_pos, 1) if $mnemonic_pos >= 0;
+
+    return '\\c' . $unctrl{chr $n} if $n >= ord("\cA") and $n <= ord("\cZ");
+#   return '\x' . sprintf("%02x", $n);
+    return '\\' . sprintf("%03o", $n);
 }
 
 # Convert a list of characters into a string suitable for tr/// search or
@@ -5674,111 +5783,170 @@ sub tr_decode_byte {
     return ($from, $to);
 }
 
-sub tr_chr {
-    my $x = shift;
-    if ($x == ord "-") {
-	return "\\-";
-    } elsif ($x == ord "\\") {
-	return "\\\\";
-    } else {
-	return chr $x;
+my $infinity = ~0 >> 1;     # IV_MAX
+
+sub tr_append_to_invlist {
+    my ($list_ref, $current, $next) = @_;
+
+    # Appends the range $current..$next-1 to the inversion list $list_ref
+
+    printf STDERR "%d: %d..%d %s", __LINE__, $current, $next, Dumper $list_ref if DEBUG;
+
+    if (@$list_ref && $list_ref->[-1] == $current) {
+
+        # The new range extends the current final one.  If it is a finite
+        # rane, replace the current final by the new ending.
+        if (defined $next) {
+            $list_ref->[-1] = $next;
+        }
+        else {
+            # The new range extends to infinity, which means the current end
+            # of the inversion list is dangling.  Removing it causes things to
+            # work.
+            pop @$list_ref;
+        }
+    }
+    else {  # The new range starts after the current final one; add it as a
+            # new range
+        push @$list_ref, $current;
+        push @$list_ref, $next if defined $next;
+    }
+
+    print STDERR __LINE__, ": ", Dumper $list_ref if DEBUG;
+}
+
+sub tr_invlist_to_string {
+    my ($list_ref, $to_complement) = @_;
+
+    # Stringify the inversion list $list_ref, possibly complementing it first.
+    # CAUTION: this can modify $list_ref.
+
+    print STDERR __LINE__, ": ", Dumper $list_ref if DEBUG;
+
+    if ($to_complement) {
+
+        # Complementing an inversion list is done by prepending a 0 if it
+        # doesn't have one there already; otherwise removing the leading 0.
+        if ($list_ref->[0] == 0) {
+            shift @$list_ref;
+        }
+        else {
+            unshift @$list_ref, 0;
+        }
+
+        print STDERR __LINE__, ": ", Dumper $list_ref if DEBUG;
+    }
+
+    my $output = "";
+
+    # Every other element is in the list.
+    for (my $i = 0; $i < @$list_ref; $i += 2) {
+        my $base = $list_ref->[$i];
+        $output .= pchr($base);
+        last unless defined $list_ref->[$i+1];
+
+        # The beginning of the next element starts the range of items not in
+        # the list.
+        my $upper = $list_ref->[$i+1] - 1;
+        my $range = $upper - $base;
+        $output .= '-' if $range > 1; # Adjacent characters don't have a
+                                      # minus, though it would be legal to do
+                                      # so
+        $output .= pchr($upper) if $range > 0;
+    }
+
+    print STDERR __LINE__, ": tr_invlist_to_string() returning '$output'\n"
+                                                                       if DEBUG;
+    return $output;
+}
+
+my $unmapped = ~0;
+my $special_handling = ~0 - 1;
+
+sub dump_invmap {
+    my ($invlist_ref, $map_ref) = @_;
+
+    for my $i (0 .. @$invlist_ref - 1) {
+        printf STDERR "[%d]\t%x\t", $i, $invlist_ref->[$i];
+        my $map = $map_ref->[$i];
+        if ($map == $unmapped) {
+            print STDERR "TR_UNMAPPED\n";
+        }
+        elsif ($map == $special_handling) {
+            print STDERR "TR_SPECIAL\n";
+        }
+        else {
+            printf STDERR "%x\n", $map;
+        }
     }
 }
 
-# XXX This doesn't yet handle all cases correctly either
-
 sub tr_decode_utf8 {
-    my($swash_hv, $flags) = @_;
-    my %swash = $swash_hv->ARRAY;
-    my $final = undef;
-    $final = $swash{'FINAL'}->IV if exists $swash{'FINAL'};
-    my $none = $swash{"NONE"}->IV;
-    my $extra = $none + 1;
-    my(@from, @delfrom, @to);
-    my $line;
-    foreach $line (split /\n/, $swash{'LIST'}->PV) {
-	my($min, $max, $result) = split(/\t/, $line);
-	$min = hex $min;
-	if (length $max) {
-	    $max = hex $max;
-	} else {
-	    $max = $min;
-	}
-	$result = hex $result;
-	if ($result == $extra) {
-	    push @delfrom, [$min, $max];
-	} else {
-	    push @from, [$min, $max];
-	    push @to, [$result, $result + $max - $min];
-	}
+    my($tr_av, $flags) = @_;
+
+    printf STDERR "\n%s: %d: flags=0x%x\n", __FILE__, __LINE__, $flags if DEBUG;
+
+    my $invlist = $tr_av->ARRAYelt(0);
+    my @invlist = unpack("J*", $invlist->PV);
+    my @map = unpack("J*", $tr_av->ARRAYelt(1)->PV);
+
+    dump_invmap(\@invlist, \@map) if DEBUG;
+
+    my @from;
+    my @to;
+
+    # Go through the whole map
+    for (my $i = 0; $i < @invlist; $i++) {
+        my $map = $map[$i];
+        printf STDERR "%d: i=%d, source=%x, map=%x\n",
+                      __LINE__, $i, $invlist[$i], $map if DEBUG;
+
+        # Ignore any lines that are unmapped
+        next if $map == $unmapped;
+
+        # Calculate this component of the mapping;  First the lhs
+        my $this_from = $invlist[$i];
+        my $next_from = $invlist[$i+1] if $i < @invlist - 1;
+
+        # The length of the rhs is the same as the lhs, except when special
+        my $next_map = $map - $this_from + $next_from
+                            if $map != $special_handling && defined $next_from;
+
+        if (DEBUG) {
+            printf STDERR "%d: i=%d, from=%x, to=%x",
+                          __LINE__, $i, $this_from, $map;
+            printf STDERR ", next_from=%x,", $next_from if defined $next_from;
+            printf STDERR ", next_map=%x", $next_map if defined $next_map;
+            print  STDERR "\n";
+        }
+
+        # Add the lhs.
+        tr_append_to_invlist(\@from, $this_from, $next_from);
+
+        # And, the rhs; special handling doesn't get output as it really is an
+        # unmatched rhs
+        tr_append_to_invlist(\@to, $map, $next_map) if $map != $special_handling;
     }
-    for my $i (0 .. $#from) {
-	if ($from[$i][0] == ord '-') {
-	    unshift @from, splice(@from, $i, 1);
-	    unshift @to, splice(@to, $i, 1);
-	    last;
-	} elsif ($from[$i][1] == ord '-') {
-	    $from[$i][1]--;
-	    $to[$i][1]--;
-	    unshift @from, ord '-';
-	    unshift @to, ord '-';
-	    last;
-	}
+
+    # Done with the input.
+
+    my $to;
+    if (join("", @from) eq join("", @to)) {
+
+        # the rhs is suppressed if identical to the left.  That's because
+        # tr/ABC/ABC/ can be written as tr/ABC//.  (Do this comparison before
+        # any complementing)
+        $to = "";
     }
-    for my $i (0 .. $#delfrom) {
-	if ($delfrom[$i][0] == ord '-') {
-	    push @delfrom, splice(@delfrom, $i, 1);
-	    last;
-	} elsif ($delfrom[$i][1] == ord '-') {
-	    $delfrom[$i][1]--;
-	    push @delfrom, ord '-';
-	    last;
-	}
+    else {
+        $to = tr_invlist_to_string(\@to, 0);  # rhs not complemented
     }
-    if (defined $final and $to[$#to][1] != $final) {
-	push @to, [$final, $final];
-    }
-    push @from, @delfrom;
-    if ($flags & OPpTRANS_COMPLEMENT) {
-	my @newfrom;
-	my $next = 0;
-	for my $i (0 .. $#from) {
-	    push @newfrom, [$next, $from[$i][0] - 1];
-	    $next = $from[$i][1] + 1;
-	}
-	@from = ();
-	for my $range (@newfrom) {
-	    if ($range->[0] <= $range->[1]) {
-		push @from, $range;
-	    }
-	}
-    }
-    my($from, $to, $diff);
-    for my $chunk (@from) {
-	$diff = $chunk->[1] - $chunk->[0];
-	if ($diff > 1) {
-	    $from .= tr_chr($chunk->[0]) . "-" . tr_chr($chunk->[1]);
-	} elsif ($diff == 1) {
-	    $from .= tr_chr($chunk->[0]) . tr_chr($chunk->[1]);
-	} else {
-	    $from .= tr_chr($chunk->[0]);
-	}
-    }
-    for my $chunk (@to) {
-	$diff = $chunk->[1] - $chunk->[0];
-	if ($diff > 1) {
-	    $to .= tr_chr($chunk->[0]) . "-" . tr_chr($chunk->[1]);
-	} elsif ($diff == 1) {
-	    $to .= tr_chr($chunk->[0]) . tr_chr($chunk->[1]);
-	} else {
-	    $to .= tr_chr($chunk->[0]);
-	}
-    }
-    #$final = sprintf("%04x", $final) if defined $final;
-    #$none = sprintf("%04x", $none) if defined $none;
-    #$extra = sprintf("%04x", $extra) if defined $extra;
-    #print STDERR "final: $final\n none: $none\nextra: $extra\n";
-    #print STDERR $swash{'LIST'}->PV;
+
+    my $from = tr_invlist_to_string(\@from,
+                                   ($flags & OPpTRANS_COMPLEMENT) != 0);
+
+    print STDERR "Returning ", escape_str($from), "/",
+                               escape_str($to), "\n" if DEBUG;
     return (escape_str($from), escape_str($to));
 }
 
@@ -5792,9 +5960,9 @@ sub pp_trans {
 	($from, $to) = tr_decode_byte($op->pv, $priv_flags);
     } elsif ($class eq "PADOP") {
 	($from, $to)
-	  = tr_decode_utf8($self->padval($op->padix)->RV, $priv_flags);
+	  = tr_decode_utf8($self->padval($op->padix), $priv_flags);
     } else { # class($op) eq "SVOP"
-	($from, $to) = tr_decode_utf8($op->sv->RV, $priv_flags);
+	($from, $to) = tr_decode_utf8($op->sv, $priv_flags);
     }
     my $flags = "";
     $flags .= "c" if $priv_flags & OPpTRANS_COMPLEMENT;

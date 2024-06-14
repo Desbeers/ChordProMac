@@ -1,17 +1,14 @@
 #line 1 "<embedded>/Exporter.pm"
 package Exporter;
 
-require 5.006;
-
-# Be lean.
-#use strict;
-#no strict 'refs';
+use strict;
+no strict 'refs';
 
 our $Debug = 0;
 our $ExportLevel = 0;
 our $Verbose ||= 0;
-our $VERSION = '5.73';
-our (%Cache);
+our $VERSION = '5.76';
+our %Cache;
 
 sub as_heavy {
   require Exporter::Heavy;
@@ -97,7 +94,7 @@ sub require_version {
 1;
 __END__
 
-#line 589
+#line 586
 
 
 

@@ -1,6 +1,6 @@
 #line 1 "<embedded>/Encode.pm"
 #
-# $Id: Encode.pm,v 3.01 2019/03/13 00:25:25 dankogai Exp $
+# $Id: Encode.pm,v 3.08 2020/12/02 01:27:44 dankogai Exp $
 #
 package Encode;
 use strict;
@@ -8,7 +8,8 @@ use warnings;
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 our $VERSION;
 BEGIN {
-    $VERSION = sprintf "%d.%02d", q$Revision: 3.01 $ =~ /(\d+)/g;
+    $VERSION = "3.08_01";
+    $VERSION = eval $VERSION;
     require XSLoader;
     XSLoader::load( __PACKAGE__, $VERSION );
 }
@@ -67,7 +68,7 @@ eval {
     local $SIG{__DIE__};
     local $SIG{__WARN__};
     local @INC = @INC;
-    pop @INC if $INC[-1] eq '.';
+    pop @INC if @INC && $INC[-1] eq '.';
     require Encode::ConfigLocal;
 };
 
@@ -256,4 +257,4 @@ if ($ON_EBCDIC) {
 
 __END__
 
-#line 973
+#line 974

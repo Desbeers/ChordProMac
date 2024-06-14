@@ -1,16 +1,20 @@
 #line 1 "<embedded>/utf8.pm"
 package utf8;
 
-$utf8::hint_bits = 0x00800000;
+use strict;
+use warnings;
 
-our $VERSION = '1.22';
+our $hint_bits = 0x00800000;
+
+our $VERSION = '1.24';
+our $AUTOLOAD;
 
 sub import {
-    $^H |= $utf8::hint_bits;
+    $^H |= $hint_bits;
 }
 
 sub unimport {
-    $^H &= ~$utf8::hint_bits;
+    $^H &= ~$hint_bits;
 }
 
 sub AUTOLOAD {
@@ -22,4 +26,4 @@ sub AUTOLOAD {
 1;
 __END__
 
-#line 287
+#line 296

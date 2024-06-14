@@ -6,13 +6,19 @@ use strict;
 use Carp ();
 use Exporter;
 
-our $VERSION = '1.28';
+our $VERSION = '1.30';
 
 use parent 'Exporter';
 
-our @EXPORT = qw( timegm timelocal );
-our @EXPORT_OK
-    = qw( timegm_modern timelocal_modern timegm_nocheck timelocal_nocheck );
+our @EXPORT    = qw( timegm timelocal );
+our @EXPORT_OK = qw(
+    timegm_modern
+    timelocal_modern
+    timegm_nocheck
+    timelocal_nocheck
+    timegm_posix
+    timelocal_posix
+);
 
 my @MonthDays = ( 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 );
 
@@ -91,7 +97,7 @@ sub _daygm {
                     - int( $year / 100 )
                     + int( $year / 400 )
                     + int( ( ( $month * 306 ) + 5 ) / 10 ) ) - $Epoc;
-            }
+        }
     );
 }
 
@@ -110,7 +116,7 @@ sub timegm {
     if ( $Options{no_year_munging} ) {
         $year -= 1900;
     }
-    else {
+    elsif ( !$Options{posix_year} ) {
         if ( $year >= 1000 ) {
             $year -= 1900;
         }
@@ -176,6 +182,11 @@ sub timegm_modern {
     return &timegm;
 }
 
+sub timegm_posix {
+    local $Options{posix_year} = 1;
+    return &timegm;
+}
+
 sub timelocal {
     my $ref_t         = &timegm;
     my $loc_for_ref_t = _timegm( localtime($ref_t) );
@@ -205,8 +216,8 @@ sub timelocal {
 
     return $loc_t if $dst_off > 0;
 
-    # If the original date was a non-extent gap in a forward DST jump,
-    # we should now have the wrong answer - undo the DST adjustment
+    # If the original date was a non-existent gap in a forward DST jump, we
+    # should now have the wrong answer - undo the DST adjustment
     my ( $s, $m, $h ) = localtime($loc_t);
     $loc_t -= $dst_off if $s != $_[0] || $m != $_[1] || $h != $_[2];
 
@@ -223,10 +234,15 @@ sub timelocal_modern {
     return &timelocal;
 }
 
+sub timelocal_posix {
+    local $Options{posix_year} = 1;
+    return &timelocal;
+}
+
 1;
 
 # ABSTRACT: Efficiently compute time from local and GMT time
 
 __END__
 
-#line 469
+#line 516

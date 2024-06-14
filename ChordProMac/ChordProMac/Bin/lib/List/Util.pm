@@ -13,15 +13,19 @@ require Exporter;
 
 our @ISA        = qw(Exporter);
 our @EXPORT_OK  = qw(
-  all any first min max minstr maxstr none notall product reduce sum sum0 shuffle uniq uniqnum uniqstr
+  all any first min max minstr maxstr none notall product reduce reductions sum sum0
+  sample shuffle uniq uniqint uniqnum uniqstr
   head tail pairs unpairs pairkeys pairvalues pairmap pairgrep pairfirst
 );
-our $VERSION    = "1.50";
+our $VERSION    = "1.55";
 our $XS_VERSION = $VERSION;
-$VERSION    = eval $VERSION;
+$VERSION =~ tr/_//d;
 
 require XSLoader;
 XSLoader::load('List::Util', $XS_VERSION);
+
+# Used by shuffle()
+our $RAND;
 
 sub import
 {
@@ -39,21 +43,24 @@ sub import
 # For objects returned by pairs()
 sub List::Util::_Pair::key   { shift->[0] }
 sub List::Util::_Pair::value { shift->[1] }
+sub List::Util::_Pair::TO_JSON { [ @{+shift} ] }
 
-#line 68
+#line 73
 
-#line 74
+#line 80
 
-#line 278
+#line 304
 
-#line 314
+#line 340
 
-#line 475
+#line 504
 
-#line 479
+#line 508
 
-#line 555
+#line 520
 
-#line 669
+#line 625
+
+#line 758
 
 1;

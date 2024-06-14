@@ -9,7 +9,7 @@
 #  in the README file that comes with the distribution.
 #
 
-require XSLoader;
+BEGIN { require XSLoader }
 require Exporter;
 package Storable;
 
@@ -28,7 +28,9 @@ our @EXPORT_OK = qw(
 
 our ($canonical, $forgive_me);
 
-our $VERSION = '3.15';
+BEGIN {
+  our $VERSION = '3.23';
+}
 
 our $recursion_limit;
 our $recursion_limit_hash;
@@ -105,13 +107,11 @@ $Storable::flags = FLAGS_COMPAT;
 $Storable::downgrade_restricted = 1;
 $Storable::accept_future_minor = 1;
 
-XSLoader::load('Storable');
+BEGIN { XSLoader::load('Storable') };
 
 #
 # Determine whether locking is possible, but only when needed.
 #
-
-sub CAN_FLOCK { 1 } # computed by Storable.pm.PL
 
 sub show_file_magic {
     print <<EOM;
@@ -267,7 +267,7 @@ sub _store {
     local *FILE;
     if ($use_locking) {
         open(FILE, ">>", $file) || logcroak "can't write into $file: $!";
-        unless (1) {
+        unless (CAN_FLOCK) {
             logcarp
               "Storable::lock_store: fcntl/flock emulation broken on $^O";
             return undef;
@@ -411,7 +411,7 @@ sub _retrieve {
     my $self;
     my $da = $@;			# Could be from exception handler
     if ($use_locking) {
-        unless (1) {
+        unless (CAN_FLOCK) {
             logcarp
               "Storable::lock_store: fcntl/flock emulation broken on $^O";
             return undef;
@@ -528,4 +528,4 @@ EOS
 1;
 __END__
 
-#line 1442
+#line 1445

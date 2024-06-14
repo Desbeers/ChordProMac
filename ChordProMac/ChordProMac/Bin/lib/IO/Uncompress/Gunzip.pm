@@ -10,12 +10,12 @@ use strict ;
 use warnings;
 use bytes;
 
-use IO::Uncompress::RawInflate 2.084 ;
+use IO::Uncompress::RawInflate 2.101 ;
 
-use Compress::Raw::Zlib 2.084 () ;
-use IO::Compress::Base::Common 2.084 qw(:Status );
-use IO::Compress::Gzip::Constants 2.084 ;
-use IO::Compress::Zlib::Extra 2.084 ;
+use Compress::Raw::Zlib 2.101 () ;
+use IO::Compress::Base::Common 2.101 qw(:Status );
+use IO::Compress::Gzip::Constants 2.101 ;
+use IO::Compress::Zlib::Extra 2.101 ;
 
 require Exporter ;
 
@@ -29,7 +29,7 @@ Exporter::export_ok_tags('all');
 
 $GunzipError = '';
 
-$VERSION = '2.084';
+$VERSION = '2.102';
 
 sub new
 {
@@ -71,9 +71,9 @@ sub ckMagic
 
     *$self->{HeaderPending} = $magic ;
 
-    return $self->HeaderError("Minimum header size is " . 
-                              GZIP_MIN_HEADER_SIZE . " bytes") 
-        if length $magic != GZIP_ID_SIZE ;                                    
+    return $self->HeaderError("Minimum header size is " .
+                              GZIP_MIN_HEADER_SIZE . " bytes")
+        if length $magic != GZIP_ID_SIZE ;
 
     return $self->HeaderError("Bad Magic")
         if ! isGzipMagic($magic) ;
@@ -96,10 +96,10 @@ sub chkTrailer
     my $self = shift;
     my $trailer = shift;
 
-    # Check CRC & ISIZE 
+    # Check CRC & ISIZE
     my ($CRC32, $ISIZE) = unpack("V V", $trailer) ;
-    *$self->{Info}{CRC32} = $CRC32;    
-    *$self->{Info}{ISIZE} = $ISIZE;    
+    *$self->{Info}{CRC32} = $CRC32;
+    *$self->{Info}{ISIZE} = $ISIZE;
 
     if (*$self->{Strict}) {
         return $self->TrailerError("CRC mismatch")
@@ -131,9 +131,9 @@ sub _readFullGzipHeader($)
 
     *$self->{HeaderPending} = $magic ;
 
-    return $self->HeaderError("Minimum header size is " . 
-                              GZIP_MIN_HEADER_SIZE . " bytes") 
-        if length $magic != GZIP_ID_SIZE ;                                    
+    return $self->HeaderError("Minimum header size is " .
+                              GZIP_MIN_HEADER_SIZE . " bytes")
+        if length $magic != GZIP_ID_SIZE ;
 
 
     return $self->HeaderError("Bad Magic")
@@ -151,7 +151,7 @@ sub _readGzipHeader($)
     my ($buffer) = '' ;
 
     $self->smartReadExact(\$buffer, GZIP_MIN_HEADER_SIZE - GZIP_ID_SIZE)
-        or return $self->HeaderError("Minimum header size is " . 
+        or return $self->HeaderError("Minimum header size is " .
                                      GZIP_MIN_HEADER_SIZE . " bytes") ;
 
     my $keep = $magic . $buffer ;
@@ -160,22 +160,22 @@ sub _readGzipHeader($)
     # now split out the various parts
     my ($cm, $flag, $mtime, $xfl, $os) = unpack("C C V C C", $buffer) ;
 
-    $cm == GZIP_CM_DEFLATED 
+    $cm == GZIP_CM_DEFLATED
         or return $self->HeaderError("Not Deflate (CM is $cm)") ;
 
     # check for use of reserved bits
     return $self->HeaderError("Use of Reserved Bits in FLG field.")
-        if $flag & GZIP_FLG_RESERVED ; 
+        if $flag & GZIP_FLG_RESERVED ;
 
     my $EXTRA ;
     my @EXTRA = () ;
     if ($flag & GZIP_FLG_FEXTRA) {
         $EXTRA = "" ;
-        $self->smartReadExact(\$buffer, GZIP_FEXTRA_HEADER_SIZE) 
+        $self->smartReadExact(\$buffer, GZIP_FEXTRA_HEADER_SIZE)
             or return $self->TruncatedHeader("FEXTRA Length") ;
 
         my ($XLEN) = unpack("v", $buffer) ;
-        $self->smartReadExact(\$EXTRA, $XLEN) 
+        $self->smartReadExact(\$EXTRA, $XLEN)
             or return $self->TruncatedHeader("FEXTRA Body");
         $keep .= $buffer . $EXTRA ;
 
@@ -191,10 +191,10 @@ sub _readGzipHeader($)
     if ($flag & GZIP_FLG_FNAME) {
         $origname = "" ;
         while (1) {
-            $self->smartReadExact(\$buffer, 1) 
+            $self->smartReadExact(\$buffer, 1)
                 or return $self->TruncatedHeader("FNAME");
             last if $buffer eq GZIP_NULL_BYTE ;
-            $origname .= $buffer 
+            $origname .= $buffer
         }
         $keep .= $origname . GZIP_NULL_BYTE ;
 
@@ -206,10 +206,10 @@ sub _readGzipHeader($)
     if ($flag & GZIP_FLG_FCOMMENT) {
         $comment = "";
         while (1) {
-            $self->smartReadExact(\$buffer, 1) 
+            $self->smartReadExact(\$buffer, 1)
                 or return $self->TruncatedHeader("FCOMMENT");
             last if $buffer eq GZIP_NULL_BYTE ;
-            $comment .= $buffer 
+            $comment .= $buffer
         }
         $keep .= $comment . GZIP_NULL_BYTE ;
 
@@ -218,7 +218,7 @@ sub _readGzipHeader($)
     }
 
     if ($flag & GZIP_FLG_FHCRC) {
-        $self->smartReadExact(\$buffer, GZIP_FHCRC_SIZE) 
+        $self->smartReadExact(\$buffer, GZIP_FHCRC_SIZE)
             or return $self->TruncatedHeader("FHCRC");
 
         $HeaderCRC = unpack("v", $buffer) ;
@@ -255,7 +255,7 @@ sub _readGzipHeader($)
         'Comment'       => $comment,
         'Time'          => $mtime,
         'OsID'          => $os,
-        'OsName'        => defined $GZIP_OS_Names{$os} 
+        'OsName'        => defined $GZIP_OS_Names{$os}
                                  ? $GZIP_OS_Names{$os} : "Unknown",
         'HeaderCRC'     => $HeaderCRC,
         'Flags'         => $flag,
@@ -276,4 +276,4 @@ sub _readGzipHeader($)
 __END__
 
 
-#line 1123
+#line 1129
