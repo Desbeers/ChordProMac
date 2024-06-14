@@ -78,7 +78,11 @@ extension MacEditorView {
                 /// Highlight only the current paragraph
                 highlightRange = composeText.paragraphRange(for: textView.selectedRange)
             }
-            MacEditorView.highlight(view: textView, font: textView.font ?? .systemFont(ofSize: 14), range: highlightRange)
+            MacEditorView.highlight(
+                view: textView,
+                font: textView.font ?? .systemFont(ofSize: 14),
+                range: highlightRange
+            )
             parent.text = textView.string
         }
 

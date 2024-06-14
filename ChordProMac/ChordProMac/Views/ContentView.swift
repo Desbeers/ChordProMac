@@ -62,4 +62,3 @@ struct ContentView: View {
         .focusedSceneValue(\.sceneState, sceneState)
     }
 }
-

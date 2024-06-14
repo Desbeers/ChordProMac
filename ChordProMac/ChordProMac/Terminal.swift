@@ -121,7 +121,7 @@ extension Terminal {
 }
 
 extension Terminal {
-    
+
     /// Get information about the **ChordPro** binary
     /// - Returns: The info in a ``ChordProInfo`` struct
     static func getChordProInfo() async throws -> ChordProInfo {
@@ -154,7 +154,7 @@ extension Terminal {
 
 extension Terminal {
 
-    /// Export a document with the **chordpro** binary to a PDF
+    /// Export a document with the **ChordPro** binary to a PDF
     /// - Parameters:
     ///   - document: The current ``ChordProDocument``
     ///   - settings: The current ``AppSettings``
@@ -165,7 +165,7 @@ extension Terminal {
         settings: AppSettings,
         sceneState: SceneState
     ) async throws -> (data: Data, status: AppError) {
-        /// Get the **chordpro** binary
+        /// Get the **ChordPro** binary
         let chordProApp = try getChordProBinary()
         /// Remove previous export (if any)
         try? FileManager.default.removeItem(atPath: sceneState.exportURL.path)

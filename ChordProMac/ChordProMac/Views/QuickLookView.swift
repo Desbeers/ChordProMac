@@ -79,7 +79,7 @@ struct QuickLookView: View {
 }
 
 extension QuickLookView {
-    
+
     /// Create a preview of the current document
     struct Preview: NSViewRepresentable {
         var url: URL
@@ -87,20 +87,20 @@ extension QuickLookView {
             let preview = QLPreviewView(frame: .zero, style: .normal)
             preview?.autostarts = true
             preview?.previewItem = url as QLPreviewItem
-            
+
             return preview ?? QLPreviewView()
         }
-        
+
         func updateNSView(_ nsView: QLPreviewView, context: NSViewRepresentableContext<Preview>) {
             nsView.previewItem = url as QLPreviewItem
         }
-        
+        // swiftlint:disable:next nesting
         typealias NSViewType = QLPreviewView
     }
 }
 
 extension QuickLookView {
-    
+
     /// Update the preview of the current document
     struct UpdatePreview: View {
         /// The current document

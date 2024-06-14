@@ -23,7 +23,7 @@ struct AboutView: View {
                 .font(.system(size: 20, weight: .bold))
             Text("ChordPro \(chordProInfo?.general.chordpro.version ?? "…")")
             Text(chordProInfo?.general.chordpro.aux ?? "…")
-                    .font(.caption)
+                .font(.caption)
             Text("The reference implementation of the **ChordPro** format")
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
@@ -67,53 +67,53 @@ extension AboutView {
         @Binding var showMoreInfo: Bool
         var body: some View {
             VStack {
-                    Text("ChordPro \(chordProInfo.general.chordpro.version)")
-                        .font(.title)
-                    Text(chordProInfo.general.chordpro.aux)
-                        .font(.caption)
-                    ScrollView {
-                        VStack {
-                            VStack(alignment: .leading) {
-                                HStack {
-                                    Text("Perl")
-                                        .bold()
-                                    Text(chordProInfo.general.perl.version)
-                                }
-                                    Text("ABC Support")
-                                        .bold()
-                                    Text(chordProInfo.general.abc)
-                                Text("Resource Path")
-                                    .bold()
-                                ForEach(chordProInfo.resources, id: \.self) { resource in
-                                    HStack {
-                                        Text(resource.path)
-                                    }
-                                }
-                            }
-                            .wrapInfoSection(title: "General")
-                            VStack(alignment: .leading) {
-                                if let library = chordProInfo.general.library.first {
-                                    Text(library.path)
-                                } else {
-                                    Text("You have not selected a Custom Library")
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .wrapInfoSection(title: "Custom Library")
-                        }
+                Text("ChordPro \(chordProInfo.general.chordpro.version)")
+                    .font(.title)
+                Text(chordProInfo.general.chordpro.aux)
+                    .font(.caption)
+                ScrollView {
+                    VStack {
                         VStack(alignment: .leading) {
-                            ForEach(chordProInfo.modules, id: \.self) { module in
+                            HStack {
+                                Text("Perl")
+                                    .bold()
+                                Text(chordProInfo.general.perl.version)
+                            }
+                            Text("ABC Support")
+                                .bold()
+                            Text(chordProInfo.general.abc)
+                            Text("Resource Path")
+                                .bold()
+                            ForEach(chordProInfo.resources, id: \.self) { resource in
                                 HStack {
-                                    Text(module.name)
-                                    Text("・")
-                                    Text("Version \(module.version)")
+                                    Text(resource.path)
                                 }
                             }
                         }
-                        .wrapInfoSection(title: "Perl Modules")
-                        .padding(.bottom)
+                        .wrapInfoSection(title: "General")
+                        VStack(alignment: .leading) {
+                            if let library = chordProInfo.general.library.first {
+                                Text(library.path)
+                            } else {
+                                Text("You have not selected a Custom Library")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .wrapInfoSection(title: "Custom Library")
                     }
-                    .border(Color.accentColor)
+                    VStack(alignment: .leading) {
+                        ForEach(chordProInfo.modules, id: \.self) { module in
+                            HStack {
+                                Text(module.name)
+                                Text("・")
+                                Text("Version \(module.version)")
+                            }
+                        }
+                    }
+                    .wrapInfoSection(title: "Perl Modules")
+                    .padding(.bottom)
+                }
+                .border(Color.accentColor)
                 Button {
                     showMoreInfo = false
                 } label: {
@@ -157,4 +157,3 @@ extension View {
         modifier(AboutView.WrapInfoSection(title: title))
     }
 }
-

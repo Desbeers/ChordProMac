@@ -8,6 +8,9 @@
 import AppKit
 
 extension MacEditorView {
+
+    // swiftlint:disable force_try
+
     /// The regex for chords
     static let chordRegex = try! NSRegularExpression(pattern: "\\[([\\w#b\\/]+)\\]", options: .caseInsensitive)
     /// The regex for directives
@@ -16,6 +19,9 @@ extension MacEditorView {
     static let commentsRegex = try! NSRegularExpression(pattern: "#.*\\s")
     /// The regex for pango
     static let pangoRegex = try! NSRegularExpression(pattern: "<\\/?[^>]*>")
+
+    // swiftlint:enable force_try
+
     /// The line height multiplier for the editor text
     static let lineHeightMultiple: Double = 1.2
     /// The style of a paragraph in the editor
@@ -47,7 +53,7 @@ extension MacEditorView {
                 .paragraphStyle: MacEditorView.paragraphStyle,
                 .foregroundColor: NSColor.textColor,
                 .font: font
-            ], 
+            ],
             range: range
         )
         /// Go to all the regex definitions
