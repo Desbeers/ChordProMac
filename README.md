@@ -1,5 +1,13 @@
 # ChordProMac
 
+## 16 June 2024
+
+My wrapper is merged into the official ChordPro source. That means that what you see here is what you get there. I might keep this repository alive; maybe not. Maybe just for TestBuilds.
+
+I'm very proud for what I have achieved. It was a long and often difficult journey to write a new macOS *wrapper* but I loved it all the way. My journey with **ChordPro** will not end here. It just started.
+
+---
+
 A MacOS SwiftUI wrapper for the official [ChordPro](https://chordpro.org) program.
 
 ![ChordProMac](https://github.com/Desbeers/ChordProMac/raw/main/Images/screenshot-macOS.jpg)
