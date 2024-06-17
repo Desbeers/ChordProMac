@@ -51,6 +51,7 @@ struct ContentView: View {
             }
         }
         .toolbar {
+            FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             QuickLookView(label: "Show Preview", document: document)
                 .labelStyle(.iconOnly)

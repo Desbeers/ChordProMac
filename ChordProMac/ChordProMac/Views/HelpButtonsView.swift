@@ -37,9 +37,9 @@ struct HelpButtonsView: View {
         Divider()
         Text("Trouble Shooting")
             .font(.caption)
-        Toggle(isOn: $appState.settings.chordPro.debug) {
-            Text("Enable Debug Info in the PDF")
-        }
+//        Toggle(isOn: $appState.settings.chordPro.debug) {
+//            Text("Enable Debug Info in the PDF")
+//        }
         if let url = URL(string: "https://chordpro.org/chordpro/trouble-shooting/") {
             Link(destination: url) {
                 Text("More Trouble Shooting Help on ChordPro.org")

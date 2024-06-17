@@ -126,7 +126,6 @@ extension SettingsView {
             Text("Built-in configurations")
                 .font(.subheadline)
                 .bold()
-            Divider()
             List {
                 ForEach($systemConfigurations) { $template in
                     Toggle(isOn: $template.enabled) {
@@ -137,7 +136,6 @@ extension SettingsView {
                     appState.settings.chordPro.systemConfigs = systemConfigurations.filter({$0.enabled == true})
                 }
             }
-            Divider()
             Toggle("Add a custom configuration", isOn: $appState.settings.chordPro.useCustomConfig)
             FileButtonView(
                 bookmark: CustomFile.customConfig
@@ -185,6 +183,9 @@ extension SettingsView {
                 Toggle("Eliminate capo settings", isOn: $appState.settings.chordPro.deCapo)
                 Text("This will be done by transposing the song")
                     .font(.caption)
+                Toggle(isOn: $appState.settings.chordPro.debug) {
+                    Text("Enable Debug Info in the PDF")
+                }
             }
             .wrapSettingsSection(title: "General")
             VStack {
@@ -240,39 +241,39 @@ extension SettingsView {
     }
 }
 
-extension SettingsView {
-
-    /// Menu Items and Keyboard shortcuts for font size
-    /// - Note: Unfortunately, this cannot be placed in a `Menu` because it does not proper update its state...
-    struct MenuButtonsView: View {
-        /// The observable state of the application
-        @EnvironmentObject private var appState: AppState
-        /// The scene in the environment
-        @FocusedValue(\.sceneState) private var sceneState: SceneState?
-        /// The range of font sizes
-        private let fontSizeRange = AppSettings.Application.fontSizeRange
-        /// The body of the `View`
-        var body: some View {
-            Group {
-                Button {
-                    appState.settings.application.fontSize += 1
-                } label: {
-                    Text("Increase Editor Font")
-                }
-                .keyboardShortcut("+")
-                .disabled(appState.settings.application.fontSize == fontSizeRange.upperBound)
-                Button {
-                    appState.settings.application.fontSize -= 1
-                } label: {
-                    Text("Decrease Editor Font")
-                }
-                .keyboardShortcut("-")
-                .disabled(appState.settings.application.fontSize == fontSizeRange.lowerBound)
-            }
-            .disabled(sceneState == nil)
-        }
-    }
-}
+//extension SettingsView {
+//
+//    /// Menu Items and Keyboard shortcuts for font size
+//    /// - Note: Unfortunately, this cannot be placed in a `Menu` because it does not proper update its state...
+//    struct MenuButtonsView: View {
+//        /// The observable state of the application
+//        @EnvironmentObject private var appState: AppState
+//        /// The scene in the environment
+//        @FocusedValue(\.sceneState) private var sceneState: SceneState?
+//        /// The range of font sizes
+//        private let fontSizeRange = AppSettings.Application.fontSizeRange
+//        /// The body of the `View`
+//        var body: some View {
+//            Group {
+//                Button {
+//                    appState.settings.application.fontSize += 1
+//                } label: {
+//                    Text("Increase Editor Font")
+//                }
+//                .keyboardShortcut("+")
+//                .disabled(appState.settings.application.fontSize == fontSizeRange.upperBound)
+//                Button {
+//                    appState.settings.application.fontSize -= 1
+//                } label: {
+//                    Text("Decrease Editor Font")
+//                }
+//                .keyboardShortcut("-")
+//                .disabled(appState.settings.application.fontSize == fontSizeRange.lowerBound)
+//            }
+//            .disabled(sceneState == nil)
+//        }
+//    }
+//}
 
 extension SettingsView {
 
@@ -303,15 +304,4 @@ extension View {
     func wrapSettingsSection(title: String) -> some View {
         modifier(SettingsView.WrapSettingsSection(title: title))
     }
-}
-
-extension NSTableView {
-
-    /// Hack to remove the background from a list
-    /// - Note: In macOS 13 and higher this can be done in SwiftUI but we support macOS 12 as well
-  open override func viewDidMoveToWindow() {
-    super.viewDidMoveToWindow()
-    backgroundColor = NSColor.clear
-    enclosingScrollView!.drawsBackground = false
-  }
 }
