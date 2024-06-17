@@ -25,9 +25,9 @@ import SwiftUI
                 Button("About ChordPro") {
                     appDelegate.showAboutWindow(chordProInfo: appState.chordProInfo)
                 }
-                .task(id: appState.settings.chordPro) {
-                    appState.chordProInfo = try? await Terminal.getChordProInfo()
-                }
+//                .task(id: appState.settings.chordPro) {
+//                    appState.chordProInfo = try? await Terminal.getChordProInfo()
+//                }
             }
             CommandGroup(after: .importExport) {
                 ExportSongView(label: "Export as PDF…")
