@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// SwiftUI `View` for buttons to resize the editor font
+/// - Note: This can't be in the main menu; macOS Monterey can't handle dynamic buttons
 struct FontSizeButtonsView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState

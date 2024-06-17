@@ -241,40 +241,6 @@ extension SettingsView {
     }
 }
 
-//extension SettingsView {
-//
-//    /// Menu Items and Keyboard shortcuts for font size
-//    /// - Note: Unfortunately, this cannot be placed in a `Menu` because it does not proper update its state...
-//    struct MenuButtonsView: View {
-//        /// The observable state of the application
-//        @EnvironmentObject private var appState: AppState
-//        /// The scene in the environment
-//        @FocusedValue(\.sceneState) private var sceneState: SceneState?
-//        /// The range of font sizes
-//        private let fontSizeRange = AppSettings.Application.fontSizeRange
-//        /// The body of the `View`
-//        var body: some View {
-//            Group {
-//                Button {
-//                    appState.settings.application.fontSize += 1
-//                } label: {
-//                    Text("Increase Editor Font")
-//                }
-//                .keyboardShortcut("+")
-//                .disabled(appState.settings.application.fontSize == fontSizeRange.upperBound)
-//                Button {
-//                    appState.settings.application.fontSize -= 1
-//                } label: {
-//                    Text("Decrease Editor Font")
-//                }
-//                .keyboardShortcut("-")
-//                .disabled(appState.settings.application.fontSize == fontSizeRange.lowerBound)
-//            }
-//            .disabled(sceneState == nil)
-//        }
-//    }
-//}
-
 extension SettingsView {
 
     struct WrapSettingsSection: ViewModifier {
@@ -297,7 +263,7 @@ extension SettingsView {
 }
 
 extension View {
-    
+
     /// Shortcut to the `WrapSettingsSection` modifier
     /// - Parameter title: The title
     /// - Returns: A modified `View`
