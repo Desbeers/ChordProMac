@@ -14,9 +14,6 @@ final class AppState: ObservableObject {
     @Published var settings: AppSettings {
         didSet {
             try? AppSettings.save(settings: settings)
-            Task { @MainActor in
-                self.chordProInfo = try? await Terminal.getChordProInfo()
-            }
         }
     }
     /// Information about **ChordPro**

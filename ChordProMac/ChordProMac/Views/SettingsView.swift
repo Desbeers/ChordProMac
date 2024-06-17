@@ -126,6 +126,7 @@ extension SettingsView {
             Text("Built-in configurations")
                 .font(.subheadline)
                 .bold()
+            Divider()
             List {
                 ForEach($systemConfigurations) { $template in
                     Toggle(isOn: $template.enabled) {
@@ -136,6 +137,7 @@ extension SettingsView {
                     appState.settings.chordPro.systemConfigs = systemConfigurations.filter({$0.enabled == true})
                 }
             }
+            Divider()
             Toggle("Add a custom configuration", isOn: $appState.settings.chordPro.useCustomConfig)
             FileButtonView(
                 bookmark: CustomFile.customConfig
@@ -294,8 +296,22 @@ extension SettingsView {
 }
 
 extension View {
-
+    
+    /// Shortcut to the `WrapSettingsSection` modifier
+    /// - Parameter title: The title
+    /// - Returns: A modified `View`
     func wrapSettingsSection(title: String) -> some View {
         modifier(SettingsView.WrapSettingsSection(title: title))
     }
+}
+
+extension NSTableView {
+
+    /// Hack to remove the background from a list
+    /// - Note: In macOS 13 and higher this can be done in SwiftUI but we support macOS 12 as well
+  open override func viewDidMoveToWindow() {
+    super.viewDidMoveToWindow()
+    backgroundColor = NSColor.clear
+    enclosingScrollView!.drawsBackground = false
+  }
 }
