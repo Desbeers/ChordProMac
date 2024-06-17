@@ -20,6 +20,7 @@ use File::LoadLines;
 use File::Spec;
 use Scalar::Util qw(reftype);
 use List::Util qw(any);
+use Storable 'dclone';
 use Hash::Util;
 
 #sub hmerge($$;$);
@@ -131,7 +132,7 @@ sub configurator ( $opts = undef ) {
         }
 
         # Process.
-        local $::config = $cfg;
+        local $::config = dclone($cfg);
         process_config( $new, $file );
         # Merge final.
         $cfg = hmerge( $cfg, $new );
@@ -331,7 +332,7 @@ sub process_config ( $cfg, $file ) {
 
     ChordPro::Chords::reset_parser;
     ChordPro::Chords::Parser->reset_parsers;
-    local $::config = hmerge( $::config, $cfg );
+    local $::config = dclone(hmerge( $::config, $cfg ));
     if ( $cfg->{chords} ) {
         ChordPro::Chords::push_parser($cfg->{notes}->{system});
         my $c = $cfg->{chords};
@@ -412,6 +413,46 @@ sub config_final ( $delta ) {
 	$cfg->lock;
 	$res;
     }
+}
+
+sub convert_config ( $from, $to ) {
+    # This is a completely independent function.
+
+    # Establish a key order retaining parser.
+    my $parser = JSON::Relaxed::Parser->new( key_order => 1 );
+
+    # First find and process the schema.
+    my $schema = CP->findres( "config.schema", class => "config" );
+    my $o = { split => 0, fail => 'soft' };
+    my $data = loadlines( $schema, $o );
+    die("$schema: ", $o->{error}, "\n") if $o->{error};
+    $schema = $parser->decode($data);
+
+    # Then load the config to be converted.
+    $o = { split => 0, fail => 'soft' };
+    $data = loadlines( $from, $o );
+    die("$from: ", $o->{error}, "\n") if $o->{error};
+    my $new = $parser->decode($data);
+
+    # And re-encode it using the schema.
+    my $res = $parser->encode( data => $new, pretty => 1,
+			       nounicodeescapes => 1, schema => $schema );
+
+    # Add trailer.
+    $res .= "\n// End of Config.\n";
+
+    # Write if out.
+    if ( $to && $to ne "-" ) {
+	open( my $fd, '>', $to )
+	  or die("$to: $!\n");
+	print $fd $res;
+	$fd->close;
+    }
+    else {
+	print $res;
+    }
+
+    1;
 }
 
 # Config in properties format.

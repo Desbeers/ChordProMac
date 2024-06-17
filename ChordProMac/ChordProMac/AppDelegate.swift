@@ -12,13 +12,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var aboutBoxWindowController: NSWindowController?
 
-    func showAboutWindow() {
+    func showAboutWindow(appState: AppState) {
         if aboutBoxWindowController == nil {
             let styleMask: NSWindow.StyleMask = [.closable, .miniaturizable, .titled]
             let window = NSWindow()
             window.styleMask = styleMask
             window.title = "About ChordPro"
-            window.contentView = NSHostingView(rootView: AboutView())
+            window.contentView = NSHostingView(rootView: AboutView(appState: appState))
             window.center()
             aboutBoxWindowController = NSWindowController(window: window)
         }

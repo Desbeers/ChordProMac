@@ -34,7 +34,6 @@ struct ContentView: View {
                             .overlay(alignment: .top) {
                                 if sceneState.quickLookOutdated {
                                     QuickLookView.UpdatePreview(document: document)
-                                    
                                 }
                             }
                     }

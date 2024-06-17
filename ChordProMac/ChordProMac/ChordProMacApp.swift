@@ -23,7 +23,10 @@ import SwiftUI
         .commands {
             CommandGroup(replacing: CommandGroupPlacement.appInfo) {
                 Button("About ChordPro") {
-                    appDelegate.showAboutWindow()
+                    appDelegate.showAboutWindow(appState: appState)
+                }
+                .task(id: appState.settings.chordPro) {
+                    appState.chordProInfo = try? await Terminal.getChordProInfo()
                 }
             }
             CommandGroup(after: .importExport) {
