@@ -12,7 +12,7 @@ struct AboutView: View {
     /// Bool to show the sheet with additional info
     @State private var showMoreInfo: Bool = false
     /// The observable state of the application
-    var appState: AppState
+    var chordProInfo: ChordProInfo?
     /// The body of the `View`
     var body: some View {
         VStack(spacing: 10) {
@@ -21,8 +21,8 @@ struct AboutView: View {
                 .frame(width: 80, height: 80)
             Text("ChordPro")
                 .font(.system(size: 20, weight: .bold))
-            Text("ChordPro \(appState.chordProInfo?.general.chordpro.version ?? "…")")
-            Text(appState.chordProInfo?.general.chordpro.aux ?? "…")
+            Text("ChordPro \(chordProInfo?.general.chordpro.version ?? "…")")
+            Text(chordProInfo?.general.chordpro.aux ?? "…")
                 .font(.caption)
             Text("The reference implementation of the **ChordPro** format")
                 .multilineTextAlignment(.center)
@@ -32,7 +32,7 @@ struct AboutView: View {
                     showMoreInfo = true
                 }
             }
-            .disabled(appState.chordProInfo == nil)
+            .disabled(chordProInfo == nil)
             Text("Copyright 2016,2024 Johan Vromans\n<jvromans@squirrel.nl>")
                 .font(.caption)
                 .multilineTextAlignment(.center)
@@ -40,7 +40,7 @@ struct AboutView: View {
         .padding()
         .frame(minWidth: 280, minHeight: 330)
         .sheet(isPresented: $showMoreInfo) {
-            if let chordProInfo = appState.chordProInfo {
+            if let chordProInfo = chordProInfo {
                 MoreInfoView(chordProInfo: chordProInfo, showMoreInfo: $showMoreInfo)
             }
         }
@@ -79,15 +79,15 @@ extension AboutView {
                             }
                         }
                         .wrapInfoSection(title: "General")
-                        VStack(alignment: .leading) {
-                            if let library = chordProInfo.general.library.first {
-                                Text(library.path)
-                            } else {
-                                Text("You have not selected a Custom Library")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .wrapInfoSection(title: "Custom Library")
+//                        VStack(alignment: .leading) {
+//                            if let library = chordProInfo.general.library.first {
+//                                Text(library.path)
+//                            } else {
+//                                Text("You have not selected a Custom Library")
+//                                    .foregroundColor(.secondary)
+//                            }
+//                        }
+//                        .wrapInfoSection(title: "Custom Library")
                     }
                     VStack(alignment: .leading) {
                         ForEach(chordProInfo.modules, id: \.self) { module in
