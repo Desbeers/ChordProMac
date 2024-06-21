@@ -6,6 +6,10 @@
 
 Reason is that I rebuild the **ChordPro** core on my M1 mac so the core is *arm* only at the moment. That will be fixed for any official release in the future.
 
+**As of 21 June 2024, the TestBuilds might not work at all because I'm battling code-signing **
+
+---
+
 This is an unsigned, intel only test build for macOS 12 and later.
 
 - Download the dmg and open it.

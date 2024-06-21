@@ -27,9 +27,8 @@ xcodebuild: info
 	$(MKDIR) -p "${DEST}/XcodeSource"
 	cp -r "ChordProMac" "${DEST}/XcodeSource"
 	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
-		-arch x86_64 \
-		CODE_SIGN_IDENTITY="" \
-		CODE_SIGNING_REQUIRED=NO \
+		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGNING_REQUIRED=YES \
 		BUILD_DIR=../../../build
 		
 archive: xcodebuild
