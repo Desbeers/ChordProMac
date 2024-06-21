@@ -19,8 +19,9 @@ chordpro:
 	rm -fr "${WRAPPERBIN}"
 	$(MKDIR) -p "${WRAPPERBIN}"
 	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
+	@echo "Add core info to the wrapper..."
 
-xcodebuild:
+xcodebuild: info
 	@echo "Building ChordProMac"
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
@@ -38,6 +39,10 @@ archive: xcodebuild
 	cp "ChordProMac/Read Me First.html" "${DEST}/ChordPro"
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"
+	
+info:
+	@echo "Add core info to the wrapper..."
+	${WRAPPERBIN}/chordpro -A -A -A -> ${WRAPPERBIN}/ChordProInfo.json
 	
 clean:
 	rm -fr ${DEST}
