@@ -914,7 +914,8 @@ sub generate_song {
     $newpage->();
 
     # Embed source and config for debugging;
-    $pr->embed($source->{file}) if $source->{file} && $options->{debug};
+    $pr->embed($source->{file})
+      if $source->{file} && ( $options->{debug} || $ChordPro::VERSION =~ /_/ );
 
     my $prev;			# previous element
 
@@ -2062,6 +2063,7 @@ sub imageline {
 		     border => $opts->{border} || 0,
 		     valign => $opts->{valign} // "top",
 		     align  => $align,
+		     maybe href => $opts->{href},
 		   );
 
     if ( $anchor eq "float" ) {
