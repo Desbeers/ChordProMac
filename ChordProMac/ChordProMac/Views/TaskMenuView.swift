@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import ChordProShared
 
 /// SwiftUI `View` with buttons to run a ``CustomTask``
 struct TaskMenuView: View {
@@ -63,7 +64,7 @@ struct TaskMenuView: View {
         let settings = AppSettings.load()
         if settings.chordPro.useAdditionalLibrary {
             guard
-                let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customLibrary),
+                let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customLibrary),
                 let regex = try? NSRegularExpression(
                     pattern: "(?://|\\#)\\s*(?:chordpro\\s*)?task:\\s*(.*)",
                     options: []

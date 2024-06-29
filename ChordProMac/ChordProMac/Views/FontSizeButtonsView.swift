@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// SwiftUI `View` for buttons to resize the editor font
 /// - Note: This can't be in the main menu; macOS Monterey can't handle dynamic buttons
@@ -13,24 +14,24 @@ struct FontSizeButtonsView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
     /// The range of font sizes
-    private let fontSizeRange = AppSettings.Application.fontSizeRange
+    private let fontSizeRange = ChordProEditor.Settings.fontSizeRange
     /// The body of the `View`
     var body: some View {
         Group {
             Button {
-                appState.settings.application.fontSize -= 1
+                appState.settings.editor.fontSize -= 1
             } label: {
                 Label("Smaller", systemImage: "textformat.size.smaller")
             }
             .keyboardShortcut("-")
-            .disabled(appState.settings.application.fontSize == fontSizeRange.lowerBound)
+            .disabled(appState.settings.editor.fontSize == fontSizeRange.lowerBound)
             Button {
-                appState.settings.application.fontSize += 1
+                appState.settings.editor.fontSize += 1
             } label: {
                 Label("Bigger", systemImage: "textformat.size.larger")
             }
             .keyboardShortcut("+")
-            .disabled(appState.settings.application.fontSize == fontSizeRange.upperBound)
+            .disabled(appState.settings.editor.fontSize == fontSizeRange.upperBound)
         }
         .labelStyle(.titleAndIcon)
     }

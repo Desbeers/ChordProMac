@@ -7,6 +7,7 @@
 
 import SwiftUI
 import OSLog
+import ChordProShared
 
 /// SwiftUI `View` for an export button
 /// - Note: This button is also in the App Menu to it needs focused values for the document and the scene
@@ -52,7 +53,7 @@ struct ExportSongView: View {
                 }
             },
             label: {
-                Text(label)
+                Label(label, systemImage: "square.and.arrow.up")
             }
         )
         /// Disable the button when there is no document window in focus and no scene state available

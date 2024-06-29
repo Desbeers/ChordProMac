@@ -7,6 +7,7 @@
 
 import SwiftUI
 import OSLog
+import ChordProShared
 
 /// Terminal utilities
 enum Terminal {
@@ -126,12 +127,12 @@ extension Terminal {
     static func getOptionalCustomConfig(settings: AppSettings) -> String? {
         if
             settings.chordPro.useCustomConfig,
-            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customConfig)
+            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customConfig)
         {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
             /// Close the access
-            FileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+            UserFileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
             return "--config='\(persistentURL.path)'"
         }
         return nil
@@ -152,12 +153,12 @@ extension Terminal {
         /// Add the optional additional library to the environment of the shell
         if
             settings.chordPro.useAdditionalLibrary,
-            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customLibrary) {
+            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customLibrary) {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
             arguments.append("CHORDPRO_LIB='\(persistentURL.path)'")
             /// Close the access
-            FileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+            UserFileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
         }
         /// Add the argument to get the information
         arguments.append("'\(chordProApp.path)' -A -A -A")
@@ -208,12 +209,12 @@ extension Terminal {
         /// Add the optional additional library to the environment of the shell
         if
             settings.chordPro.useAdditionalLibrary,
-            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customLibrary) {
+            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customLibrary) {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
             arguments.append("CHORDPRO_LIB='\(persistentURL.path)'")
             /// Close the access
-            FileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+            UserFileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
         }
         /// The **ChordPro** binary
         arguments.append("'\(chordProApp.path)'")

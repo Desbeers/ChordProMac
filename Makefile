@@ -26,8 +26,13 @@ xcodebuild: info
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
 	cp -r "ChordProMac" "${DEST}/XcodeSource"
-	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
-		BUILD_DIR=../../../build
+	cd ${DEST}/XcodeSource/ChordProMac && xcodebuild \
+		-scheme ChordProMac \
+		-configuration Release \
+		-arch x86_64 \
+		CODE_SIGN_IDENTITY="" \
+		CODE_SIGNING_REQUIRED=NO \
+		-derivedDataPath "${DEST}"
 		
 archive: xcodebuild
 	@echo "Archive ChordPro"

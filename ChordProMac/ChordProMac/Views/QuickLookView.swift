@@ -8,6 +8,7 @@
 import SwiftUI
 import QuickLook
 import Quartz
+import ChordProShared
 
 /// SwiftUI `View` for a quick look button
 struct QuickLookView: View {

@@ -5,7 +5,8 @@
 //  Created by Nick Berendsen on 26/05/2024.
 //
 
-import Foundation
+import SwiftUI
+import ChordProShared
 
 /// The observable state of the scene
 /// - Note: Every open song window has its own `SceneState` class
@@ -32,6 +33,8 @@ final class SceneState: ObservableObject {
     @Published var quickLookID = UUID()
     /// Bool if the quick look is outdated
     @Published var quickLookOutdated: Bool = false
+    /// The internals of the **ChordPro** editor
+    @Published var editorInternals = ChordProEditor.Internals()
     /// Init the class
     init() {
         /// Give it an unique ID
@@ -44,5 +47,23 @@ final class SceneState: ObservableObject {
         exportURL = temporaryDirectoryURL.appendingPathComponent(sceneID, conformingTo: .pdf)
         /// Create a log URL
         logFileURL = temporaryDirectoryURL.appendingPathComponent(sceneID, conformingTo: .plainText)
+    }
+}
+
+/// The `FocusedValueKey` for the current scene
+struct SceneFocusedValueKey: FocusedValueKey {
+    /// The `typealias` for the key
+    typealias Value = SceneState
+}
+
+extension FocusedValues {
+    /// The value of the scene key
+    var sceneState: SceneFocusedValueKey.Value? {
+        get {
+            self[SceneFocusedValueKey.self]
+        }
+        set {
+            self[SceneFocusedValueKey.self] = newValue
+        }
     }
 }

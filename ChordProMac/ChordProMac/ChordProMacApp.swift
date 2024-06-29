@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// SwiftUI `Scene` for **ChordProMac**
 @main struct ChordProMacApp: App {
@@ -29,13 +30,15 @@ import SwiftUI
             CommandGroup(after: .importExport) {
                 ExportSongView(label: "Export as PDF…")
                     .environmentObject(appState)
+                Divider()
+                PrintPDFView(label: "Print…")
+                    .environmentObject(appState)
             }
             CommandMenu("Tasks") {
                 TaskMenuView()
             }
             CommandGroup(replacing: .help) {
                 HelpButtonsView()
-                    .environmentObject(appState)
             }
         }
         Settings {

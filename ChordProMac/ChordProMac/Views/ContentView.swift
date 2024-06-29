@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// SwiftUI `View` for the main content
 struct ContentView: View {
@@ -17,18 +18,24 @@ struct ContentView: View {
     @StateObject private var sceneState = SceneState()
     /// The font for the editor
     var nsFont: NSFont {
-        return appState.settings.application.fontStyle.nsFont(size: appState.settings.application.fontSize)
+        return appState.settings.editor.fontStyle.nsFont(size: appState.settings.editor.fontSize)
     }
     /// The body of the `View`
     var body: some View {
         VStack {
-            HStack {
-                MacEditorView(
+            HStack(spacing: 0) {
+                ChordProEditor(
                     text: $document.text,
-                    font: nsFont,
+                    settings: appState.settings.editor,
                     directives: appState.directives
                 )
-                VStack {
+                .introspect { editor in
+                    Task { @MainActor in
+                        sceneState.editorInternals = editor
+                    }
+                }
+                HStack(spacing: 0) {
+                    Divider()
                     if let quickView = sceneState.quickLookURL {
                         QuickLookView.Preview(url: quickView)
                             .id(sceneState.quickLookID)
@@ -54,9 +61,13 @@ struct ContentView: View {
         .toolbar {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
-            QuickLookView(label: "Show Preview", document: document)
+            ControlGroup {
+                PrintPDFView(label: "Print PDF")
+                QuickLookView(label: "Show Preview", document: document)
+            }
                 .labelStyle(.iconOnly)
         }
+        .labelStyle(.titleAndIcon)
         .sheet(isPresented: $sceneState.showLog) {
             LogView()
         }

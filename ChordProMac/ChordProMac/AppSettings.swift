@@ -6,11 +6,14 @@
 //
 
 import Foundation
+import ChordProShared
 
 /// All the settings for the application
 struct AppSettings: Codable, Equatable {
     /// Settings that will change the behaviour of the application
     var application = Application()
+    /// The options for the ``ChordProEditor``
+    var editor: ChordProEditor.Settings = .init()
     /// Settings that will change the behaviour of the **ChordPro** binary
     var chordPro = ChordPro()
 }
@@ -45,15 +48,6 @@ extension AppSettings {
 
         /// Bool to use a custom song template
         var useCustomSongTemplate: Bool = false
-
-        // MARK: Fonts
-
-        /// The range of available font sizes
-        static let fontSizeRange: ClosedRange<Double> = 10...24
-        /// The font style of the editor
-        var fontStyle: FontStyle = .monospaced
-        /// The font size of the editor
-        var fontSize: Double = 14
     }
 
     /// Settings that will change the behaviour of the **ChordPro** binary
@@ -70,7 +64,7 @@ extension AppSettings {
         /// The label to show in the ``StatusView``
         var configLabel: String {
             var config = systemConfigs.map {$0.label.replacingOccurrences(of: "_", with: " ").capitalized}
-            if useCustomConfig, let url = try? FileBookmark.getBookmarkURL(CustomFile.customConfig) {
+            if useCustomConfig, let url = try? UserFileBookmark.getBookmarkURL(UserFileItem.customConfig) {
                 config.append(url.deletingPathExtension().lastPathComponent)
             }
             return config.joined(separator: "・")
@@ -140,8 +134,6 @@ extension AppSettings {
         var noChordGrids: Bool = false
         /// Eliminate capo settings by transposing the song
         var deCapo: Bool = false
-        /// Use packaged fonts
-        var usePackagedFonts: Bool = false
         /// Enable debug info in the PDF
         var debug: Bool = false
     }

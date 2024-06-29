@@ -7,13 +7,14 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import ChordProShared
 
-extension UTType {
-    /// Define the UTType for a **ChordPro** song
-    static var chordProSong: UTType {
-        UTType(importedAs: "org.chordpro")
-    }
-}
+//extension UTType {
+//    /// Define the UTType for a **ChordPro** song
+//    static var chordProSong: UTType {
+//        UTType(importedAs: "org.chordpro")
+//    }
+//}
 
 /// Define the  **ChordPro** document
 struct ChordProDocument: FileDocument {
@@ -27,7 +28,7 @@ struct ChordProDocument: FileDocument {
         /// Check if we have to use a custom template
         if
             settings.application.useCustomSongTemplate,
-            let persistentURL = try? FileBookmark.getBookmarkURL(CustomFile.customSongTemplate) {
+            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customSongTemplate) {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
             let data = try? String(contentsOf: persistentURL, encoding: .utf8)
@@ -54,5 +55,23 @@ struct ChordProDocument: FileDocument {
             throw AppError.writeDocumentError
         }
         return .init(regularFileWithContents: data)
+    }
+}
+
+/// The `FocusedValueKey` for the current document
+struct DocumentFocusedValueKey: FocusedValueKey {
+    /// The `typealias` for the key
+    typealias Value = FileDocumentConfiguration<ChordProDocument>
+}
+
+extension FocusedValues {
+    /// The value of the document key
+    var document: DocumentFocusedValueKey.Value? {
+        get {
+            self[DocumentFocusedValueKey.self]
+        }
+        set {
+            self[DocumentFocusedValueKey.self] = newValue
+        }
     }
 }

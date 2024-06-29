@@ -9,6 +9,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
 import AudioToolbox
+import ChordProShared
 
 /// SwiftUI `View` with the application settings
 struct SettingsView: View {
@@ -76,8 +77,8 @@ extension SettingsView {
         ScrollView {
             VStack {
                 Toggle("Use a custom template", isOn: $appState.settings.application.useCustomSongTemplate)
-                FileButtonView(
-                    bookmark: CustomFile.customSongTemplate
+                UserFileButtonView(
+                    bookmark: UserFileItem.customSongTemplate
                 ) {}
                     .disabled(!appState.settings.application.useCustomSongTemplate)
                 Text("You can use your own **ChordPro** file as a starting point when you create a new song")
@@ -87,35 +88,60 @@ extension SettingsView {
             VStack {
                 HStack {
                     Text("A")
-                        .font(.system(size: AppSettings.Application.fontSizeRange.lowerBound))
+                        .font(.system(size: ChordProEditor.Settings.fontSizeRange.lowerBound))
                     Slider(
-                        value: $appState.settings.application.fontSize,
-                        in: AppSettings.Application.fontSizeRange,
+                        value: $appState.settings.editor.fontSize,
+                        in: ChordProEditor.Settings.fontSizeRange,
                         step: 1
                     )
                     /// Give it a random ID to avoid random crashes on macOS Monterey
                     .id(UUID())
                     Text("A")
-                        .font(.system(size: AppSettings.Application.fontSizeRange.upperBound))
+                        .font(.system(size: ChordProEditor.Settings.fontSizeRange.upperBound))
                 }
                 .foregroundColor(.secondary)
                 /// Give it a random ID to avoid random crashes on macOS Monterey
                 .id(UUID())
-                Picker("The font style of the editor", selection: $appState.settings.application.fontStyle) {
-                    ForEach(FontStyle.allCases, id: \.self) { font in
+                Picker("Font style", selection: $appState.settings.editor.fontStyle) {
+                    ForEach(ChordProEditor.Settings.FontStyle.allCases, id: \.self) { font in
                         Text("\(font.rawValue)")
-                            .font(font.font(size: appState.settings.application.fontSize))
+                            .font(font.font(size: 12))
                     }
                 }
                 /// Give it a random ID to avoid random crashes on macOS Monterey
                 .id(UUID())
-                .pickerStyle(.radioGroup)
-                .labelsHidden()
-                .padding()
             }
             .wrapSettingsSection(title: "Editor Font")
+            VStack {
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.chordColor,
+                    label: "Color for **chords**"
+                )
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.directiveColor,
+                    label: "Color for **directives**"
+                )
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.argumentColor,
+                    label: "Color for **arguments**"
+                )
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.pangoColor,
+                    label: "Color for **pango**"
+                )
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.bracketColor,
+                    label: "Color for **brackets**"
+                )
+                ColorPickerButtonView(
+                    selectedColor: $appState.settings.editor.commentColor,
+                    label: "Color for **comments**"
+                )
+            }
+            .wrapSettingsSection(title: "Highlight Colors")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .padding(.bottom)
     }
 }
 
@@ -137,9 +163,10 @@ extension SettingsView {
                 }
             }
             Toggle("Add a custom configuration", isOn: $appState.settings.chordPro.useCustomConfig)
-            FileButtonView(
-                bookmark: CustomFile.customConfig
+            UserFileButtonView(
+                bookmark: UserFileItem.customConfig
             ) {}
+                .disabled(!appState.settings.chordPro.useCustomConfig)
             Toggle("Ignore default configurations", isOn: $appState.settings.chordPro.noDefaultConfigs)
             // swiftlint:disable:next line_length
             Text("This prevents **ChordPro** from using system wide, user specific and song specific configurations. Checking this will make sure that **ChordPro** only uses the configuration as set in the _application_.")
@@ -156,8 +183,8 @@ extension SettingsView {
     var library: some View {
         VStack {
             Toggle("Add a custom library", isOn: $appState.settings.chordPro.useAdditionalLibrary)
-            FileButtonView(
-                bookmark: CustomFile.customLibrary
+            UserFileButtonView(
+                bookmark: UserFileItem.customLibrary
             ) {}
                 .disabled(!appState.settings.chordPro.useAdditionalLibrary)
             // swiftlint:disable:next line_length
@@ -183,11 +210,6 @@ extension SettingsView {
                 Toggle("Eliminate capo settings", isOn: $appState.settings.chordPro.deCapo)
                 Text("This will be done by transposing the song")
                     .font(.caption)
-                if AppState.checkGNUFonts() != nil {
-                    Toggle("Use packaged fonts", isOn: $appState.settings.chordPro.usePackagedFonts)
-                    Text("**GNU FreeFont** is part of the application")
-                        .font(.caption)
-                }
                 Toggle(isOn: $appState.settings.chordPro.debug) {
                     Text("Enable Debug Info in the PDF")
                 }
