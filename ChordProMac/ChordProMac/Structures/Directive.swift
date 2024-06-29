@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ChordProShared
 
 struct Directive: ChordProDirective {
     let directive: String
@@ -44,7 +43,7 @@ extension Directive {
                 Directive(
                     directive: item,
                     group: .metadata,
-                    icon: "info.bubble",
+                    icon: "info.circle",
                     editable: true,
                     argument: true,
                     help: "Help Me!!!"

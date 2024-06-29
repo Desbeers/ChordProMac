@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ChordProShared
 
 /// SwiftUI `Scene` for **ChordProMac**
 @main struct ChordProMacApp: App {

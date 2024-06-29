@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import ChordProShared
 
 /// All the settings for the application
 struct AppSettings: Codable, Equatable {

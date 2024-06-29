@@ -6,8 +6,6 @@
 //
 
 import Foundation
-import ChordProShared
-
 /// The observable state of the application
 /// - Note: Every open song window shares this state
 final class AppState: ObservableObject {

@@ -7,7 +7,6 @@
 
 import SwiftUI
 import OSLog
-import ChordProShared
 
 /// SwiftUI `View` for an export button
 /// - Note: This button is also in the App Menu to it needs focused values for the document and the scene

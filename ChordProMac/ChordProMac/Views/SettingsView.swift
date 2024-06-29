@@ -8,8 +8,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
-import AudioToolbox
-import ChordProShared
 
 /// SwiftUI `View` with the application settings
 struct SettingsView: View {
@@ -108,6 +106,9 @@ extension SettingsView {
                             .font(font.font(size: 12))
                     }
                 }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxHeight: 20)
                 /// Give it a random ID to avoid random crashes on macOS Monterey
                 .id(UUID())
             }
