@@ -27,15 +27,17 @@ xcodebuild: info
 	$(MKDIR) -p "${DEST}/XcodeSource"
 	cp -r "ChordProMac" "${DEST}/XcodeSource"
 	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
+		-scheme ChordProMac \
+		-configuration Release \
 		-arch x86_64 \
-		CODE_SIGN_IDENTITY="" \
-		CODE_SIGNING_REQUIRED=NO \
-		BUILD_DIR=../../../build
+		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGNING_REQUIRED=YES \
+		-derivedDataPath "${DEST}"
 		
 archive: xcodebuild
 	@echo "Archive ChordPro"
 	$(MKDIR) -p "${DEST}/ChordPro"
-	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro"
+	cp -r "${DEST}/Build/Products/Release/ChordPro.app" "build/ChordPro"
 	cp "ChordProMac/Read Me First.html" "${DEST}/ChordPro"
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"

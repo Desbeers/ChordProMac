@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import ChordProShared
 
 /// SwiftUI `View` with buttons to run a ``CustomTask``
 struct TaskMenuView: View {

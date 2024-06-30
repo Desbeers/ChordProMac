@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// SwiftUI `View` for buttons to resize the editor font
 /// - Note: This can't be in the main menu; macOS Monterey can't handle dynamic buttons

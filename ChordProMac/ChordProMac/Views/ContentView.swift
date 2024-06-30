@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// SwiftUI `View` for the main content
 struct ContentView: View {
@@ -58,6 +59,9 @@ struct ContentView: View {
             }
         }
         .toolbar {
+            UserFileButtonView(
+                bookmark: UserFileItem.customSongTemplate
+            ) {}
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             ControlGroup {

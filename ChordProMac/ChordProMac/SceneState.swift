@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import ChordProShared
 
 /// The observable state of the scene
 /// - Note: Every open song window has its own `SceneState` class

@@ -7,6 +7,7 @@
 
 import Foundation
 import UniformTypeIdentifiers
+import ChordProShared
 
 /// All files that can be chosen in the ``SettingsView`` to override **ChordPro** defaults
 enum UserFileItem: String, UserFile {

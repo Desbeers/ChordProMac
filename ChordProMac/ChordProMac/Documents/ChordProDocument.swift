@@ -7,6 +7,7 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
+import ChordProShared
 
 //extension UTType {
 //    /// Define the UTType for a **ChordPro** song

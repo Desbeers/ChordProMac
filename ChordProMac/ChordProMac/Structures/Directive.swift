@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import ChordProShared
 
 struct Directive: ChordProDirective {
     let directive: String

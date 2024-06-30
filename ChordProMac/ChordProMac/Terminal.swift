@@ -7,6 +7,7 @@
 
 import SwiftUI
 import OSLog
+import ChordProShared
 
 /// Terminal utilities
 enum Terminal {
