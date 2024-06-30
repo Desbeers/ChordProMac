@@ -77,7 +77,7 @@ extension SettingsView {
             VStack {
                 Toggle("Use a custom template", isOn: $appState.settings.application.useCustomSongTemplate)
                 UserFileButtonView(
-                    bookmark: UserFileItem.customSongTemplate
+                    userFile: UserFileItem.customSongTemplate
                 ) {}
                     .disabled(!appState.settings.application.useCustomSongTemplate)
                 Text("You can use your own **ChordPro** file as a starting point when you create a new song")
@@ -94,24 +94,24 @@ extension SettingsView {
                         step: 1
                     )
                     /// Give it a random ID to avoid random crashes on macOS Monterey
-                    .id(UUID())
+                    //.id(UUID())
                     Text("A")
                         .font(.system(size: ChordProEditor.Settings.fontSizeRange.upperBound))
                 }
                 .foregroundColor(.secondary)
                 /// Give it a random ID to avoid random crashes on macOS Monterey
-                .id(UUID())
+                //.id(UUID())
                 Picker("Font style", selection: $appState.settings.editor.fontStyle) {
                     ForEach(ChordProEditor.Settings.FontStyle.allCases, id: \.self) { font in
                         Text("\(font.rawValue)")
                             .font(font.font(size: 12))
                     }
                 }
-                .pickerStyle(.segmented)
+                //.pickerStyle(.segmented)
                 .labelsHidden()
                 .frame(maxHeight: 20)
                 /// Give it a random ID to avoid random crashes on macOS Monterey
-                .id(UUID())
+                //.id(UUID())
             }
             .wrapSettingsSection(title: "Editor Font")
             VStack {
@@ -166,7 +166,7 @@ extension SettingsView {
             }
             Toggle("Add a custom configuration", isOn: $appState.settings.chordPro.useCustomConfig)
             UserFileButtonView(
-                bookmark: UserFileItem.customConfig
+                userFile: UserFileItem.customConfig
             ) {}
                 .disabled(!appState.settings.chordPro.useCustomConfig)
             Toggle("Ignore default configurations", isOn: $appState.settings.chordPro.noDefaultConfigs)
@@ -186,7 +186,7 @@ extension SettingsView {
         VStack {
             Toggle("Add a custom library", isOn: $appState.settings.chordPro.useAdditionalLibrary)
             UserFileButtonView(
-                bookmark: UserFileItem.customLibrary
+                userFile: UserFileItem.customLibrary
             ) {}
                 .disabled(!appState.settings.chordPro.useAdditionalLibrary)
             // swiftlint:disable:next line_length
@@ -228,14 +228,14 @@ extension SettingsView {
                                 }
                             }
                             /// Give it a random ID to avoid random crashes on macOS Monterey
-                            .id(UUID())
+                            //.id(UUID())
                             Picker("To:", selection: $appState.settings.chordPro.transposeTo) {
                                 ForEach(Note.allCases, id: \.self) { note in
                                     Text(note.rawValue)
                                 }
                             }
                             /// Give it a random ID to avoid random crashes on macOS Monterey
-                            .id(UUID())
+                            //.id(UUID())
                         }
                         Picker("Accidentals:", selection: $appState.settings.chordPro.transposeAccidentals) {
                             ForEach(Accidentals.allCases, id: \.self) { accidental in
@@ -243,7 +243,7 @@ extension SettingsView {
                             }
                         }
                         /// Give it a random ID to avoid random crashes on macOS Monterey
-                        .id(UUID())
+                        //.id(UUID())
                     }
                     .padding(.top)
                 }
@@ -259,7 +259,7 @@ extension SettingsView {
                         }
                     }
                     /// Give it a random ID to avoid random crashes on macOS Monterey
-                    .id(UUID())
+                    //.id(UUID())
                     .padding(.top)
                 }
             }

@@ -59,9 +59,6 @@ struct ContentView: View {
             }
         }
         .toolbar {
-            UserFileButtonView(
-                bookmark: UserFileItem.customSongTemplate
-            ) {}
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             ControlGroup {
