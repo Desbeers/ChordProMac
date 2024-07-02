@@ -71,6 +71,9 @@ struct SettingsView: View {
 }
 
 extension SettingsView {
+
+    // MARK: Editor Settings
+
     /// SwiftUI `View` with editor settings
     var editor: some View {
         ScrollView {
@@ -148,6 +151,9 @@ extension SettingsView {
 }
 
 extension SettingsView {
+
+    // MARK: Presets Settings
+
     /// SwiftUI `View` with presets settings
     var presets: some View {
         VStack {
@@ -181,6 +187,9 @@ extension SettingsView {
 }
 
 extension SettingsView {
+
+    // MARK: Library Settings
+
     /// SwiftUI `View` with presets settings
     var library: some View {
         VStack {
@@ -199,6 +208,9 @@ extension SettingsView {
 }
 
 extension SettingsView {
+
+    // MARK: Options Settings
+
     /// SwiftUI `View` with options settings
     var options: some View {
         ScrollView {
@@ -269,6 +281,8 @@ extension SettingsView {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 }
+
+// MARK: SettingsView Modifiers
 
 extension SettingsView {
 

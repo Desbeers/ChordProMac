@@ -35,6 +35,7 @@ struct QuickLookView: View {
                 Label(label, systemImage: sceneState.quickLookURL == nil ? "eye" : "eye.fill")
             }
         )
+        .help("Quick Look at the PDF")
         .task(id: sceneState.customTask) {
             if sceneState.customTask != nil {
                 /// Show a Quick View of the task
@@ -75,27 +76,6 @@ struct QuickLookView: View {
             /// Remove the task (if any)
             sceneState.customTask = nil
         }
-    }
-}
-
-extension QuickLookView {
-
-    /// Create a preview of the current document
-    struct Preview: NSViewRepresentable {
-        var url: URL
-        func makeNSView(context: NSViewRepresentableContext<Preview>) -> QLPreviewView {
-            let preview = QLPreviewView(frame: .zero, style: .normal)
-            preview?.autostarts = true
-            preview?.previewItem = url as QLPreviewItem
-
-            return preview ?? QLPreviewView()
-        }
-
-        func updateNSView(_ nsView: QLPreviewView, context: NSViewRepresentableContext<Preview>) {
-            nsView.previewItem = url as QLPreviewItem
-        }
-        // swiftlint:disable:next nesting
-        typealias NSViewType = QLPreviewView
     }
 }
 

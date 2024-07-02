@@ -52,7 +52,7 @@ struct ExportSongView: View {
                 }
             },
             label: {
-                Label(label, systemImage: "square.and.arrow.up")
+                Label(label, systemImage: "square.and.arrow.up.on.square")
             }
         )
         /// Disable the button when there is no document window in focus and no scene state available

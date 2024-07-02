@@ -31,13 +31,17 @@ struct ContentView: View {
                 )
                 .introspect { editor in
                     Task { @MainActor in
+                        //sceneState.showSharePicker = false
                         sceneState.editorInternals = editor
                     }
+                }
+                .onTapGesture {
+                    print("TABTABTAB")
                 }
                 HStack(spacing: 0) {
                     Divider()
                     if let quickView = sceneState.quickLookURL {
-                        QuickLookView.Preview(url: quickView)
+                        PreviewView(url: quickView)
                             .id(sceneState.quickLookID)
                             .overlay(alignment: .top) {
                                 if sceneState.quickLookOutdated {
@@ -61,11 +65,12 @@ struct ContentView: View {
         .toolbar {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
-            ControlGroup {
-                PrintPDFView(label: "Print PDF")
+            Group {
                 QuickLookView(label: "Show Preview", document: document)
+                //PrintPDFView(label: "Print PDF")
+                ShareButtonView(document: document)
             }
-                .labelStyle(.iconOnly)
+            .labelStyle(.iconOnly)
         }
         .labelStyle(.titleAndIcon)
         .sheet(isPresented: $sceneState.showLog) {

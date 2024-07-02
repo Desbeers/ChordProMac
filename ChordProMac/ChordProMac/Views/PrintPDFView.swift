@@ -45,7 +45,7 @@ struct PrintPDFView: View {
                 Label(label, systemImage: "printer")
             }
         )
-        .help("Print your song")
+        .help("Print a PDF of the song")
         .disabled(sceneState == nil)
     }
 }

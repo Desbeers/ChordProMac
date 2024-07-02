@@ -26,8 +26,6 @@
 		D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CA2C04711000291BE7 /* SettingsView.swift */; };
 		D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CC2C04725D00291BE7 /* AppSettings.swift */; };
 		D74002CF2C04728600291BE7 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CE2C04728600291BE7 /* AppState.swift */; };
-		D7484C0F2C18179D00D47D1A /* MacEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7484C0E2C18179D00D47D1A /* MacEditorView.swift */; };
-		D7484C162C18426A00D47D1A /* MacEditorView+highlight.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */; };
 		D75E5FFF2C04FEF00083F96F /* Template.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75E5FFE2C04FEF00083F96F /* Template.swift */; };
 		D75F410E2C0EFDA200F0413B /* TaskMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */; };
 		D75F41102C0F240800F0413B /* CustomTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75F410F2C0F240800F0413B /* CustomTask.swift */; };
@@ -49,6 +47,7 @@
 		D796F0EC2C1A6AB600B3DE40 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */; };
 		D7AC53422C20C1A0002B075F /* FontSizeButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */; };
 		D7F627432C31020300117FBF /* ChordProShared in Frameworks */ = {isa = PBXBuildFile; productRef = D7F627422C31020300117FBF /* ChordProShared */; };
+		D7F627492C33153100117FBF /* ShareButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F627482C33153100117FBF /* ShareButtonView.swift */; };
 		D7F659B72C2F25D500B65437 /* PrintPDFView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F659B62C2F25D500B65437 /* PrintPDFView.swift */; };
 		D7F659B92C304D2A00B65437 /* ExportDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7F659B82C304D2A00B65437 /* ExportDocument.swift */; };
 		D7FBDB8F2C2C96AE00D242ED /* Directive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FBDB8E2C2C96AE00D242ED /* Directive.swift */; };
@@ -74,8 +73,6 @@
 		D74002CA2C04711000291BE7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D74002CC2C04725D00291BE7 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		D74002CE2C04728600291BE7 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
-		D7484C0E2C18179D00D47D1A /* MacEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacEditorView.swift; sourceTree = "<group>"; };
-		D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MacEditorView+highlight.swift"; sourceTree = "<group>"; };
 		D75E5FFE2C04FEF00083F96F /* Template.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template.swift; sourceTree = "<group>"; };
 		D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskMenuView.swift; sourceTree = "<group>"; };
 		D75F410F2C0F240800F0413B /* CustomTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTask.swift; sourceTree = "<group>"; };
@@ -99,6 +96,7 @@
 		D774F2862C05F6CB00CC4E3E /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 		D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizeButtonsView.swift; sourceTree = "<group>"; };
+		D7F627482C33153100117FBF /* ShareButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareButtonView.swift; sourceTree = "<group>"; };
 		D7F659B62C2F25D500B65437 /* PrintPDFView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrintPDFView.swift; sourceTree = "<group>"; };
 		D7F659B82C304D2A00B65437 /* ExportDocument.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExportDocument.swift; sourceTree = "<group>"; };
 		D7FBDB8E2C2C96AE00D242ED /* Directive.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Directive.swift; sourceTree = "<group>"; };
@@ -204,14 +202,13 @@
 				D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */,
 				D72EA3372C0B8E2C00B1BA93 /* HelpButtonsView.swift */,
 				D72EA33B2C0BB24600B1BA93 /* LogView.swift */,
-				D7484C0E2C18179D00D47D1A /* MacEditorView.swift */,
-				D7484C152C18426A00D47D1A /* MacEditorView+highlight.swift */,
 				D7F659B62C2F25D500B65437 /* PrintPDFView.swift */,
 				D7723A6E2C0354250031CD0C /* QuickLookView.swift */,
 				D74002CA2C04711000291BE7 /* SettingsView.swift */,
 				D774F2842C05F2B900CC4E3E /* StatusView.swift */,
 				D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */,
 				D72EA33F2C0C5E5800B1BA93 /* View+errorAlert.swift */,
+				D7F627482C33153100117FBF /* ShareButtonView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -352,8 +349,8 @@
 				D7723A692C03442F0031CD0C /* ExportSongView.swift in Sources */,
 				D728FF292C1B26F60028D7A9 /* AppDelegate.swift in Sources */,
 				D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */,
+				D7F627492C33153100117FBF /* ShareButtonView.swift in Sources */,
 				D7AC53422C20C1A0002B075F /* FontSizeButtonsView.swift in Sources */,
-				D7484C162C18426A00D47D1A /* MacEditorView+highlight.swift in Sources */,
 				D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */,
 				D7F659B92C304D2A00B65437 /* ExportDocument.swift in Sources */,
 				D7723A4F2C0326120031CD0C /* ChordProDocument.swift in Sources */,
@@ -372,7 +369,6 @@
 				D72EA3382C0B8E2C00B1BA93 /* HelpButtonsView.swift in Sources */,
 				D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */,
 				D72EA33E2C0C5C3F00B1BA93 /* LocalizedAlertError.swift in Sources */,
-				D7484C0F2C18179D00D47D1A /* MacEditorView.swift in Sources */,
 				D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */,
 				D7723A512C0326120031CD0C /* ContentView.swift in Sources */,
 			);
