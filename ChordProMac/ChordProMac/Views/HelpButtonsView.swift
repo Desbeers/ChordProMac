@@ -9,6 +9,8 @@ import SwiftUI
 
 /// SwiftUI buttons for the main `help` menu
 struct HelpButtonsView: View {
+    /// The observable state of the application
+    @EnvironmentObject private var appState: AppState
     /// The scene state in the environment
     @FocusedValue(\.sceneState) private var sceneState: SceneState?
     /// The body of the `View`
@@ -38,6 +40,9 @@ struct HelpButtonsView: View {
         }
         if let url = URL(string: "https://chordpro.org/chordpro/trouble-shooting/") {
             Divider()
+            Toggle(isOn: $appState.settings.chordPro.debug) {
+                Text("Enable Debug Info in the PDF")
+            }
             Link(destination: url) {
                 Text("Trouble Shooting Help")
             }

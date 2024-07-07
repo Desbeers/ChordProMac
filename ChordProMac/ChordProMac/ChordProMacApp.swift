@@ -39,6 +39,7 @@ import SwiftUI
             }
             CommandGroup(replacing: .help) {
                 HelpButtonsView()
+                    .environmentObject(appState)
             }
         }
         Settings {

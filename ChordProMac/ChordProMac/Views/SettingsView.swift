@@ -224,9 +224,6 @@ extension SettingsView {
                 Toggle("Eliminate capo settings", isOn: $appState.settings.chordPro.deCapo)
                 Text("This will be done by transposing the song")
                     .font(.caption)
-                Toggle(isOn: $appState.settings.chordPro.debug) {
-                    Text("Enable Debug Info in the PDF")
-                }
             }
             .wrapSettingsSection(title: "General")
             VStack {
