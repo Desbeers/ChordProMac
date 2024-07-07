@@ -17,14 +17,34 @@ final class SceneState: ObservableObject {
     @Published var showLog: Bool = false
     /// Status of the last **ChordPro** export
     @Published var exportStatus: AppError = .noErrorOccurred
-    /// The unique ID of the scene
-    let sceneID: String
+    /// The temporary directory for processing files
+    let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+    /// The calculated file name of the song
+    var songFileName: String {
+        dump(temporaryDirectoryURL)
+        var result: [String] = []
+        if let textView = editorInternals.textView {
+            if let songSubtitle = textView.songSubtitle {
+                result.append(songSubtitle)
+            }
+            result.append(textView.songTitle)
+        } else {
+            result.append(UUID().uuidString)
+        }
+        return result.joined(separator: " - ")
+    }
     /// The URL of the source file
-    let sourceURL: URL
+    var sourceURL: URL {
+        return temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .chordProSong)
+    }
     /// The URL of the export file
-    let exportURL: URL
+    var exportURL: URL {
+        temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .pdf)
+    }
     /// The URL of the log file
-    let logFileURL: URL
+    var logFileURL: URL {
+        temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .plainText)
+    }
     /// The optional custom task to run
     @Published var customTask: CustomTask?
     /// Preview variables
@@ -33,16 +53,6 @@ final class SceneState: ObservableObject {
     @Published var editorInternals = ChordProEditor.Internals()
     /// Init the class
     init() {
-        /// Give it an unique ID
-        sceneID = UUID().uuidString
-        /// Create URLs
-        let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
-        /// Create a source URL
-        sourceURL = temporaryDirectoryURL.appendingPathComponent(sceneID, conformingTo: .chordProSong)
-        /// Create an export URL
-        exportURL = temporaryDirectoryURL.appendingPathComponent(sceneID, conformingTo: .pdf)
-        /// Create a log URL
-        logFileURL = temporaryDirectoryURL.appendingPathComponent(sceneID, conformingTo: .plainText)
     }
 }
 
