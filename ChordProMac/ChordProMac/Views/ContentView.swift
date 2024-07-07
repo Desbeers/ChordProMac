@@ -23,28 +23,20 @@ struct ContentView: View {
     /// The body of the `View`
     var body: some View {
         VStack {
-            HStack {
-                EditorView()
-                /// - Note: Put the preview in its own stack, so a refresh does not scroll the editor back to top
-                HStack(spacing: 0) {
-                    PreviewPaneView()
-                }
+            HStack(spacing: 0) {
+                EditorPaneView()
+                PreviewPaneView()
             }
             StatusView()
                 .padding(.horizontal)
         }
         .animation(.default, value: sceneState.preview)
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
-        .onChange(of: document.text) { _ in
-            if sceneState.preview.url != nil {
-                sceneState.preview.outdated = true
-            }
-        }
         .toolbar {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             Group {
-                PreviewPDFView(label: "Show Preview", document: document)
+                PreviewPDFButtonView(label: "Show Preview", document: document)
                 ShareButtonView(document: document)
             }
             .labelStyle(.iconOnly)

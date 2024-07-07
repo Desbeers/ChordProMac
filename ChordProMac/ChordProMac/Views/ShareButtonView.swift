@@ -18,6 +18,8 @@ struct ShareButtonView: View {
     @EnvironmentObject private var sceneState: SceneState
     /// Bool to show the share picker
     @State private var showSharePicker: Bool = false
+    /// The export URL
+    @State private var exportURL: URL?
     /// The body of the `View`
     var body: some View {
         Button(
@@ -29,6 +31,7 @@ struct ShareButtonView: View {
                             settings: appState.settings,
                             sceneState: sceneState
                         )
+                        exportURL = sceneState.exportURL
                         showSharePicker = true
                     } catch {
                         /// Show an `Alert`
@@ -44,7 +47,7 @@ struct ShareButtonView: View {
         .background(
             SharingServiceRepresentedView(
                 isPresented: $showSharePicker,
-                url: sceneState.exportURL
+                url: $exportURL
             )
         )
     }

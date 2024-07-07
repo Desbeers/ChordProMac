@@ -1,5 +1,5 @@
 //
-//  EditorView.swift
+//  EditorPaneView.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 05/07/2024.
@@ -9,7 +9,7 @@ import SwiftUI
 import ChordProShared
 
 /// SwiftUI `View` with the editor
-struct EditorView: View {
+struct EditorPaneView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene

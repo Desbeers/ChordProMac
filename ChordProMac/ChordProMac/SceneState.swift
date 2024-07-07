@@ -21,7 +21,6 @@ final class SceneState: ObservableObject {
     let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
     /// The calculated file name of the song
     var songFileName: String {
-        dump(temporaryDirectoryURL)
         var result: [String] = []
         if let textView = editorInternals.textView {
             if let songSubtitle = textView.songSubtitle {

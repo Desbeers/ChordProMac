@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// SwiftUI `View` for a PDF preview
-struct PreviewPDFView: View {
+struct PreviewPDFButtonView: View {
     /// The label for the button
     let label: String
     /// The current document
@@ -22,20 +22,20 @@ struct PreviewPDFView: View {
     /// The body of the `View`
     var body: some View {
         Button(
-            action: {
-                if sceneState.preview.url == nil || replacePreview {
-                    showPreview()
-                } else {
-                    sceneState.preview.url = nil
-                }
-            },
 //            action: {
-//                if sceneState.preview.data == nil || replacePreview {
+//                if sceneState.preview.url == nil || replacePreview {
 //                    showPreview()
 //                } else {
-//                    sceneState.preview.data = nil
+//                    sceneState.preview.url = nil
 //                }
 //            },
+            action: {
+                if sceneState.preview.data == nil || replacePreview {
+                    showPreview()
+                } else {
+                    sceneState.preview.data = nil
+                }
+            },
             label: {
                 Label(label, systemImage: sceneState.preview.url == nil ? "eye" : "eye.fill")
             }
@@ -48,7 +48,7 @@ struct PreviewPDFView: View {
             }
         }
         .onChange(of: appState.settings.chordPro) { _ in
-            if sceneState.preview.url != nil {
+            if sceneState.preview.data != nil {
                 /// Show a preview with the new settings
                 showPreview()
             }
@@ -68,11 +68,11 @@ struct PreviewPDFView: View {
                 /// The preview is not outdated
                 sceneState.preview.outdated = false
                 /// Show the Quick Look
-                sceneState.preview.url = sceneState.exportURL
+                //sceneState.preview.url = sceneState.exportURL
                 /// Give the Quick Look a new ID
-                sceneState.preview.id = UUID().uuidString
+                //sceneState.preview.id = UUID().uuidString
                 /// Show the Quick Look
-                //sceneState.preview.data = pdf.data
+                sceneState.preview.data = pdf.data
             } catch {
                 /// Show an `Alert`
                 sceneState.alertError = error
@@ -85,37 +85,42 @@ struct PreviewPDFView: View {
     }
 }
 
-extension PreviewPDFView {
+extension PreviewPDFButtonView {
 
     /// Update the preview of the current document
     struct UpdatePreview: View {
-        /// The current document
-        let document: ChordProDocument
+//        /// The current document
+//        let document: ChordProDocument
+
+        /// The document in the environment
+        @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
 
         var body: some View {
-            PreviewPDFView(
-                label: "Update Preview",
-                document: document,
-                replacePreview: true
-            )
-            .labelStyle(.titleOnly)
-            .padding(8)
-            .background(Color(nsColor: .textColor).opacity(0.04).cornerRadius(10))
-            .background(
-                Color(nsColor: .textBackgroundColor)
-                    .cornerRadius(10)
-                    .shadow(
-                        color: .secondary.opacity(0.1),
-                        radius: 8,
-                        x: 0,
-                        y: 2
-                    )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-            )
-            .padding()
+            if let document {
+                PreviewPDFButtonView(
+                    label: "Update Preview",
+                    document: document.document,
+                    replacePreview: true
+                )
+                .labelStyle(.titleOnly)
+                .padding(8)
+                .background(Color(nsColor: .textColor).opacity(0.04).cornerRadius(10))
+                .background(
+                    Color(nsColor: .textBackgroundColor)
+                        .cornerRadius(10)
+                        .shadow(
+                            color: .secondary.opacity(0.1),
+                            radius: 8,
+                            x: 0,
+                            y: 2
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+                )
+                .padding()
+            }
         }
     }
 }

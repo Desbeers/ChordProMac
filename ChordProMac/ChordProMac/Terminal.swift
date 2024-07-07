@@ -235,7 +235,6 @@ extension Terminal {
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
-        Logger.pdfBuild.log("ERROR: \(output.standardError, privacy: .public)")
         /// Write to the log file
         let log = output.standardError.isEmpty ? "No errors occurred but the song might be empty" : output.standardError
         do {
