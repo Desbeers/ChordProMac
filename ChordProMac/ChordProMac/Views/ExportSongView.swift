@@ -40,6 +40,8 @@ struct ExportSongView: View {
                             self.pdf = pdf.data
                             /// Show the export dialog
                             exportSongDialog = true
+                            /// The PDF is not outdated
+                            sceneState.preview.outdated = false
                             /// Set the status
                             sceneState.exportStatus = pdf.status
                         } catch {

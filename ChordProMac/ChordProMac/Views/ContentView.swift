@@ -23,51 +23,28 @@ struct ContentView: View {
     /// The body of the `View`
     var body: some View {
         VStack {
-            HStack(spacing: 0) {
-                ChordProEditor(
-                    text: $document.text,
-                    settings: appState.settings.editor,
-                    directives: appState.directives
-                )
-                .introspect { editor in
-                    Task { @MainActor in
-                        //sceneState.showSharePicker = false
-                        sceneState.editorInternals = editor
-                    }
-                }
-                .onTapGesture {
-                    print("TABTABTAB")
-                }
+            HStack {
+                EditorView()
+                /// - Note: Put the preview in its own stack, so a refresh does not scroll the editor back to top
                 HStack(spacing: 0) {
-                    Divider()
-                    if let quickView = sceneState.quickLookURL {
-                        PreviewView(url: quickView)
-                            .id(sceneState.quickLookID)
-                            .overlay(alignment: .top) {
-                                if sceneState.quickLookOutdated {
-                                    QuickLookView.UpdatePreview(document: document)
-                                }
-                            }
-                    }
+                    PreviewPaneView()
                 }
             }
             StatusView()
                 .padding(.horizontal)
         }
-        .animation(.default, value: sceneState.quickLookURL)
-        .animation(.default, value: sceneState.quickLookOutdated)
+        .animation(.default, value: sceneState.preview)
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .onChange(of: document.text) { _ in
-            if sceneState.quickLookURL != nil {
-                sceneState.quickLookOutdated = true
+            if sceneState.preview.url != nil {
+                sceneState.preview.outdated = true
             }
         }
         .toolbar {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             Group {
-                QuickLookView(label: "Show Preview", document: document)
-                //PrintPDFView(label: "Print PDF")
+                PreviewPDFView(label: "Show Preview", document: document)
                 ShareButtonView(document: document)
             }
             .labelStyle(.iconOnly)

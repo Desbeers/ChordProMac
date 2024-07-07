@@ -16,8 +16,7 @@ struct ChordProDocument: FileDocument {
     /// The text of the song
     var text: String
     /// Init the song
-    /// - Note: Make sure we have a minimum of 10 lines or else we have a crash on macOS Monterey
-    init(text: String = "{title: New Song}\n\n\n\n\n\n\n\n\n") {
+    init(text: String = "{title: New Song}\n") {
         let settings = AppSettings.load()
         /// Check if we have to use a custom template
         if
@@ -37,12 +36,10 @@ struct ChordProDocument: FileDocument {
     init(configuration: ReadConfiguration) throws {
         guard
             let data = configuration.file.regularFileContents,
-            var string = String(data: data, encoding: .utf8)
+            let string = String(data: data, encoding: .utf8)
         else {
             throw AppError.readDocumentError
         }
-        /// Make sure we have a minimum of 10 lines or else we have a crash on macOS Monterey
-        while string.components(separatedBy: "\n").count < 10 { string += "\n" }
         text = string
     }
     /// Save the song

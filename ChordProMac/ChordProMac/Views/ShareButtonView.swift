@@ -8,7 +8,7 @@
 import SwiftUI
 import ChordProShared
 
-
+/// SwiftUI `View` with the 'share' button'
 struct ShareButtonView: View {
     /// Binding to the current document
     let document: ChordProDocument
@@ -42,7 +42,7 @@ struct ShareButtonView: View {
         )
         .help("Share the PDF")
         .background(
-            SharingPickerView(
+            SharingServiceRepresentedView(
                 isPresented: $showSharePicker,
                 url: sceneState.exportURL
             )

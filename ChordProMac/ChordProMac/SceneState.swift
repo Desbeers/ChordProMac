@@ -27,12 +27,8 @@ final class SceneState: ObservableObject {
     let logFileURL: URL
     /// The optional custom task to run
     @Published var customTask: CustomTask?
-    /// The optional URL for the QuickView
-    @Published var quickLookURL: URL?
-    /// The random ID of the preview
-    @Published var quickLookID = UUID()
-    /// Bool if the quick look is outdated
-    @Published var quickLookOutdated: Bool = false
+    /// Preview variables
+    @Published var preview = PreviewState()
     /// The internals of the **ChordPro** editor
     @Published var editorInternals = ChordProEditor.Internals()
     /// Init the class

@@ -45,7 +45,7 @@ extension Directive {
                     directive: item,
                     group: .metadata,
                     icon: "info.circle",
-                    editable: true,
+                    editable: false,
                     argument: true,
                     help: "Help Me!!!"
                 )

@@ -1,16 +1,14 @@
 //
-//  QuickLookView.swift
+//  PreviewPDFView.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/05/2024.
 //
 
 import SwiftUI
-import QuickLook
-import Quartz
 
-/// SwiftUI `View` for a quick look button
-struct QuickLookView: View {
+/// SwiftUI `View` for a PDF preview
+struct PreviewPDFView: View {
     /// The label for the button
     let label: String
     /// The current document
@@ -25,35 +23,41 @@ struct QuickLookView: View {
     var body: some View {
         Button(
             action: {
-                if sceneState.quickLookURL == nil || replacePreview {
-                    showQuickView()
+                if sceneState.preview.url == nil || replacePreview {
+                    showPreview()
                 } else {
-                    sceneState.quickLookURL = nil
+                    sceneState.preview.url = nil
                 }
             },
+//            action: {
+//                if sceneState.preview.data == nil || replacePreview {
+//                    showPreview()
+//                } else {
+//                    sceneState.preview.data = nil
+//                }
+//            },
             label: {
-                Label(label, systemImage: sceneState.quickLookURL == nil ? "eye" : "eye.fill")
+                Label(label, systemImage: sceneState.preview.url == nil ? "eye" : "eye.fill")
             }
         )
-        .help("Quick Look at the PDF")
+        .help("Preview the PDF")
         .task(id: sceneState.customTask) {
             if sceneState.customTask != nil {
-                /// Show a Quick View of the task
-                showQuickView()
+                /// Show a preview with the task
+                showPreview()
             }
         }
         .onChange(of: appState.settings.chordPro) { _ in
-            if sceneState.quickLookURL != nil {
-                /// Show a Quick View with the new settings
-                showQuickView()
+            if sceneState.preview.url != nil {
+                /// Show a preview with the new settings
+                showPreview()
             }
         }
     }
-    /// Show a Quick View of the PDF
-    @MainActor func showQuickView() {
+    /// Show a preview of the PDF
+    @MainActor func showPreview() {
         Task {
             do {
-                sceneState.quickLookURL = replacePreview ? sceneState.quickLookURL : nil
                 let pdf = try await Terminal.exportDocument(
                     text: document.text,
                     settings: appState.settings,
@@ -61,12 +65,14 @@ struct QuickLookView: View {
                 )
                 /// Set the status
                 sceneState.exportStatus = pdf.status
-                /// It is not outdated
-                sceneState.quickLookOutdated = false
+                /// The preview is not outdated
+                sceneState.preview.outdated = false
                 /// Show the Quick Look
-                sceneState.quickLookURL = sceneState.exportURL
+                sceneState.preview.url = sceneState.exportURL
                 /// Give the Quick Look a new ID
-                sceneState.quickLookID = UUID()
+                sceneState.preview.id = UUID().uuidString
+                /// Show the Quick Look
+                //sceneState.preview.data = pdf.data
             } catch {
                 /// Show an `Alert`
                 sceneState.alertError = error
@@ -79,32 +85,37 @@ struct QuickLookView: View {
     }
 }
 
-extension QuickLookView {
+extension PreviewPDFView {
 
     /// Update the preview of the current document
     struct UpdatePreview: View {
         /// The current document
         let document: ChordProDocument
-        @Environment(\.colorScheme) var colorScheme
+
         var body: some View {
-                QuickLookView(label: "Update Preview", document: document, replacePreview: true)
-                    .labelStyle(.titleOnly)
+            PreviewPDFView(
+                label: "Update Preview",
+                document: document,
+                replacePreview: true
+            )
+            .labelStyle(.titleOnly)
             .padding(8)
             .background(Color(nsColor: .textColor).opacity(0.04).cornerRadius(10))
             .background(
                 Color(nsColor: .textBackgroundColor)
                     .cornerRadius(10)
                     .shadow(
-                        color: .secondary
-                            .opacity(0.1),
-                        radius: 8, x: 0, y: 2)
+                        color: .secondary.opacity(0.1),
+                        radius: 8,
+                        x: 0,
+                        y: 2
+                    )
             )
             .overlay(
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
-                )
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
+            )
             .padding()
         }
     }
-
 }
