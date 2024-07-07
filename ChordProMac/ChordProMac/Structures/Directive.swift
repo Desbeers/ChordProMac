@@ -53,6 +53,7 @@ extension Directive {
         )
         directives.append(
             contentsOf: info.directives.map { item in
+                // swiftlint:disable:next line_length
                 let icon = item.starts(with: "start_") ? "increase.indent" : item.starts(with: "end_") ? "decrease.quotelevel" : "tag"
                 return Directive(
                     directive: item,

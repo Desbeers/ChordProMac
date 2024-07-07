@@ -63,18 +63,14 @@ extension Terminal {
         /// Return the stream
         return AsyncStream { continuation in
             pipe.fileHandleForReading.readabilityHandler = { handler in
-                guard let standardOutput = String(data: handler.availableData, encoding: .utf8) else {
-                    return
-                }
+                let standardOutput = String(decoding: handler.availableData, as: UTF8.self)
                 guard !standardOutput.isEmpty else {
                     return
                 }
                 continuation.yield(.standardOutput(standardOutput))
             }
             errorPipe.fileHandleForReading.readabilityHandler = { handler in
-                guard let errorOutput = String(data: handler.availableData, encoding: .utf8) else {
-                    return
-                }
+                let errorOutput = String(decoding: handler.availableData, as: UTF8.self)
                 guard !errorOutput.isEmpty else {
                     return
                 }
@@ -127,8 +123,7 @@ extension Terminal {
     static func getOptionalCustomConfig(settings: AppSettings) -> String? {
         if
             settings.chordPro.useCustomConfig,
-            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customConfig)
-        {
+            let persistentURL = try? UserFileBookmark.getBookmarkURL(UserFileItem.customConfig) {
             /// Get access to the URL
             _ = persistentURL.startAccessingSecurityScopedResource()
             /// Close the access

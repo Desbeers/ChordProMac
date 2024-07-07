@@ -10,12 +10,12 @@ import ChordProShared
 
 /// SwiftUI `View` with the 'share' button'
 struct ShareButtonView: View {
-    /// Binding to the current document
-    let document: ChordProDocument
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneState
+    /// The document in the environment
+    @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// Bool to show the share picker
     @State private var showSharePicker: Bool = false
     /// The export URL
@@ -24,18 +24,20 @@ struct ShareButtonView: View {
     var body: some View {
         Button(
             action: {
-                Task {
-                    do {
-                        _ = try await Terminal.exportDocument(
-                            text: document.text,
-                            settings: appState.settings,
-                            sceneState: sceneState
-                        )
-                        exportURL = sceneState.exportURL
-                        showSharePicker = true
-                    } catch {
-                        /// Show an `Alert`
-                        sceneState.alertError = error
+                if let document {
+                    Task {
+                        do {
+                            _ = try await Terminal.exportDocument(
+                                text: document.document.text,
+                                settings: appState.settings,
+                                sceneState: sceneState
+                            )
+                            exportURL = sceneState.exportURL
+                            showSharePicker = true
+                        } catch {
+                            /// Show an `Alert`
+                            sceneState.alertError = error
+                        }
                     }
                 }
             },
@@ -45,7 +47,7 @@ struct ShareButtonView: View {
         )
         .help("Share the PDF")
         .background(
-            SharingServiceRepresentedView(
+            AppKitUtils.SharingServiceRepresentedView(
                 isPresented: $showSharePicker,
                 url: $exportURL
             )

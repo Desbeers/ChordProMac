@@ -32,8 +32,7 @@ struct HelpButtonsView: View {
                     let sceneState,
                     let textView = sceneState.editorInternals.textView,
                     let content = try? String(contentsOf: sampleSong, encoding: .utf8) {
-                    let composeText = textView.string as NSString
-                    textView.insertText(content, replacementRange: NSRange(location: 0, length: composeText.length))
+                    textView.replaceText(text: content)
                 }
             }
             .disabled(sceneState == nil)

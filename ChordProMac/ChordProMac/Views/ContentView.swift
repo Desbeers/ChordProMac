@@ -36,8 +36,8 @@ struct ContentView: View {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
             Group {
-                PreviewPDFButtonView(label: "Show Preview", document: document)
-                ShareButtonView(document: document)
+                PreviewPDFButtonView(label: "Show Preview")
+                ShareButtonView()
             }
             .labelStyle(.iconOnly)
         }

@@ -63,6 +63,7 @@ struct ExportSongView: View {
             isPresented: $exportSongDialog,
             document: ExportDocument(pdf: pdf),
             contentType: .pdf,
+            // swiftlint:disable:next line_length
             defaultFilename: document?.fileURL?.deletingPathExtension().lastPathComponent ?? sceneState?.songFileName ??  "Export"
         ) { _ in
             Logger.pdfBuild.notice("Export completed")

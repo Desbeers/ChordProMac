@@ -32,15 +32,14 @@ struct ChordProDocument: FileDocument {
             self.text = text
         }
     }
-    /// Black magic
-    init(configuration: ReadConfiguration) throws {
-        guard
-            let data = configuration.file.regularFileContents,
-            let string = String(data: data, encoding: .utf8)
+    /// Init the configuration
+    public init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents
         else {
             throw AppError.readDocumentError
         }
-        text = string
+        /// Replace any Windows line endings
+        text = String(decoding: data, as: UTF8.self).replacingOccurrences(of: "\r\n", with: "\n")
     }
     /// Save the song
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {

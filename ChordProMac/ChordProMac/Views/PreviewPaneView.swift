@@ -16,12 +16,13 @@ struct PreviewPaneView: View {
     @EnvironmentObject private var sceneState: SceneState
     /// The document in the environment
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
-
+    /// Optional annotations in the PDF
     @State private var annotations: [(userName: String, contents: String)] = []
+    /// The body of the `View`
     var body: some View {
         if let data = sceneState.preview.data {
             Divider()
-            PDFKitRepresentedView(data: data, annotations: $annotations)
+            AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
                 .overlay(alignment: .top) {
                     if sceneState.preview.outdated {
                         PreviewPDFButtonView.UpdatePreview()
@@ -52,7 +53,7 @@ struct PreviewPaneView: View {
 }
 
 extension PreviewPaneView {
-    
+
     /// Show buttons with debug-popovers
     struct DebugInfoView: View {
         /// The annotation from the PDF

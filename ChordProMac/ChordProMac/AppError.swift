@@ -9,12 +9,6 @@ import Foundation
 
 /// All errors that can happen in the application
 enum AppError: String, LocalizedError {
-
-    case userFileNotFound
-    //case writeDocumentError
-    case noKeyWindow
-    case noFolderSelected
-
     /// A read error
     case readDocumentError
     /// A write error

@@ -96,25 +96,18 @@ extension SettingsView {
                         in: ChordProEditor.Settings.fontSizeRange,
                         step: 1
                     )
-                    /// Give it a random ID to avoid random crashes on macOS Monterey
-                    //.id(UUID())
                     Text("A")
                         .font(.system(size: ChordProEditor.Settings.fontSizeRange.upperBound))
                 }
                 .foregroundColor(.secondary)
-                /// Give it a random ID to avoid random crashes on macOS Monterey
-                //.id(UUID())
                 Picker("Font style", selection: $appState.settings.editor.fontStyle) {
                     ForEach(ChordProEditor.Settings.FontStyle.allCases, id: \.self) { font in
                         Text("\(font.rawValue)")
                             .font(font.font(size: 12))
                     }
                 }
-                //.pickerStyle(.segmented)
                 .labelsHidden()
                 .frame(maxHeight: 20)
-                /// Give it a random ID to avoid random crashes on macOS Monterey
-                //.id(UUID())
             }
             .wrapSettingsSection(title: "Editor Font")
             VStack {
@@ -236,23 +229,17 @@ extension SettingsView {
                                     Text(note.rawValue)
                                 }
                             }
-                            /// Give it a random ID to avoid random crashes on macOS Monterey
-                            //.id(UUID())
                             Picker("To:", selection: $appState.settings.chordPro.transposeTo) {
                                 ForEach(Note.allCases, id: \.self) { note in
                                     Text(note.rawValue)
                                 }
                             }
-                            /// Give it a random ID to avoid random crashes on macOS Monterey
-                            //.id(UUID())
                         }
                         Picker("Accidentals:", selection: $appState.settings.chordPro.transposeAccidentals) {
                             ForEach(Accidentals.allCases, id: \.self) { accidental in
                                 Text(accidental.rawValue)
                             }
                         }
-                        /// Give it a random ID to avoid random crashes on macOS Monterey
-                        //.id(UUID())
                     }
                     .padding(.top)
                 }
@@ -267,8 +254,6 @@ extension SettingsView {
                                 .tag(notation.label)
                         }
                     }
-                    /// Give it a random ID to avoid random crashes on macOS Monterey
-                    //.id(UUID())
                     .padding(.top)
                 }
             }

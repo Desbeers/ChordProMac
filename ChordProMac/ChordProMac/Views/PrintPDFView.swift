@@ -31,7 +31,7 @@ struct PrintPDFView: View {
                                 sceneState: sceneState
                             )
                             /// Show the print dialog
-                            Utils.printDialog(exportURL: sceneState.exportURL)
+                            AppKitUtils.printDialog(exportURL: sceneState.exportURL)
                         } catch {
                             /// Show an `Alert`
                             sceneState.alertError = error
