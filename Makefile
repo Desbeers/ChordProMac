@@ -19,7 +19,6 @@ chordpro:
 	rm -fr "${WRAPPERBIN}"
 	$(MKDIR) -p "${WRAPPERBIN}"
 	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
-	@echo "Add core info to the wrapper..."
 
 xcodebuild: info
 	@echo "Building ChordProMac"
@@ -27,12 +26,10 @@ xcodebuild: info
 	$(MKDIR) -p "${DEST}/XcodeSource"
 	cp -r "ChordProMac" "${DEST}/XcodeSource"
 	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
-		-scheme ChordProMac \
-		-configuration Release \
 		-arch x86_64 \
-		CODE_SIGN_IDENTITY="-" \
-		CODE_SIGNING_REQUIRED=YES \
-		-derivedDataPath "${DEST}"
+		CODE_SIGN_IDENTITY="" \
+		CODE_SIGNING_REQUIRED=NO \
+		BUILD_DIR=../../../build
 		
 archive: xcodebuild
 	@echo "Archive ChordPro"

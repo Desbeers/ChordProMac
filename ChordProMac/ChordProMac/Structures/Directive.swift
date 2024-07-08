@@ -7,19 +7,25 @@
 
 import Foundation
 
+/// Definition of a directive
 struct Directive: ChordProDirective {
+    /// The name of the directive
     let directive: String
+    /// The group the directive belongs to
     let group: Group
+    /// The icon for the directive
     let icon: String
+    /// Bool if the directive is editable
     let editable: Bool
-    let argument: Bool
+    /// Optional help-text for the directive
     let help: String
+    /// The name for an optional button to add this directive
     var button: String = ""
-
+    /// The label of the directive
     var label: String {
         return self.directive.replacingOccurrences(of: "_", with: " ").capitalized
     }
-
+    /// The directive groups
     enum Group {
         case metadata
         case directive
@@ -28,7 +34,9 @@ struct Directive: ChordProDirective {
 }
 
 extension Directive {
-
+    
+    /// Get all the directive we know about
+    /// - Returns: An array of directives
     static func getChordProDirectives() -> [Directive] {
         var directives: [Directive] = []
         guard
@@ -45,7 +53,6 @@ extension Directive {
                     group: .metadata,
                     icon: "info.circle",
                     editable: false,
-                    argument: true,
                     help: ""
                 )
             }
@@ -59,7 +66,6 @@ extension Directive {
                     group: .directive,
                     icon: icon,
                     editable: false,
-                    argument: true,
                     help: ""
                 )
             }
@@ -71,7 +77,6 @@ extension Directive {
                     group: .abbreviation,
                     icon: "tag",
                     editable: false,
-                    argument: false,
                     help: ""
                 )
             }
