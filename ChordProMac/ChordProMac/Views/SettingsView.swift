@@ -103,7 +103,7 @@ extension SettingsView {
                 Picker("Font style", selection: $appState.settings.editor.fontStyle) {
                     ForEach(ChordProEditor.Settings.FontStyle.allCases, id: \.self) { font in
                         Text("\(font.rawValue)")
-                            .font(font.font(size: 12))
+                            .font(font.font())
                     }
                 }
                 .labelsHidden()

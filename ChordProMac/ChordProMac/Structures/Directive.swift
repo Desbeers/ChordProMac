@@ -47,7 +47,7 @@ extension Directive {
                     icon: "info.circle",
                     editable: false,
                     argument: true,
-                    help: "Help Me!!!"
+                    help: ""
                 )
             }
         )
@@ -61,7 +61,7 @@ extension Directive {
                     icon: icon,
                     editable: false,
                     argument: true,
-                    help: "Help Me!!!"
+                    help: ""
                 )
             }
         )
@@ -73,7 +73,7 @@ extension Directive {
                     icon: "tag",
                     editable: false,
                     argument: false,
-                    help: "Help Me!!!"
+                    help: ""
                 )
             }
         )
