@@ -8,7 +8,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import OSLog
-import ChordProShared
 
 /// SwiftUI `View` with the application settings
 struct SettingsView: View {

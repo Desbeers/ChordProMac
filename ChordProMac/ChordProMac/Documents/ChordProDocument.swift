@@ -7,7 +7,6 @@
 
 import SwiftUI
 import UniformTypeIdentifiers
-import ChordProShared
 
 /// Define the  **ChordPro** document
 struct ChordProDocument: FileDocument {

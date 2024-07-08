@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import ChordProShared
 
 /// SwiftUI `View` for the main content
 struct ContentView: View {
