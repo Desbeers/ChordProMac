@@ -57,7 +57,7 @@ public struct ChordProEditor: NSViewRepresentable {
     ///   - view: The wrapped editor
     ///   - context: The context
     public func updateNSView(_ wrapper: Wrapper, context: Context) {
-        /// Update the text in the TextView when it is changed from *outisde*; like when adding the example song
+        /// Update the text in the TextView when it is changed from *outside*; like when adding the example song
         if context.coordinator.task == nil, self.text != wrapper.textView.string {
             wrapper.textView.string = text
             highlightText(textView: wrapper.textView)
