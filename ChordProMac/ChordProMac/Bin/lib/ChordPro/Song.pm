@@ -754,8 +754,8 @@ sub parse_song {
     }
 
     if ( $config->{diagrams}->{sorted} ) {
-	@used_chords =
-	  sort ChordPro::Chords::chordcompare @used_chords;
+	sub byname { ChordPro::Chords::chordcompare($a,$b) }
+	@used_chords = sort byname @used_chords;
     }
 
     # For headings, footers, table of contents, ...
@@ -1129,6 +1129,7 @@ my %abbrevs = (
    cs	      => "chordsize",
    eob	      => "end_of_bridge",
    eoc	      => "end_of_chorus",
+   eog	      => "end_of_grid",
    eot	      => "end_of_tab",
    eov	      => "end_of_verse",
    g	      => "diagrams",
@@ -1138,6 +1139,7 @@ my %abbrevs = (
    ns	      => "new_song",
    sob	      => "start_of_bridge",
    soc	      => "start_of_chorus",
+   sog	      => "start_of_grid",
    sot	      => "start_of_tab",
    sov	      => "start_of_verse",
    st	      => "subtitle",
@@ -1521,8 +1523,9 @@ sub dir_image {
 	    $opts{lc($k)} = $v;
 	}
 	elsif ( $k =~ /^(scale)$/
-		&& $v =~ /^(\d+(?:\.\d+)?)(%)?$/ ) {
-	    $opts{lc($k)} = $2 ? $1/100 : $1;
+		&& $v =~ /^(\d+(?:\.\d+)?)(%)?(?:,(\d+(?:\.\d+)?)(%)?)?$/ ) {
+	    $opts{lc($k)} = [ $2 ? $1/100 : $1 ];
+	    $opts{lc($k)}->[1] = $3 ? $4 ? $3/100 : $3 : $opts{lc($k)}->[0];
 	}
 	elsif ( $k =~ /^(center|border|spread|persist)$/i ) {
 	    if ( $k eq "center" ) {
@@ -1606,10 +1609,13 @@ sub dir_image {
     # Store as asset.
     if ( $uri ) {
 	my $opts;
-	$opts->{type} = $opts{type}    if $opts{type};
-	$opts->{persist} = $opts{persist} if $opts{persist};
-	$opts->{href} = $opts{href} if $opts{href};
-	delete $opts{$_} for qw( type persist href );
+	for ( qw( type persist href ) ) {
+	    $opts->{$_} = $opts{$_} if defined $opts{$_};
+	    delete $opts{$_};
+	}
+	for ( qw( spread ) ) {
+	    $opts->{$_} = $opts{$_} if defined $opts{$_};
+	}
 
 	if ( $id && %opts ) {
 	    do_warn("Asset definition \"$id\" does not take attributes",
@@ -2047,7 +2053,7 @@ sub define_chord {
 	# frets N N ... N
 	elsif ( $a eq "frets" ) {
 	    my @f;
-	    while ( @a && $a[0] =~ /^(?:[0-9]+|[-xXN])$/ && @f < $strings ) {
+	    while ( @a && $a[0] =~ /^(?:-?[0-9]+|[-xXN])$/ && @f < $strings ) {
 		push( @f, shift(@a) );
 	    }
 	    if ( @f == $strings ) {

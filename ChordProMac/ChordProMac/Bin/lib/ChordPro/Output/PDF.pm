@@ -706,7 +706,18 @@ sub generate_song {
 	$y = $ps->{_margintop};
 	$y += $ps->{headspace} if $ps->{'head-first-only'} && $class == 2;
 	$x += $ps->{_indent};
-	undef $spreadimage unless ref($spreadimage);
+
+        if ( $spreadimage ) {
+	    warn("PDF: Preparing spread image\n")
+	      if $config->{debug}->{images} || $config->{debug}->{assets};
+	    prepare_asset( $spreadimage->{id}, $s, $pr );
+	    $assets = $s->{assets} || {};
+	    warn("PDF: Preparing spread image, done\n")
+	      if $config->{debug}->{images} || $config->{debug}->{assets};
+            $y -= $ps->{_spreadimage} = imagespread( $spreadimage, $x, $y, $ps );
+            undef $spreadimage;
+        }
+
 	$ps->{_top} = $y;
 	$col = 0;
 	$vsp_ignorefirst = 1;
@@ -952,16 +963,10 @@ sub generate_song {
 	if ( $elt->{type} ne "set" && !$did++ ) {
 	    # Insert top/left/right/bottom chord diagrams.
  	    $chorddiagrams->() unless $dctl->{show} eq "below";
+
 	    # Prepare the assets now we know the page width.
 	    prepare_assets( $s, $pr );
 
-	    if ( $spreadimage ) {
-		if (ref($spreadimage) eq 'HASH' ) {
-		    # Spread image doesn't indent.
-		    $spreadimage = imagespread( $spreadimage, $x-$ps->{_indent}, $y, $ps );
-		}
-		$y -= $spreadimage;
-	    }
 	    showlayout($ps) if $ps->{showlayout} || $config->{debug}->{spacing};
 	}
 
@@ -1887,14 +1892,20 @@ sub imageline {
     my $x0 = $x;
     my $pr = $ps->{pr};
     my $id = $elt->{id};
-    my $opts = { %{$assets->{$id}->{opts}//{}}, %{$elt->{opts}//{}} };
-    my $img = $assets->{$id}->{data};
+    my $asset = $assets->{$id};
+    unless ( $asset ) {
+	warn("Undefined image id: \"$id\"\n");
+    }
+    my $opts = { %{$asset->{opts}//{}}, %{$elt->{opts}//{}} };
+    my $img = $asset->{data};
     my $label = $opts->{label};
     my $anchor = $opts->{anchor} //= "float";
     my $width = $opts->{width};
     my $height = $opts->{height};
-    my $avwidth  = $assets->{$id}->{vwidth};
-    my $avheight = $assets->{$id}->{vheight};
+    my $avwidth  = $asset->{vwidth};
+    my $avheight = $asset->{vheight};
+    my $scalex = $asset->{opts}->{design_scale} || 1;
+    my $scaley = $scalex;
 
     unless ( $img ) {
 	return "Unhandled image type: asset=$id";
@@ -1928,6 +1939,7 @@ sub imageline {
 	    $pw = $ps->{__rightmargin} - $ps->{_leftmargin};
 	}
 	$ph = $ps->{_margintop} - $ps->{_marginbottom};
+	$pw -= $ps->{_indent} if $anchor eq "float";
     }
 
     if ( $width && $width =~ /^(\d+(?:\.\d+)?)\%$/ ) {
@@ -1937,7 +1949,6 @@ sub imageline {
 	$height = $1/100 * $ph;
     }
 
-    my $scale = 1;
     my ( $w, $h ) = ( $width  || $avwidth  || $img->width,
 		      $height || $avheight || $img->height );
 
@@ -1949,40 +1960,34 @@ sub imageline {
 	$w = $height / ($avheight || $img->height) * ($avwidth || $img->width);
     }
 
-
-  if ( $config->{debug}->{x1} ) {
-
-    # Current approach: user scale overrides.
-    if ( defined $opts->{scale} ) {
-	$scale = $opts->{scale} || 1;
-    }
-    else {
-	if ( $w > $pw ) {
-	    $scale = $pw / $w;
-	}
-	if ( $h*$scale > $ph ) {
-	    $scale = $ph / $h;
-	}
-    }
-  }
-  else {
-
-    # Better, but may break things.
     if ( $w > $pw ) {
-	$scale = $pw / $w;
+	$scalex = $pw / $w;
     }
-    if ( $h*$scale > $ph ) {
-	$scale = $ph / $h;
+    if ( $h*$scalex > $ph ) {
+	$scalex = $ph / $h;
     }
+    $scaley = $scalex;
     if ( $opts->{scale} ) {
-	$scale *= $opts->{scale} =~ /^(\d+(?:\.\d+)?)\%$/ ? $1/100 : $opts->{scale};
+	my @s;
+	if ( UNIVERSAL::isa( $opts->{scale}, 'ARRAY' ) ) {
+	    @s = @{$opts->{scale}};
+	}
+	else {
+	    for ( split( /,/, $opts->{scale} ) ) {
+		$_ = $1 / 100 if /^([\d.]+)\%$/;
+		push( @s, $_ );
+	    }
+	    push( @s, $s[0] ) unless @s > 1;
+	    carp("Invalid scale attribute: \"$opts->{scale}\" (too many values)\n")
+	      unless @s == 2;
+	}
+	$scalex *= $s[0];
+	$scaley *= $s[1];
     }
 
-  }
-
-    warn("Image scale: $scale\n") if $config->{debug}->{images};
-    $h *= $scale;
-    $w *= $scale;
+    warn("Image scale: $scalex,$scaley\n") if $config->{debug}->{images};
+    $w *= $scalex;
+    $h *= $scaley;
 
     my $ox = $opts->{x};
     my $oy = $opts->{y};
@@ -1990,7 +1995,7 @@ sub imageline {
     # Not sure I like this...
     if ( defined $oy && $oy =~ /base([-+].*)/ ) {
 	$oy = -$1;
-	$oy += $opts->{base}*$scale if $opts->{base};
+	$oy += $opts->{base}*$scaley if $opts->{base};
 	warn("Y: ", $opts->{y}, " BASE: ", $opts->{base}, " -> $oy\n");
     }
 
@@ -2084,7 +2089,8 @@ sub imagespread {
     my $tag = "id=" . $si->{id};
     return "Unknown asset: $tag"
       unless exists( $assets->{$si->{id}} );
-    my $img = $assets->{$si->{id}}->{data};
+    my $asset = $assets->{$si->{id}};
+    my $img = $asset->{data};
     return "Unhandled asset: $tag"
       unless $img;
     my $opts = {};
@@ -2093,43 +2099,42 @@ sub imagespread {
     my $pw = $ps->{_marginright} - $ps->{_marginleft};
     my $ph = $ps->{_margintop} - $ps->{_marginbottom};
 
-    my $scale = 1;
     my ( $w, $h ) = ( $opts->{width}  || $img->width,
 		      $opts->{height} || $img->height );
 
-  if ( $config->{debug}->{x1} ) {
+    # Design scale.
+    my $scalex = $asset->{opts}->{scale} || 1;
+    my $scaley = $scalex;
 
-    # Current approach: user scale overrides.
-    if ( defined $opts->{scale} ) {
-	$scale = $opts->{scale} || 1;
-    }
-    else {
-	if ( $w > $pw ) {
-	    $scale = $pw / $w;
-	}
-	if ( $h*$scale > $ph ) {
-	    $scale = $ph / $h;
-	}
-    }
-  }
-  else {
-
-    # Better, but may break things.
     if ( $w > $pw ) {
-	$scale = $pw / $w;
+	$scalex = $pw / $w;
     }
-    if ( $h*$scale > $ph ) {
-	$scale = $ph / $h;
+    if ( $h*$scalex > $ph ) {
+	$scalex = $ph / $h;
     }
+    $scaley = $scalex;
+
     if ( $opts->{scale} ) {
-	$scale *= $opts->{scale};
+	my @s;
+	if ( UNIVERSAL::isa( $opts->{scale}, 'ARRAY' ) ) {
+	    @s = @{$opts->{scale}};
+	}
+	else {
+	    for ( split( /,/, $opts->{scale} ) ) {
+		$_ = $1 / 100 if /^([\d.]+)\%$/;
+		push( @s, $_ );
+	    }
+	    push( @s, $s[0] ) unless @s > 1;
+	    carp("Invalid scale attribute: \"$opts->{scale}\" (too many values)\n")
+	      unless @s == 2;
+	}
+	$scalex *= $s[0];
+	$scaley *= $s[1];
     }
 
-  }
-
-    warn("Image scale: $scale\n") if $config->{debug}->{images};
-    $h *= $scale;
-    $w *= $scale;
+    warn("Image scale: $scalex $scaley\n") if $config->{debug}->{images};
+    $h *= $scalex;
+    $w *= $scaley;
 
     my $align = $opts->{align};
     $align //= ( $opts->{center} // 1 ) ? "center" : "left";
@@ -2410,6 +2415,28 @@ sub showlayout {
 	       $ml-$pr->strwidth("$t  "),
 	       $a[1]-2,
 	       $font, $fsz );
+
+    my $spreadimage = $ps->{_spreadimage};
+    if ( defined($spreadimage) && !ref($spreadimage) ) {
+	my $mr = $ps->{marginright};
+	$a[1] = $ps->{papersize}->[1]-$ps->{margintop} - $spreadimage;
+	$a[2] = $ps->{papersize}->[0]-$ml-$mr;
+	$pr->hline(@a);
+	$t = $f->($a[1]);
+	$pr->text( "<span color='red'>$t  </span>",
+		   $ml-$pr->strwidth("$t  "),
+		   $a[1]-2,
+		   $font, $fsz );
+	$a[0] = $ps->{papersize}->[0]-$mr;
+	$a[1] = $ps->{papersize}->[1]-$ps->{margintop};
+	$a[2] = $a[1] - $ps->{marginbottom};
+	$pr->vline(@a);
+	$t = $f->($a[0]);
+	$pr->text( "<span color='red'>$t  </span>",
+		   $a[0]-$pr->strwidth("$t")/2,
+		   $ptop,
+		   $font, $fsz );
+    }
 
     my @off = @{ $ps->{columnoffsets} };
     pop(@off);
@@ -2730,7 +2757,34 @@ sub wrapsimple {
 sub prepare_assets {
     my ( $s, $pr ) = @_;
 
-    my %sa = %{$s->{assets}//{}};	# song assets
+    my %sa;			# song assets
+
+    # Ignore spread asset.
+    while ( my($k,$v) = each %{$s->{assets}//{}} ) {
+	next if $v->{opts}->{spread};
+	$sa{$k} = $v;
+    }
+
+    warn("PDF: Preparing ", scalar(keys %sa), " image",
+	 keys(%sa) == 1 ? "" : "s", "\n")
+      if $config->{debug}->{images} || $config->{debug}->{assets};
+
+    for my $id ( sort keys %sa ) {
+	prepare_asset( $id, $s, $pr );
+    }
+
+    warn("PDF: Preparing ", scalar(keys %sa), " image",
+	 keys(%sa) == 1 ? "" : "s", ", done\n")
+      if $config->{debug}->{images} || $config->{debug}->{assets};
+    $assets = $s->{assets} || {};
+    ::dump( $assets, as => "Assets, Pass 2" )
+      if $config->{debug}->{assets} & 0x02;
+
+}
+
+sub prepare_asset {
+    my ( $id, $s, $pr ) = @_;
+
     $s->{_ps} = $pr->{ps};		# for handlers TODO
 
     # All elements generate zero or one display items, except for SVG images
@@ -2741,11 +2795,8 @@ sub prepare_assets {
     my $pw = $ps->{_marginright} - $ps->{_marginleft};
     my $cw = ( $pw - ( $ps->{columns} - 1 ) * $ps->{columnspace} ) /$ps->{columns}
       - $ps->{_indent};
-    warn("PDF: Preparing ", scalar(keys %sa), " image",
-	 keys(%sa) == 1 ? "" : "s", ", pw=$pw, cw=$cw\n")
-      if $config->{debug}->{images} || $config->{debug}->{assets};
-    for my $id ( sort keys %sa ) {
-	my $elt = $sa{$id};
+
+    for my $elt ( $s->{assets}->{$id} ) {
 
 	$elt->{subtype} //= "image" if $elt->{uri};
 
@@ -2869,11 +2920,6 @@ sub prepare_assets {
 	    next;
 	}
 
-	if ( $elt->{type} eq "image" && $elt->{data} ) {
-	    # Ready to go.
-	    next;
-	}
-
 	if ( $elt->{type} eq "image" ) {
 	    warn("PDF: Preparing $elt->{subtype} image\n") if $config->{debug}->{images};
 	    if ( ($elt->{uri}//"") =~ /^chord:(.+)/ ) {
@@ -2960,14 +3006,7 @@ sub prepare_assets {
 	}
 
     }
-    warn("PDF: Preparing images, done\n")
-      if $config->{debug}->{images} || $config->{debug}->{assets};
-    $assets = $s->{assets} || {};
-    ::dump( $assets, as => "Assets, Pass 2" )
-      if $config->{debug}->{assets} & 0x02;
-
 }
-
 
 my %corefonts =
   (
@@ -3211,14 +3250,14 @@ use Object::Pad;
 
 class TextLayoutImageElement :isa(Text::Layout::PDFAPI2::ImageElement);
 
-use constant TYPE => "img";
 use Carp;
 
 use Text::ParseWords qw( shellwords );
 
 method parse( $ctx, $k, $v ) {
 
-    my %ctl = ( type => TYPE, size => $ctx->{size} );
+    my %ctl = ( type => "img", size => $ctx->{size} );
+    my $err;
 
     # Split the attributes.
     foreach my $kk ( shellwords($v) ) {
@@ -3231,6 +3270,10 @@ method parse( $ctx, $k, $v ) {
 	    $v = lc $v unless $k =~ /^(id|chord)$/;
 
 	    if ( $k =~ /^(id|bbox|chord|src)$/ ) {
+		if ( $v =~ /^(chord|builtin):/ ) {
+		    $k = $1;
+		    $v = $';
+		}
 		$ctl{$k} = $v;
 	    }
 	    elsif ( $k eq "align" && $v =~ /^(left|right|center)$/ ) {
@@ -3240,27 +3283,50 @@ method parse( $ctx, $k, $v ) {
 		$ctl{instrument} = $v;
 	    }
 	    elsif ( $k =~ /^(width|height|dx|dy|w|h)$/ ) {
+		$v = $1                      if $v =~ /^(-?[\d.]+)pt$/;
 		$v = $1 * $ctx->{size}       if $v =~ /^(-?[\d.]+)em$/;
 		$v = $1 * $ctx->{size} / 2   if $v =~ /^(-?[\d.]+)ex$/;
-		$v = $1 * $ctx->{size} / 100 if $v =~ /^(-?[\d.]+)\%$/;
-		$ctl{$k} = $v;
+		#$v = $1 * $ctx->{size} / 100 if $v =~ /^(-?[\d.]+)\%$/;
+		if ( $v =~ /^(-?[\d.]+)\%$/ ) {
+		    warn("Invalid img attribute: \"$kk\" (percentage not allowed)\n");
+		    $err++;
+		}
+		else {
+		    $ctl{$k} = $v;
+		}
 	    }
 	    elsif ( $k =~ /^(scale)$/ ) {
-		$v = $1 / 100 if $v =~ /^([\d.]+)\%$/;
-		$ctl{$k} = $v;
+		my @s;
+		for ( split( /,/, $v ) ) {
+		    $_ = $1 / 100 if /^([\d.]+)\%$/;
+		    push( @s, $_ );
+		}
+		push( @s, $s[0] ) unless @s > 1;
+		unless ( @s == 2 ) {
+		    warn("Invalid img attribute: \"$kk\" (too many values)\n");
+		    $err++;
+		}
+		$ctl{$k} = \@s;
 	    }
 	    else {
-		carp("Invalid " . TYPE . " attribute: \"$k\" ($kk)\n");
+		warn("Invalid img attribute: \"$k\" ($kk)\n");
+		$err++;
 	    }
 	}
 
 	# Currently we do not have value-less attributes.
 	else {
-	    carp("Invalid " . TYPE . " attribute: \"$kk\"\n");
+	    warn("Invalid img attribute: \"$kk\"\n");
+	    $err++;
 	}
     }
 
-    if ( $ctl{id} ) {
+    if ( $err ) {
+	if ( $ctl{id} ) {
+	    $ctl{id} = "__ERROR__";
+	}
+    }
+    elsif ( $ctl{id} ) {
 	my $a = ChordPro::Output::PDF::assets($ctl{id});
 	if ( $a && $a->{opts}->{base} ) {
 	    $ctl{base} = $a->{opts}->{base};
@@ -3274,15 +3340,34 @@ method getimage ($fragment) {
     $fragment->{_img} //= do {
 	my $xo;
 	if ( $fragment->{id} ) {
-	    $xo = ChordPro::Output::PDF::assets($fragment->{id})->{data};
-	    unless ( $xo ) {
-		warn("Unknown image ID in <img>: $fragment->{id}\n");
+	    my $o = ChordPro::Output::PDF::assets($fragment->{id});
+	    $xo = $o->{data} if $o;
+	    unless ( $o && $xo ) {
+		warn("Unknown image ID in <img>: $fragment->{id}\n")
+		  unless $fragment->{id} eq "__ERROR__";
+		$xo = alert( $fragment->{size} );
+	    }
+	    $fragment->{design_scale} = $o->{opts}->{scale};
+	    if ( $o->{width} && $o->{vwidth} ) {
+		$fragment->{design_scale} ||= 1;
+		$fragment->{design_scale} *= $o->{vwidth}/$o->{width};
+	    }
+	}
+	elsif ( $fragment->{builtin} ) {
+	    my $i = $fragment->{builtin};
+	    if ( $i =~ /^alert(?:\(([\d.]+)\))?$/ ) {
+		$xo = alert( $1 || $fragment->{size} );
+	    }
+	    else {
+		warn("Unknown builtin image in <img>: $i\n");
+		$xo = alert( $fragment->{size} );
 	    }
 	}
 	elsif ( $fragment->{chord} ) {
 	    my $info = ChordPro::Chords::known_chord($fragment->{chord});
 	    unless ( $info ) {
 		warn("Unknown chord in <img>: $fragment->{chord}\n");
+		$xo = alert( $fragment->{size} );
 	    }
 	    else {
 		my $p;
