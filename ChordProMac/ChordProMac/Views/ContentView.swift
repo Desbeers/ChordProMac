@@ -15,10 +15,6 @@ struct ContentView: View {
     @EnvironmentObject private var appState: AppState
     /// The observable state of the scene
     @StateObject private var sceneState = SceneState()
-    /// The font for the editor
-    var nsFont: NSFont {
-        return appState.settings.editor.fontStyle.nsFont(size: appState.settings.editor.fontSize)
-    }
     /// The body of the `View`
     var body: some View {
         VStack {
