@@ -97,17 +97,6 @@ extension ChordProEditor {
                             directive = textView.directives.first { $0.directive == value }
                         }
                     }
-                    if let directive {
-                        /// Get some details to suggest a proper export file name
-                        switch directive.directive {
-                        case "t", "title":
-                            textView.songTitle = getDirectiveArgument(nsRange: nsRange) ?? "New Song"
-                        case "st", "subtitle", "artist":
-                            textView.songSubtitle = getDirectiveArgument(nsRange: nsRange)
-                        default:
-                            break
-                        }
-                    }
                     /// Draw the line number
                     drawLineNumber(
                         lineNumber,
