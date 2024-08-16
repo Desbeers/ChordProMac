@@ -964,7 +964,7 @@ sub app_setup {
     if ( $defcfg || $fincfg || $deltacfg ) {
 
 	if ( $defcfg ) {
-	    my $config = CP->findres( "chordpro.rrjson", class => "config" );
+	    my $config = CP->findres( "chordpro.json", class => "config" );
 	    print loadlines( $config, { split => 0 } );
 	}
 	print ChordPro::Config::config_final($deltacfg)
@@ -1166,7 +1166,7 @@ sub runtime_info {
 
     for ( $res->{general}{chordpro} ) {
 	$_->{version} = $dd->($VERSION);
-	$_{type} = $::options->{reference} ? "reference" : "core";
+	$_->{type} = $::options->{reference} ? "reference" : "core";
 	$_->{aux} = "Unsupported development snapshot"
 	  if $VERSION =~ /_/;
     }
