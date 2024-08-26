@@ -1,50 +1,11 @@
 # ChordProMac
 
-## 16 June 2024
-
-My wrapper is merged into the official ChordPro source. That means that what you see here is what you get there. I might keep this repository alive; maybe not. Maybe just for TestBuilds.
-
-I'm very proud for what I have achieved. It was a long and often difficult journey to write a new macOS *wrapper* but I loved it all the way. My journey with **ChordPro** will not end here. It just started.
-
----
-
-A MacOS SwiftUI wrapper for the official [ChordPro](https://chordpro.org) program.
+My `dev` area for the official macOS wrapper for the [ChordPro](https://chordpro.org) application.
 
 ![ChordProMac](https://github.com/Desbeers/ChordProMac/raw/main/Images/screenshot-macOS.jpg)
 
-Goal is to replace the very outdated current wrapper. See [MacOS rewrite](https://github.com/ChordPro/chordpro/issues/373).
+Here; I experiment before sending PR’s upstream.
 
-It is using the official pre-compiled binary to do the hard work and that is in the `Bin` directory of the project.
+Stable versions you can download on the [ChordPro Github](https://github.com/ChordPro/chordpro) page.
 
-The chordpro-core `Bin` directory can be updated with `make chordpro` but requires a lot of perl-packages to compile...
-
-## What can it do
-
-- Open and save **ChordPro** files
-- QuickLook the PDF
-- Export the PDF
-- Choose templates
-- Transpose and transcode a song
-
-## Building
-
-- There are pre-compiled `dmg` images in the 'TestBuild' folder.
-
-### Build yourself (arm and intel)
-
-- This needs a full Xcode install
-- Clone or download the project
-
-#### Xcode:
-
-- Open the project in Xcode
-- Change the signing  certificate to your own
-- Build and run!
-
-#### Command line:
-
-- ~~Run `make xcodebuild` from the root of the project. That will build an unsigned Intel application... It works on arm as well, it is just that universal binaries will not run unsigned at all...~~ *Work in progress*...
-
-## Notes
-
-- MacOS 12 or higher...
+There is a `TestBuild` folder; they may or may not work.
