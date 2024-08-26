@@ -354,6 +354,36 @@ sub process_config ( $cfg, $file ) {
         ChordPro::Chords::pop_parser();
     }
     config_split_fc_aliases($cfg);
+    config_expand_font_shortcuts($cfg);
+}
+
+# Expand pdf.fonts.foo: bar to pdf.fonts.foo { description: bar }.
+sub config_expand_font_shortcuts ( $cfg ) {
+    return unless exists $cfg->{pdf}->{fonts};
+    for my $f ( keys %{$cfg->{pdf}->{fonts}} ) {
+	next if ref($cfg->{pdf}->{fonts}->{$f}) eq 'HASH';
+	for ( $cfg->{pdf}->{fonts}->{$f} ) {
+	    my $v = $_;
+	    my $i = {};
+	    # Break out size.
+	    if ( $v =~ /(.*?)(?:\s+(\d+(?:\.\d+)?))?$/ ) {
+		$i->{size} = $2 if $2;
+		$v = $1;
+	    }
+	    # Check for filename.
+	    if ( $v =~ /^.*\.(ttf|otf)$/i ) {
+		$i->{file} = $v;
+	    }
+	    # Check for corefonts.
+	    elsif ( is_corefont($v) ) {
+		$i->{name} = is_corefont($v);
+	    }
+	    else {
+		$i->{description} = $v;
+	    }
+	    $_ = $i;
+	}
+    }
 }
 
 sub config_split_fc_aliases ( $cfg ) {
@@ -376,44 +406,73 @@ sub config_split_fc_aliases ( $cfg ) {
     }
 }
 
-sub config_final ( $delta ) {
+sub config_final ( %args ) {
+    my $delta   = $args{delta} || 0;
+    my $default = $args{default} || 0;
     $options->{'cfg-print'} = 1;
-    my $cfg = configurator($options);
 
-    if ( $delta ) {
-        my $def = pristine_config();
-	config_split_fc_aliases($def);
-        $cfg->reduce($def);
+    my $defcfg;			# pristine config
+    my $cfg;			# actual config
+    if ( $default || $delta ) {
+	local $options->{nosysconfig} = 1;
+	local $options->{nouserconfig} = 1;
+	local $options->{noconfig} = 1;
+	$defcfg = pristine_config();
+	config_split_fc_aliases($defcfg);
+	if ( $delta ) {
+	    delete $defcfg->{chords};
+	    delete $defcfg->{include};
+	}
+	bless $defcfg => __PACKAGE__;
+	$cfg = $defcfg if $default;
     }
+
+    $cfg //= configurator($options);
+
+    # Remove unwanted data.
     $cfg->unlock;
     $cfg->{tuning} = delete $cfg->{_tuning};
-    delete($cfg->{tuning}) if $delta && !defined($cfg->{tuning});
-    $cfg->{chords} = delete $cfg->{_chords};
+    if ( $delta ) {
+	for ( qw( tuning ) ) {
+	    delete($cfg->{$_}) unless defined($cfg->{$_});
+	}
+	for my $f ( keys( %{$cfg->{pdf}{fonts}} ) ) {
+	    for ( qw( background color ) ) {
+		next if defined($defcfg->{pdf}{fonts}{$f}{$_});
+		delete($cfg->{pdf}{fonts}{$f}{$_});
+		delete($defcfg->{pdf}{fonts}{$f}{$_});
+	    }
+	}
+    }
+    delete $cfg->{_chords};
     delete $cfg->{chords};
     delete $cfg->{_src};
-    $cfg->lock;
 
-    if ( $ENV{CHORDPRO_CFGPROPS} ) {
-        cfg2props($cfg);
-    }
-    else {
-	my $parser = JSON::Relaxed::Parser->new( key_order => 1 );
+    my $parser = JSON::Relaxed::Parser->new( key_order => 1 );
 
+    # Load schema.
+    my $schema = do {
 	my $schema = CP->findres( "config.schema", class => "config" );
 	my $data = loadlines( $schema, { split => 0 } );
-	$data = $parser->decode($data);
-	$schema = $data;
+	$parser->decode($data);
+    };
 
-	my $config = CP->findres( "chordpro.json", class => "config" );
-	$data = loadlines( $config, { split => 0 } );
-	my $new = $parser->decode($data);
-
-	$cfg->unlock;
-	my $tmp = hmerge($new,$cfg);
-	my $res = $parser->encode( data => $tmp, pretty => 1, schema => $schema );
-	$cfg->lock;
-	$res;
+    # Delta cannot handle reference config yet.
+    if ( $delta ) {
+	$defcfg->unlock;
+	$cfg->reduce( $defcfg );
+	return $parser->encode( data => {%$cfg},
+				pretty => 1, schema => $schema );
     }
+
+    my $config = do {
+	my $config = CP->findres( "chordpro.json", class => "config" );
+	my $data = loadlines( $config, { split => 0 } );
+	$parser->decode($data);
+    };
+
+    return $parser->encode( data => hmerge( $config, $cfg ),
+			    pretty => 1, schema => $schema );
 }
 
 sub convert_config ( $from, $to ) {
@@ -607,13 +666,13 @@ sub reduce ( $self, $hash ) {
 
     my $locked = $self->is_locked;
 
-    warn("O: ", qd($hash,1), "\n") if DEBUG;
-    warn("N: ", qd($self,1), "\n") if DEBUG;
+    warn("O: ", qd($hash,1), "\n") if DEBUG > 1;
+    warn("N: ", qd($self,1), "\n") if DEBUG > 1;
     my $state = _reduce( $self, $hash, "" );
 
     $self->lock if $locked;
 
-    warn("== ", qd($self,1), "\n") if DEBUG;
+    warn("== ", qd($self,1), "\n") if DEBUG > 1;
     return $self;
 }
 
@@ -637,7 +696,7 @@ sub _reduce ( $self, $orig, $path ) {
               unless exists $self->{$key}
                 || $key =~ /^_/;
 
-            unless ( defined $orig->{$key} ) {
+            unless ( exists $orig->{$key} ) {
                 warn("D: $path$key\n") if DEBUG;
                 delete $self->{$key};
                 $state //= 'M';
@@ -851,11 +910,7 @@ sub precheck ( $cfg, $file ) {
     $p = sub {
         my ( $o, $path ) = @_;
         $path //= "";
-        if ( !defined $o ) {
-            warn("$file: Undefined config \"$path\" (using 'false')\n");
-            $_[0] = '';
-        }
-        elsif ( UNIVERSAL::isa( $o, 'HASH' ) ) {
+        if ( UNIVERSAL::isa( $o, 'HASH' ) ) {
             $path .= "." unless $path eq "";
             for ( sort keys %$o ) {
                 $p->( $o->{$_}, $path . $_  );
