@@ -13,7 +13,7 @@ chordpro:
 	@echo "Building ChordPro core"
 	rm -fr "${DEST}/ChordProSource"
 	$(MKDIR) -p "${DEST}/ChordProSource"
-	git clone --branch dev https://github.com/ChordPro/chordpro.git "${DEST}/ChordProSource"
+	git clone --branch dev https://github.com/Desbeers/chordpro.git "${DEST}/ChordProSource"
 	cd "${DEST}/ChordProSource/pp/macosswift" && make chordpro
 	@echo "Copy core to the wrapper..."
 	rm -fr "${WRAPPERBIN}"
@@ -21,21 +21,22 @@ chordpro:
 	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
 
 xcodebuild: info
-	@echo "Building ChordProMac"
+	@echo "Building ChordProMac for Apple Silicone"
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
 	cp -r "ChordProMac" "${DEST}/XcodeSource"
 	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
-		-arch x86_64 \
-		CODE_SIGN_IDENTITY="" \
-		CODE_SIGNING_REQUIRED=NO \
+		-arch arm64 \
+		CODE_SIGN_IDENTITY="-" \
+		CODE_SIGNING_REQUIRED=YES \
 		BUILD_DIR=../../../build
 		
 archive: xcodebuild
 	@echo "Archive ChordPro"
-	$(MKDIR) -p "${DEST}/ChordPro"
-	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro"
+	$(MKDIR) -p "${DEST}/ChordPro/Resources"
+	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro/Resources"
 	cp "ChordProMac/Read Me First.html" "${DEST}/ChordPro"
+	cp "ChordProMac/Install ChordPro" "${DEST}/ChordPro"
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"
 	
