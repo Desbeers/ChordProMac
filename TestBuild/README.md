@@ -1,25 +1,5 @@
-# Test build
+# Test builds
 
 ## Notice:
 
-**Currently, the TestBuilds only work proper on Apple Silicone**
-
-Reason is that I rebuild the **ChordPro** core on my M1 mac so the core is *arm* only at the moment. That will be fixed for any official release in the future.
-
----
-
-This is an unsigned, *Intel* test build for macOS 12 and later.
-
-- Download the dmg and open it.
-- Move the application to wherever you want it.
-
-YOU CANNOT JUST OPEN THE APPLICATION!
-
-- `right-click` the application and choose ‘open’
-- You will get a warning that the application is not verified and you are suggested to move int to the bin. Press `cancel`
-- `right-click` again and choose ‘open’ again.
-- Now you can choose ‘open anyway’ and the application should start.
-
-Next time you can just open it without any warnings.
-
-Even though the build is *Intel* only it will run on arm-macs as well. The reason I cannot make a universal binary is that an unsigned arm-version will simply refuse to open...
+These are unsupported arm versions of ChordPro for macs running on Apple Silicon

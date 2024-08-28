@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>This is an unsupported, not official version of ChordPro for</title>
+</head>
+<body>
+<h1>This is an unsupported arm version of ChordPro for macs running on Apple Silicon</h1>
+
+<p>Distributing ‘ready to go’ binaries for Apple Silicon is a lot harder than on Intel. The application <em>must</em> be signed with a valid Apple Developers account or else it will simply not run.</p>
+
+<p>I don’t have such account.</p>
+
+<p>The version in the <code>Resources</code> folder is ‘ad-hoc’ signed; that means its signed to run on my mac and my mac only. Sorry, you cannot run it.</p>
+
+<p>If you want to use it; you have to ‘re-sign’ it so it becomes yours. The <code>Install.zsh</code> can help you.</p>
+
+<p>To use this script; the <code>Xcode Command Line Tools</code> must be installed. Fortunately; they are free and do not require any account. A full Xcode is not required. Use your favourite search engine if you don’t know how to install it.</p>
+
+<p>Once you have the <code>Xcode Command Line Tools</code> installed, you can run the <code>Install.zsh</code> script in the Terminal. It does require your administration password; <strong>so use it at your own risk</strong>!</p>
+
+<p>It will do the following:</p>
+
+<ul>
+<li>Copy <code>ChordPro</code> to your applications folder</li>
+<li>Remove all attributes that prevents code-signing</li>
+<li>Re-sign the application ‘ad-hoc’, so its just for you</li>
+<li>Remove the quarantine bit so macOS will not show any warning when opening the first time</li>
+<li>Add the <code>chordpro</code> command-line command to your $PATH so you can easily use it in the Terminal to use its full power</li>
+</ul>
+
+<p>This is dirty; I know, but it works...</p>
+</body>
+</html>

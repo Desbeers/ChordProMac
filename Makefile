@@ -35,8 +35,8 @@ archive: xcodebuild
 	@echo "Archive ChordPro"
 	$(MKDIR) -p "${DEST}/ChordPro/Resources"
 	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro/Resources"
-	cp "ChordProMac/Read Me First.html" "${DEST}/ChordPro"
-	cp "ChordProMac/Install ChordPro" "${DEST}/ChordPro"
+	cp "ChordProMac/Read Me.html" "${DEST}/ChordPro"
+	cp "ChordProMac/Install.zsh" "${DEST}/ChordPro"
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"
 	
