@@ -30,15 +30,6 @@ xcodebuild: info
 		CODE_SIGN_IDENTITY="-" \
 		CODE_SIGNING_REQUIRED=YES \
 		BUILD_DIR=../../../build
-		
-archive: xcodebuild
-	@echo "Archive ChordPro"
-	$(MKDIR) -p "${DEST}/ChordPro/Resources"
-	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro/Resources"
-	cp "ChordProMac/Read Me.html" "${DEST}/ChordPro"
-	cp "ChordProMac/Install.zsh" "${DEST}/ChordPro"
-	rm -f "${TESTBUILDDIR}/${DMGNAME}"
-	hdiutil create -format UDZO -srcfolder build/ChordPro/ "${TESTBUILDDIR}/${DMGNAME}"
 	
 info:
 	@echo "Add core info to the wrapper..."
@@ -46,3 +37,26 @@ info:
 	
 clean:
 	rm -fr ${DEST}
+
+archive: xcodebuild
+	@echo "Archive ChordPro"
+	rm -fr "${DEST}/ChordPro"
+	$(MKDIR) -p "${DEST}/ChordPro/Resources"
+	cp -r "${DEST}/Release/ChordPro.app" "build/ChordPro/Resources"
+	cp "Resources/README.pdf" "${DEST}/ChordPro"
+	cp "Resources/Install.zsh" "${DEST}/ChordPro"
+	rm -f "${TESTBUILDDIR}/${DMGNAME}"
+	# Create the DMG
+	bash Resources/Create-dmg/create-dmg \
+	  --volname "ChordPro Installer" \
+	  --background "Resources/installer_background.png" \
+	  --eula "Resources/eula.rtf" \
+	  --window-pos 200 120 \
+	  --window-size 700 400 \
+	  --icon-size 64 \
+	  --icon "README.pdf" 560 100 \
+	  --hide-extension "README.pdf" \
+	  --icon "Install.zsh" 560 200 \
+	  --hide-extension "Install.zsh" \
+	  "${TESTBUILDDIR}/${DMGNAME}" \
+	  "${DEST}/ChordPro"
