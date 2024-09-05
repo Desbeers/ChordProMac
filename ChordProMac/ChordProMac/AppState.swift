@@ -16,14 +16,10 @@ final class AppState: ObservableObject {
             try? AppSettings.save(settings: settings)
         }
     }
-    /// All the directives we know about
-    var directives: [ChordProDirective] = []
     /// Init the class; get application settings
     init() {
         /// Get the application settings from the cache
         self.settings = AppSettings.load()
-        /// Get all known directives
-        self.directives = Directive.getChordProDirectives()
     }
     /// Add the user settings as arguments to **ChordPro** for the Terminal action
     /// - Parameter settings: The ``AppSettings``

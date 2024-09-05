@@ -18,9 +18,12 @@ chordpro:
 	@echo "Copy core to the wrapper..."
 	rm -fr "${WRAPPERBIN}"
 	$(MKDIR) -p "${WRAPPERBIN}"
+	@echo "Remove the static info (not needed anymore)..."
 	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
+	@echo "Remove the static info (not needed anymore)..."
+	rm -f "${WRAPPERBIN}/ChordProInfo.json"
 
-xcodebuild: info
+xcodebuild:
 	@echo "Building ChordProMac for Apple Silicone"
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
@@ -30,10 +33,6 @@ xcodebuild: info
 		CODE_SIGN_IDENTITY="-" \
 		CODE_SIGNING_REQUIRED=YES \
 		BUILD_DIR=../../../build
-	
-info:
-	@echo "Add core info to the wrapper..."
-	${WRAPPERBIN}/chordpro -A -A -A -> ${WRAPPERBIN}/ChordProInfo.json
 	
 clean:
 	rm -fr ${DEST}

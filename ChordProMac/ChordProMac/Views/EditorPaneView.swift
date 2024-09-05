@@ -11,6 +11,8 @@ import SwiftUI
 struct EditorPaneView: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
+    /// The observable state of the delegate
+    @EnvironmentObject private var appDelegate: AppDelegate
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneState
     /// The document in the environment
@@ -21,7 +23,7 @@ struct EditorPaneView: View {
             ChordProEditor(
                 text: document.$document.text,
                 settings: appState.settings.editor,
-                directives: appState.directives
+                directives: appDelegate.directives
             )
             .introspect { editor in
                 Task { @MainActor in
@@ -29,6 +31,8 @@ struct EditorPaneView: View {
                 }
             }
             .frame(maxHeight: .infinity)
+            /// - Note: Make sure we have an up-to-date list of directives
+            .id(appDelegate.directives.count)
         }
     }
 }

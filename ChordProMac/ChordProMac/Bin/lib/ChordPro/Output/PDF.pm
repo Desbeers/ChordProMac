@@ -16,6 +16,7 @@ use Encode qw( encode_utf8 );
 use File::Temp ();
 use Storable qw(dclone);
 use List::Util qw(any);
+use Ref::Util qw(is_coderef);
 use Carp;
 use feature 'state';
 use File::LoadLines qw(loadlines loadblob);
@@ -28,6 +29,7 @@ use ChordPro::Paths;
 use ChordPro::Utils;
 
 my $pdfapi;
+my $progress_callback;
 
 use Text::Layout;
 use String::Interpolate::Named;
@@ -51,6 +53,10 @@ sub generate_songbook {
     if ( $ps->{'sort-pages'} ) {
 	sort_songbook($sb);
     }
+
+    # Progress callback, if any.
+    $progress_callback //= $options->{progress_callback}
+      if $options->{progress_callback};
 
     my $pr = (__PACKAGE__."::Writer")->new( $ps, $pdfapi );
     warn("Generating PDF ", $options->{output} || "__new__.pdf", "...\n") if $options->{verbose};
@@ -84,8 +90,15 @@ sub generate_songbook {
 	warn("Warning: Specifying an even start page when pdf.odd-even-pages is in effect may yield surprising results.\n");
     }
 
+    progress_callback
+	  ({ phase   => "pdf",
+	     index   => 0,
+	     songs   => scalar(@{$sb->{songs}}),
+	   });
+
     my $first_song_aligned;
     my $songindex;
+
     foreach my $song ( @{$sb->{songs}} ) {
 	$songindex++;
 
@@ -115,6 +128,14 @@ sub generate_songbook {
 	    }
 	}
 
+	last unless progress_callback
+	  ({ phase   => "pdf",
+	     index   => $songindex,
+	     songs   => scalar(@{$sb->{songs}}),
+	     page    => $page,
+	     source  => $song->{source}->{file},
+	     title   => $song->{meta}->{title}->[0],
+	   });
 	if ( $options->{verbose} ) {
 	    print STDERR "$page "; # Progress indicator
 	}
@@ -276,6 +297,20 @@ sub generate_songbook {
     _dump($ps) if $verbose;
 
     []
+}
+
+sub progress_callback {
+    my ( $ctl ) = @_;
+    return 1 unless $progress_callback;
+
+    if ( is_coderef($progress_callback) ) {
+	eval {
+	    $progress_callback->($ctl);
+	};
+    }
+    else {
+	warn( fmt_subst( { meta => $ctl }, $progress_callback ), "\n" );
+    }
 }
 
 sub generate_csv {
@@ -816,6 +851,12 @@ sub generate_song {
 	    my $h = int( ( $ww + $dadv ) / $hsp );
 	    die("ASSERT: $h should be greater than 0") unless $h > 0;
 
+	    # Spread evenly over multiple lines.
+	    if ( $dctl->{align} eq "center" ) {
+		my $lines = int((@chords-1)/$h) + 1;
+		$h = int((@chords-1)/$lines) + 1;
+	    }
+
 	    my $y = $y;
 	    if ( $show eq "bottom" ) {
 		$y = $ps->{marginbottom} + (int((@chords-1)/$h) + 1) * $vsp;
@@ -862,9 +903,15 @@ sub generate_song {
 	    my $h = int( ( $ww + $dadv ) / $hsp );
 	    die("ASSERT: $h should be greater than 0") unless $h > 0;
 
+	    # Spread evenly over multiple lines.
+	    if ( $dctl->{align} eq "center" ) {
+		my $lines = int((@chords-1)/$h) + 1;
+		$h = int((@chords-1)/$lines) + 1;
+	    }
+
 	    my $h0 = $h;
 	    while ( @chords ) {
-		$checkspace->( $dd->vsp0( undef, $ps ) );
+		$checkspace->($vsp);
 		my $x = $x - $ps->{_indent};
 		$pr->show_vpos( $y, 0 ) if $config->{debug}->{spacing};
 
@@ -888,7 +935,7 @@ sub generate_song {
 		$pr->show_vpos( $y, 1 ) if $config->{debug}->{spacing};
 	    }
 	}
-	$y = $ps->{_top} if $ps->{_top};
+	$y = delete $ps->{_top} if $show eq "top";
     };
 
     my @elts;
