@@ -17,6 +17,8 @@ enum UserFileItem: String, UserFile {
     case customLibrary
     /// A custom song template
     case customSongTemplate
+    /// An export folder
+    case exportFolder
     /// The ID of the file item
     var id: String {
         return self.rawValue
@@ -31,6 +33,8 @@ enum UserFileItem: String, UserFile {
             return [UTType.folder]
         case .customSongTemplate:
             return [UTType.chordProSong]
+        case .exportFolder:
+            return [UTType.folder]
         }
     }
     /// The optional calculated label of the file
@@ -48,6 +52,8 @@ enum UserFileItem: String, UserFile {
             return "building.columns"
         case .customSongTemplate:
             return "music.note.list"
+        case .exportFolder:
+            return "book"
         }
     }
     /// Protocol requirement; not supported with macOS 12
@@ -59,6 +65,8 @@ enum UserFileItem: String, UserFile {
             return "Select the folder with your custom library"
         case .customSongTemplate:
             return "Select your custom template"
+        case .exportFolder:
+            return "Select a folder with your songs"
         }
     }
 }

@@ -11,6 +11,7 @@
 		D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */; };
 		D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DC2C0CEA27006D9667 /* LogDocument.swift */; };
 		D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DE2C0CEF42006D9667 /* LogItem.swift */; };
+		D70A442D2C8B388400670D13 /* SongBook in Resources */ = {isa = PBXBuildFile; fileRef = D70A442C2C8B388400670D13 /* SongBook */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
@@ -45,6 +46,7 @@
 		D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2822C05E18B00CC4E3E /* Accidentals.swift */; };
 		D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2842C05F2B900CC4E3E /* StatusView.swift */; };
 		D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2862C05F6CB00CC4E3E /* Notation.swift */; };
+		D776B5CE2C8A1EC100E10FE8 /* ExportFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */; };
 		D796F0EC2C1A6AB600B3DE40 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */; };
 		D7AC53422C20C1A0002B075F /* FontSizeButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */; };
 		D7D244B22C3C3C240058FB8E /* AppKitUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7D244AB2C3C3C240058FB8E /* AppKitUtils.swift */; };
@@ -85,6 +87,7 @@
 		D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogView.swift; sourceTree = "<group>"; };
 		D702E0DC2C0CEA27006D9667 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
 		D702E0DE2C0CEF42006D9667 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
+		D70A442C2C8B388400670D13 /* SongBook */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SongBook; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
@@ -122,6 +125,7 @@
 		D774F2822C05E18B00CC4E3E /* Accidentals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accidentals.swift; sourceTree = "<group>"; };
 		D774F2842C05F2B900CC4E3E /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		D774F2862C05F6CB00CC4E3E /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
+		D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFolderView.swift; sourceTree = "<group>"; };
 		D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizeButtonsView.swift; sourceTree = "<group>"; };
 		D7D244AB2C3C3C240058FB8E /* AppKitUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppKitUtils.swift; sourceTree = "<group>"; };
@@ -234,6 +238,7 @@
 				D7723A5F2C03291D0031CD0C /* Documents */,
 				D7146DB52C04B39B007E77B8 /* Bin */,
 				D75F41312C0F31DB00F0413B /* SystemTasks */,
+				D70A442C2C8B388400670D13 /* SongBook */,
 				D7723A522C0326130031CD0C /* Assets.xcassets */,
 				D7723A572C0326130031CD0C /* Info.plist */,
 				D7723A582C0326130031CD0C /* ChordProMac.entitlements */,
@@ -271,6 +276,7 @@
 				D72EA33F2C0C5E5800B1BA93 /* View+errorAlert.swift */,
 				D75005662C38379C005D23E2 /* EditorPaneView.swift */,
 				D75005682C383C77005D23E2 /* PreviewPaneView.swift */,
+				D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -417,6 +423,7 @@
 			files = (
 				D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */,
 				D75F41322C0F31DB00F0413B /* SystemTasks in Resources */,
+				D70A442D2C8B388400670D13 /* SongBook in Resources */,
 				D7146DB92C04B3C3007E77B8 /* script in Resources */,
 				D7723A562C0326130031CD0C /* Preview Assets.xcassets in Resources */,
 				D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */,
@@ -510,6 +517,7 @@
 				D75005672C38379C005D23E2 /* EditorPaneView.swift in Sources */,
 				D72EA33C2C0BB24600B1BA93 /* LogView.swift in Sources */,
 				D72EA3382C0B8E2C00B1BA93 /* HelpButtonsView.swift in Sources */,
+				D776B5CE2C8A1EC100E10FE8 /* ExportFolderView.swift in Sources */,
 				D7D244C62C3C3C320058FB8E /* ChordProEditor+highlight.swift in Sources */,
 				D7D244B32C3C3C240058FB8E /* AppKitUtils+openPanel.swift in Sources */,
 				D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */,
@@ -654,12 +662,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChordProMac/ChordProMac.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -694,12 +702,12 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ChordProMac/ChordProMac.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

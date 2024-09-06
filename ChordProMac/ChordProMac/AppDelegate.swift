@@ -37,4 +37,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 
         aboutBoxWindowController?.showWindow(aboutBoxWindowController?.window)
     }
+
+    private var exportFolderBoxWindowController: NSWindowController?
+
+    @MainActor func showExportFolderWindow() {
+        if exportFolderBoxWindowController == nil {
+            let styleMask: NSWindow.StyleMask = [.closable, .miniaturizable, .titled]
+            let window = NSWindow()
+            window.styleMask = styleMask
+            window.title = "Songbook from Folder"
+            window.contentView = NSHostingView(rootView: ExportFolderView())
+            window.center()
+            exportFolderBoxWindowController = NSWindowController(window: window)
+        }
+
+        exportFolderBoxWindowController?.showWindow(exportFolderBoxWindowController?.window)
+    }
 }

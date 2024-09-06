@@ -40,6 +40,11 @@ import SwiftUI
                 PrintPDFView(label: "Print…")
                     .environmentObject(appState)
             }
+            CommandMenu("Songbook") {
+                Button("Export Folder…") {
+                    appDelegate.showExportFolderWindow()
+                }
+            }
             CommandMenu("Tasks") {
                 TaskMenuView()
             }

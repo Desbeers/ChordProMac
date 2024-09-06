@@ -1,0 +1,73 @@
+// Tables of contents.
+// An array of hashes each describing one table of contents.
+contents : [
+  {
+
+    // The metadata for this toc. One or two items.
+    fields : [ songindex ]
+
+    // For future use.
+    fold : false
+
+    // The label (title) for this toc.
+    label : "Table of Contents"
+
+    // The format for the toc lines.
+    line : "%{title}%{artist| - %{}}"
+
+    // Omit this toc.
+    omit : false
+
+    // The format for the page numbers in the toc.
+    pageno : "%{page}"
+
+    // Template song for the toc.
+    template : 'TEMPLATEPATH'
+  }
+  {
+
+    // The metadata for this toc. One or two items.
+    fields : [ sorttitle artist ]
+
+    // For future use.
+    fold : false
+
+    // The label (title) for this toc.
+    label : "Contents by Title"
+
+    // The format for the toc lines.
+    line : "%{title}%{artist| - %{}}"
+
+    // Omit this toc.
+    omit : true
+
+    // The format for the page numbers in the toc.
+    pageno : "%{page}"
+
+    // Template song for the toc.
+    template : stdtoc
+  }
+  {
+
+    // The metadata for this toc. One or two items.
+    fields : [ artist sorttitle ]
+
+    // For future use.
+    fold : false
+
+    // The label (title) for this toc.
+    label : "Contents by Artist"
+
+    // The format for the toc lines.
+    line : "%{artist|%{} - }%{title}"
+
+    // Omit this toc.
+    omit : true
+
+    // The format for the page numbers in the toc.
+    pageno : "%{page}"
+
+    // Template song for the toc.
+    template : stdtoc
+  }
+]

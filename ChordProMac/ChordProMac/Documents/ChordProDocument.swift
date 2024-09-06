@@ -12,6 +12,8 @@ import UniformTypeIdentifiers
 struct ChordProDocument: FileDocument {
     /// The UTType of the song
     static var readableContentTypes: [UTType] { [.chordProSong] }
+    /// The file extensions **ChordPro** can open
+    public static let fileExtension: [String] = ["chordpro", "cho", "crd", "chopro", "chord", "pro"]
     /// The text of the song
     var text: String
     /// Init the song

@@ -42,6 +42,14 @@ final class SceneState: ObservableObject {
     var logFileURL: URL {
         temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .plainText)
     }
+    /// The URL of the song list
+    var songListURL: URL {
+        temporaryDirectoryURL.appendingPathComponent("songlist", conformingTo: .plainText)
+    }
+    /// The URL of the config
+    var configURL: URL {
+        temporaryDirectoryURL.appendingPathComponent("config", conformingTo: .json)
+    }
     /// The optional custom task to run
     @Published var customTask: CustomTask?
     /// Preview variables

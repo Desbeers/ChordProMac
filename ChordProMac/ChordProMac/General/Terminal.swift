@@ -176,16 +176,17 @@ extension Terminal {
 
 extension Terminal {
 
-    /// Export a document with the **ChordPro** binary to a PDF
+    /// Export a document or folder with the **ChordPro** binary to a PDF
     /// - Parameters:
-    ///   - document: The current ``ChordProDocument``
+    ///   - text: The current text of the document
     ///   - settings: The current ``AppSettings``
     ///   - sceneState: The current ``SceneState``
     /// - Returns: The PDF as `Data` and the status as ``AppError``
     static func exportDocument(
         text: String,
         settings: AppSettings,
-        sceneState: SceneState
+        sceneState: SceneState,
+        songList: Bool = false
     ) async throws -> (data: Data, status: AppError) {
         /// Get the **ChordPro** binary
         let chordProApp = try getChordProBinary()
@@ -212,8 +213,13 @@ extension Terminal {
         }
         /// The **ChordPro** binary
         arguments.append("\"\(chordProApp.path)\"")
-        /// Add the source file
-        arguments.append("\"\(sceneState.sourceURL.path)\"")
+        
+        if songList {
+            arguments.append("--config='\(sceneState.configURL.path)'")
+            arguments.append("--filelist=\"\(sceneState.songListURL.path)\"")
+        } else {
+            arguments.append("\"\(sceneState.sourceURL.path)\"")
+        }
         /// Get the user settings that are simple and do not need sandbox help
         arguments.append(contentsOf: AppState.getUserSettings(settings: settings))
         /// Add the optional custom config file
