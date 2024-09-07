@@ -11,7 +11,6 @@
 		D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */; };
 		D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DC2C0CEA27006D9667 /* LogDocument.swift */; };
 		D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DE2C0CEF42006D9667 /* LogItem.swift */; };
-		D70A442D2C8B388400670D13 /* SongBook in Resources */ = {isa = PBXBuildFile; fileRef = D70A442C2C8B388400670D13 /* SongBook */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
@@ -87,7 +86,6 @@
 		D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogView.swift; sourceTree = "<group>"; };
 		D702E0DC2C0CEA27006D9667 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
 		D702E0DE2C0CEF42006D9667 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
-		D70A442C2C8B388400670D13 /* SongBook */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SongBook; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
@@ -238,7 +236,6 @@
 				D7723A5F2C03291D0031CD0C /* Documents */,
 				D7146DB52C04B39B007E77B8 /* Bin */,
 				D75F41312C0F31DB00F0413B /* SystemTasks */,
-				D70A442C2C8B388400670D13 /* SongBook */,
 				D7723A522C0326130031CD0C /* Assets.xcassets */,
 				D7723A572C0326130031CD0C /* Info.plist */,
 				D7723A582C0326130031CD0C /* ChordProMac.entitlements */,
@@ -423,7 +420,6 @@
 			files = (
 				D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */,
 				D75F41322C0F31DB00F0413B /* SystemTasks in Resources */,
-				D70A442D2C8B388400670D13 /* SongBook in Resources */,
 				D7146DB92C04B3C3007E77B8 /* script in Resources */,
 				D7723A562C0326130031CD0C /* Preview Assets.xcassets in Resources */,
 				D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */,

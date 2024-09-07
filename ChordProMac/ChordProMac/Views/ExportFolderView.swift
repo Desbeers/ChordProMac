@@ -109,7 +109,7 @@ struct ExportFolderView: View {
 
         chordProRunning = true
 
-        /// Create the TOC
+        /// Create the cover page
 
         var text: [String] = ["{title: " + title + "}"]
         text.append("{subtitle: " + subtitle + "}")
@@ -120,20 +120,6 @@ struct ExportFolderView: View {
             let coverURL = sceneState.temporaryDirectoryURL.appendingPathComponent("SongBook", conformingTo: .png)
             try? FileManager.default.copyItem(at: coverImage, to: coverURL)
             text.append("{image anchor=\"page\" x=\"50%\" y=\"50%\" scale=\"100%\" src=\"" + coverURL.path + "\"}")
-        }
-        text.append("{new_page}")
-
-        /// Create json config
-        if let json = Bundle.main.url(forResource: "SongBook/SongBook.json", withExtension: nil) {
-
-            do {
-                let content = try String(contentsOf: json, encoding: .utf8)
-                let replaced = content.replacingOccurrences(of: "TEMPLATEPATH", with: sceneState.sourceURL.path)
-                try replaced.write(to: sceneState.configURL, atomically: true, encoding: String.Encoding.utf8)
-            } catch {
-                Logger.application.error("\(error.localizedDescription, privacy: .public)")
-            }
-
         }
 
         var songsURL: [String] = []
@@ -161,6 +147,14 @@ struct ExportFolderView: View {
 
         Task {
             do {
+                /// Create the cover PDF with **ChordPro**
+                _ = try await Terminal.exportDocument(
+                    text: text.joined(separator: "\n"),
+                    settings: AppSettings.load(),
+                    sceneState: sceneState,
+                    cover: true
+                )
+
                 /// Create the PDF with **ChordPro**
                 let pdf = try await Terminal.exportDocument(
                     text: text.joined(separator: "\n"),

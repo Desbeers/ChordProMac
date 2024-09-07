@@ -50,6 +50,10 @@ final class SceneState: ObservableObject {
     var configURL: URL {
         temporaryDirectoryURL.appendingPathComponent("config", conformingTo: .json)
     }
+    /// The URL of the cover
+    var coverURL: URL {
+        temporaryDirectoryURL.appendingPathComponent("cover", conformingTo: .pdf)
+    }
     /// The optional custom task to run
     @Published var customTask: CustomTask?
     /// Preview variables
