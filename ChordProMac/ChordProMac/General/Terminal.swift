@@ -217,7 +217,7 @@ extension Terminal {
         
         if songList {
             arguments.append("--front-matter='\(sceneState.coverURL.path)'")
-            arguments.append("--filelist=\"\(sceneState.songListURL.path)\"")
+            arguments.append("--filelist=\"\(sceneState.fileListURL.path)\"")
         } else {
             arguments.append("\"\(sceneState.sourceURL.path)\"")
         }

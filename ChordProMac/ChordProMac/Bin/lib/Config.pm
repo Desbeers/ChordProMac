@@ -97,7 +97,7 @@ tie %Config, 'Config', {
     inc_version_list => ' ',
     intsize => '4',
     ldlibpthname => 'DYLD_LIBRARY_PATH',
-    libpth => '/AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.Internal.sdk/usr/local/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Toolchains/OSX14.5.xctoolchain/usr/lib/clang/15.0.0/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.5.Internal.sdk/usr/lib /AppleInternal/Library/BuildRoots/91a344b1-f985-11ee-b563-fe8bc7981bff/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib /usr/lib /usr/local/lib',
+    libpth => '/AppleInternal/Library/BuildRoots/4ff29661-3588-11ef-9513-e2437461156c/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.6.Internal.sdk/usr/local/lib /AppleInternal/Library/BuildRoots/4ff29661-3588-11ef-9513-e2437461156c/Applications/Xcode.app/Contents/Developer/Toolchains/OSX14.6.xctoolchain/usr/lib/clang/15.0.0/lib /AppleInternal/Library/BuildRoots/4ff29661-3588-11ef-9513-e2437461156c/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX14.6.Internal.sdk/usr/lib /AppleInternal/Library/BuildRoots/4ff29661-3588-11ef-9513-e2437461156c/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib /usr/lib /usr/local/lib',
     osname => 'darwin',
     osvers => '23.0',
     path_sep => ':',

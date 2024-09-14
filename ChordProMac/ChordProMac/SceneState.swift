@@ -42,13 +42,9 @@ final class SceneState: ObservableObject {
     var logFileURL: URL {
         temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .plainText)
     }
-    /// The URL of the song list
-    var songListURL: URL {
+    /// The URL of the file list with songs
+    var fileListURL: URL {
         temporaryDirectoryURL.appendingPathComponent("songlist", conformingTo: .plainText)
-    }
-    /// The URL of the config
-    var configURL: URL {
-        temporaryDirectoryURL.appendingPathComponent("config", conformingTo: .json)
     }
     /// The URL of the cover
     var coverURL: URL {

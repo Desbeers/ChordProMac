@@ -46,6 +46,7 @@
 		D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2842C05F2B900CC4E3E /* StatusView.swift */; };
 		D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2862C05F6CB00CC4E3E /* Notation.swift */; };
 		D776B5CE2C8A1EC100E10FE8 /* ExportFolderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */; };
+		D795739D2C95CCC600EE315D /* FileListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D795739C2C95CCC600EE315D /* FileListItem.swift */; };
 		D796F0EC2C1A6AB600B3DE40 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */; };
 		D7AC53422C20C1A0002B075F /* FontSizeButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */; };
 		D7D244B22C3C3C240058FB8E /* AppKitUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7D244AB2C3C3C240058FB8E /* AppKitUtils.swift */; };
@@ -124,6 +125,7 @@
 		D774F2842C05F2B900CC4E3E /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		D774F2862C05F6CB00CC4E3E /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 		D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportFolderView.swift; sourceTree = "<group>"; };
+		D795739C2C95CCC600EE315D /* FileListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListItem.swift; sourceTree = "<group>"; };
 		D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		D7AC53412C20C1A0002B075F /* FontSizeButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FontSizeButtonsView.swift; sourceTree = "<group>"; };
 		D7D244AB2C3C3C240058FB8E /* AppKitUtils.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppKitUtils.swift; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 				D702E0DE2C0CEF42006D9667 /* LogItem.swift */,
 				D728FF2A2C1B70B40028D7A9 /* ChordProInfo.swift */,
 				D7FBDB8E2C2C96AE00D242ED /* Directive.swift */,
+				D795739C2C95CCC600EE315D /* FileListItem.swift */,
 			);
 			path = Structures;
 			sourceTree = "<group>";
@@ -510,6 +513,7 @@
 				D7D244DA2C3C3C5A0058FB8E /* UserFileBookmark.swift in Sources */,
 				D72EA32F2C0B2E9400B1BA93 /* UserFileItem.swift in Sources */,
 				D7D244B22C3C3C240058FB8E /* AppKitUtils.swift in Sources */,
+				D795739D2C95CCC600EE315D /* FileListItem.swift in Sources */,
 				D75005672C38379C005D23E2 /* EditorPaneView.swift in Sources */,
 				D72EA33C2C0BB24600B1BA93 /* LogView.swift in Sources */,
 				D72EA3382C0B8E2C00B1BA93 /* HelpButtonsView.swift in Sources */,

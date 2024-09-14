@@ -71,7 +71,7 @@ extension UserFileBookmark {
     /// - Note: Always call this function after you are done with the access or else Apple will be really upset!
     public static func stopCustomFileAccess(persistentURL: URL) {
         Task {
-            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            try? await Task.sleep(nanoseconds: 500_000_000_000)
             persistentURL.stopAccessingSecurityScopedResource()
             Logger.fileAccess.info("Stopped access to '\(persistentURL.lastPathComponent, privacy: .public)'")
         }
