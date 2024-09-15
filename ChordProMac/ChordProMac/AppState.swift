@@ -17,14 +17,24 @@ final class AppState: ObservableObject {
     /// All the settings for the application
     @Published var settings: AppSettings {
         didSet {
-            Logger.application.info("Saving settings")
             try? AppSettings.save(settings: settings)
         }
     }
+
+    /// The **ChordPro** information
+    @Published var chordProInfo: ChordProInfo?
+    /// The list of known directives
+    @Published var directives: [ChordProDirective] = []
+
     /// Init the class; get application settings
     private init() {
+        print("APPSTATE INIT")
         /// Get the application settings from the cache
         self.settings = AppSettings.load()
+        Task { @MainActor in
+            chordProInfo = try? await Terminal.getChordProInfo()
+            directives = Directive.getChordProDirectives(chordProInfo: chordProInfo)
+        }
     }
     /// Add the user settings as arguments to **ChordPro** for the Terminal action
     /// - Parameter settings: The ``AppSettings``

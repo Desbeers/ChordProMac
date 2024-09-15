@@ -13,8 +13,6 @@ struct ContentView: View {
     let file: URL?
     /// The observable state of the application
     @EnvironmentObject private var appState: AppState
-    /// The observable state of the delegate
-    @EnvironmentObject private var appDelegate: AppDelegate
     /// The observable state of the scene
     @StateObject private var sceneState = SceneState()
     /// The body of the `View`
@@ -49,9 +47,10 @@ struct ContentView: View {
         .environmentObject(sceneState)
         /// Give the application access to the scene.
         .focusedSceneValue(\.sceneState, sceneState)
+        /// Make sure all directives are up-to-date
         .task {
-            appDelegate.chordProInfo = try? await Terminal.getChordProInfo()
-            appDelegate.directives = Directive.getChordProDirectives(chordProInfo: appDelegate.chordProInfo)
+            appState.chordProInfo = try? await Terminal.getChordProInfo()
+            appState.directives = Directive.getChordProDirectives(chordProInfo: appState.chordProInfo)
         }
     }
 }

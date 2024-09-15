@@ -57,7 +57,7 @@ enum UserFileItem: String, UserFile {
         case .customSongTemplate:
             return "music.note.list"
         case .exportFolder:
-            return "book"
+            return "square.and.arrow.up"
         case .songbookCover:
             return "doc.richtext"
         }
