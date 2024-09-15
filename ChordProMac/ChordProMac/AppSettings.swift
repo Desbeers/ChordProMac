@@ -47,6 +47,18 @@ extension AppSettings {
 
         /// Bool to use a custom song template
         var useCustomSongTemplate: Bool = false
+
+        // MARK: Songbook
+
+        var songbookTitle: String = "My Songs"
+
+        var songbookSubtitle: String = "ChordPro"
+
+        var songbookGenerateCover: Bool = true
+
+        var songbookUseCustomCover: Bool = false
+
+        var fileList: [FileListItem] = []
     }
 
     /// Settings that will change the behaviour of the **ChordPro** binary

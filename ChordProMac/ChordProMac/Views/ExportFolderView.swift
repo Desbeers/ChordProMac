@@ -6,9 +6,14 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
+import QuickLook
 import OSLog
 
 struct ExportFolderView: View {
+
+    /// The observable state of the application
+    @StateObject private var appState = AppState.shared
 
     /// The observable state of the delegate
     @EnvironmentObject private var appDelegate: AppDelegate
@@ -16,129 +21,190 @@ struct ExportFolderView: View {
     /// The observable state of the scene
     @StateObject private var sceneState = SceneState()
 
-    @State private var title: String = "My Songs"
-
-    @State private var subtitle: String = "ChordPro"
-
     /// Present an export dialog
     @State private var exportFolderDialog = false
-    /// The song as PDF
+    /// The songbook as PDF
     @State private var pdf: Data?
 
     @State private var chordProRunning: Bool = false
 
-    @State private var fileList: [FileListItem] = []
+    @State private var coverPreview: URL?
 
-    @State private var addCoverPage: Bool = true
+    /// Bool if the dropping is in progress
+    @State private var isDropping = false
 
     /// The current selected folder
     @State private var currentFolder: String? = ExportFolderView.exportFolderTitle
+    
+    /// The current selected cover
+    @State private var currentCover: String? = ExportFolderView.exportCoverTitle
+
     var body: some View {
-        HStack {
-            ScrollView {
+        VStack {
+            HStack {
                 VStack {
-                    VStack (alignment: .leading) {
-                        Text("Create a PDF songbook with all the songs in a folder using your current settings.")
-                        .padding([.horizontal, .top])
-                    }
-                    .padding(.horizontal)
-                    VStack {
-                        UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
-                            currentFolder = ExportFolderView.exportFolderTitle
-                            makeFileList()
-                        })
-                    }
-                    .wrapSettingsSection(title: "The folder with your songs")
-                    VStack {
-                        Toggle(isOn: $addCoverPage, label: {
-                            Text("Add a standard cover page")
-                        })
-                        Group {
-                            Text("The title of the songbook:")
-                                .font(.headline)
-                            TextField(text: $title, prompt: Text("My songbook")) {
-                                Text("Label")
+                    List {
+                        ForEach($appState.settings.application.fileList) { $item in
+                            HStack {
+                                Toggle(isOn: $item.enabled, label: {
+                                    Text("Enable")
+                                })
+                                .labelsHidden()
+                                Text(item.url.deletingPathExtension().lastPathComponent)
                             }
-                            Text("The author of the songbook:")
-                                .font(.headline)
-                            TextField(text: $subtitle, prompt: Text("My name")) {
-                                Text("Label")
-                            }
-                            Text("This is you by default.")
+                        }
+                        .onMove { from, to in
+                            appState.settings.application.fileList.move(fromOffsets: from, toOffset: to)
+                        }
+                    }
+                    .listStyle(.inset(alternatesRowBackgrounds: true))
+                    .overlay {
+                        if appState.settings.application.fileList.isEmpty {
+                            Text("Drop a folder with your **ChordPro** files here to view its content and to make a Songbook.")
+                                .multilineTextAlignment(.center)
+                                .wrapSettingsSection(title: "File List")
+                        }
+                    }
+                    Label(
+                        title: { Text("You can reorder the songs by drag and drop.") },
+                        icon: { Image(systemName: "info.circle.fill") }
+                    )
+                    .font(.caption)
+                    //.padding()
+                }
+
+                ScrollView {
+                    VStack {
+                        VStack {
+                            UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
+                                currentFolder = ExportFolderView.exportFolderTitle
+                                makeFileList()
+                            })
+                            .id(currentFolder)
+                            Text(.init(songCountLabel))
                                 .font(.caption)
                         }
-                        .disabled(!addCoverPage)
-                    }
-                    .wrapSettingsSection(title: "The front page")
-                    Button(action: {
-                        makeSongbook()
-                    }, label: {
-                        Text("Make songbook")
-                    })
-                    .padding(.top)
-                    .disabled(currentFolder == nil || title.isEmpty)
-                }
-                .padding(.top)
-                .disabled(chordProRunning)
-            }
-            VStack {
-                List {
-                    ForEach($fileList) { $item in
-                        HStack {
-                            Toggle(isOn: $item.enabled, label: {
-                                Text("Enable")
+                        .wrapSettingsSection(title: "The folder with your songs")
+                        VStack {
+                            Toggle(isOn: $appState.settings.application.songbookGenerateCover, label: {
+                                Text("Add a standard cover page")
                             })
-                            .labelsHidden()
-                            Text(item.url.lastPathComponent)
+                            .padding(.bottom)
+                            Group {
+                                HStack {
+                                    Text("Title:")
+                                        .frame(width: 60, alignment: .trailing)
+                                        .font(.headline)
+                                    TextField(text: $appState.settings.application.songbookTitle, prompt: Text("My songbook")) {
+                                        Text("Label")
+                                    }
+                                }
+                                HStack {
+                                    Text("Subtitle:")
+                                        .frame(width: 60, alignment: .trailing)
+                                        .font(.headline)
+                                    TextField(text: $appState.settings.application.songbookSubtitle, prompt: Text("My name")) {
+                                        Text("Label")
+                                    }
+                                }
+                            }
+                            .disabled(!appState.settings.application.songbookGenerateCover)
+                            .foregroundColor(appState.settings.application.songbookGenerateCover ? .primary : .secondary)
+                            Group {
+                                Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
+                                    Text("Use a custom PDF cover")
+                                })
+                                .padding()
+                                HStack {
+                                    UserFileButtonView(userFile: UserFileItem.songbookCover, action: {
+                                        currentCover = ExportFolderView.exportCoverTitle
+                                        //makeFileList()
+                                    })
+                                    if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
+                                        Button(action: {
+                                            coverPreview = url
+                                        }, label: {
+                                            
+                                            Image(systemName: "eye")
+                                        })
+                                    }
+                                }
+                                .disabled(!appState.settings.application.songbookUseCustomCover)
+                            }
+
                         }
+                        .wrapSettingsSection(title: "The front page")
+                        Button(action: {
+                            makeSongbook()
+                        }, label: {
+                            Text("Export Songbook")
+                        })
+                        .padding(.top)
+                        .disabled(currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
                     }
-                    .onMove { from, to in
-                        fileList.move(fromOffsets: from, toOffset: to)
-                    }
+                    //.padding(.top)
+                    .disabled(chordProRunning)
                 }
-                .overlay {
-                    if fileList.isEmpty {
-                        Text("Select a folder to view its content here.")
-                    }
-                }
-                Label(
-                    title: { Text("You can reorder the songs by drag and drop.").font(.caption) },
-                    icon: { Image(systemName: "info.circle.fill") }
-                )
-                .padding()
             }
+            Divider()
+            StatusView()
+                .padding(.horizontal)
         }
         .frame(width: 600, height: 460, alignment: .top)
         .overlay {
-            ProgressView()
+            VStack {
+                ProgressView()
+                Text("This might take some time...")
+                    .font(.caption)
+            }
+            .padding()
+            .background(.thinMaterial)
+                .wrapSettingsSection(title: "Making the PDF")
                 .opacity(chordProRunning ? 1 : 0)
         }
         .toolbar {
             Spacer()
         }
-        //.navigationSubtitle("Create a PDF songbook with all the songs in a folder using your current settings.")
-        .sheet(isPresented: $sceneState.showLog) {
-            LogView()
+        .task(id: appState.settings.application.songbookGenerateCover) {
+            if appState.settings.application.songbookGenerateCover {
+                appState.settings.application.songbookUseCustomCover = false
+            }
         }
-        .task {
-            subtitle = NSFullUserName()
-            makeFileList()
+        .task(id: appState.settings.application.songbookUseCustomCover) {
+            if appState.settings.application.songbookUseCustomCover {
+                appState.settings.application.songbookGenerateCover = false
+            }
         }
-        .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
+        .onDrop(of: [.folder], isTargeted: $isDropping) { itemProvider in
+            if let item = itemProvider.first {
+                item.loadItem(forTypeIdentifier: UTType.folder.identifier, options: nil) { urlData, _ in
+                    if let url = urlData as? URL {
+                        Task {
+                            UserFileBookmark.setBookmarkURL(UserFileItem.exportFolder, url)
+                            currentFolder = url.lastPathComponent
+                            makeFileList()
+                        }
+                    }
+                }
+            }
+            return true
+        }
         .fileExporter(
             isPresented: $exportFolderDialog,
             document: ExportDocument(pdf: pdf),
             contentType: .pdf,
             // swiftlint:disable:next line_length
-            defaultFilename: title
+            defaultFilename: appState.settings.application.songbookTitle
         ) { _ in
             Logger.pdfBuild.notice("Export completed")
         }
+        .quickLookPreview($coverPreview)
+        .environmentObject(appState)
         .environmentObject(sceneState)
     }
 
     @MainActor private func makeFileList() {
-        fileList = []
+        var fileList: [FileListItem] = []
 
         if let songsFolder = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
             /// Get access to the URL
@@ -155,6 +221,7 @@ struct ExportFolderView: View {
             songsFolder.stopAccessingSecurityScopedResource()
         }
         fileList.sort {$0.url.path < $1.url.path}
+        appState.settings.application.fileList = fileList
     }
 
     @MainActor private func makeSongbook() {
@@ -163,8 +230,8 @@ struct ExportFolderView: View {
 
         /// Create the cover page
 
-        var text: [String] = ["{title: " + title + "}"]
-        text.append("{subtitle: " + subtitle + "}")
+        var text: [String] = ["{title: " + appState.settings.application.songbookTitle + "}"]
+        text.append("{subtitle: " + appState.settings.application.songbookSubtitle + "}")
         text.append("{+pdf.fonts.title.size:40}")
         text.append("{+pdf.fonts.subtitle.size:20}")
 
@@ -185,7 +252,7 @@ struct ExportFolderView: View {
         if let songsFolder = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
             /// Get access to the URL
             _ = songsFolder.startAccessingSecurityScopedResource()
-            songsURL = fileList.filter {$0.enabled == true}.map(\.url.path)
+            songsURL = appState.settings.application.fileList.filter {$0.enabled == true}.map(\.url.path)
             /// Close access to the URL
             songsFolder.stopAccessingSecurityScopedResource()
         }
@@ -237,5 +304,19 @@ struct ExportFolderView: View {
     /// Get the current selected export folder
     private static var exportFolderTitle: String? {
         UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder)?.lastPathComponent
+    }
+    /// Get the current selected export cover
+    private static var exportCoverTitle: String? {
+        UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover)?.lastPathComponent
+    }
+
+    private var songCountLabel: String {
+        let count = appState.settings.application.fileList.count
+        switch count {
+        case 0:
+            return "Select a folder with your **ChordPro** songs"
+        default:
+            return "Found \(count) **ChordPro** songs in the folder"
+        }
     }
 }

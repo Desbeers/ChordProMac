@@ -6,18 +6,23 @@
 //
 
 import Foundation
+import OSLog
 
 /// The observable state of the application
 /// - Note: Every open song window shares this state
 final class AppState: ObservableObject {
+
+    static let shared = AppState()
+
     /// All the settings for the application
     @Published var settings: AppSettings {
         didSet {
+            Logger.application.info("Saving settings")
             try? AppSettings.save(settings: settings)
         }
     }
     /// Init the class; get application settings
-    init() {
+    private init() {
         /// Get the application settings from the cache
         self.settings = AppSettings.load()
     }

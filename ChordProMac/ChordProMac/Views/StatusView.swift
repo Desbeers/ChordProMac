@@ -43,5 +43,9 @@ struct StatusView: View {
         .padding(.bottom, 4)
         .animation(.default, value: appState.settings)
         .animation(.default, value: sceneState.exportStatus)
+        .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
+        .sheet(isPresented: $sceneState.showLog) {
+            LogView()
+        }
     }
 }

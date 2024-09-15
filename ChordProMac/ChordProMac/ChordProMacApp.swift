@@ -11,7 +11,7 @@ import SwiftUI
 @main struct ChordProMacApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     /// The observable state of the application
-    @StateObject private var appState = AppState()
+    @StateObject private var appState = AppState.shared
     /// The body of the `Scene`
     var body: some Scene {
         DocumentGroup(newDocument: ChordProDocument()) { file in
@@ -28,8 +28,7 @@ import SwiftUI
                 }
             }
 #if DEBUG
-            CommandGroup(after: .appInfo) {
-                Divider()
+            CommandMenu("Debug") {
                 ResetApplicationButtonView()
             }
 #endif

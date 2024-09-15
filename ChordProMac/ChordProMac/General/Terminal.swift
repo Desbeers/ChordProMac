@@ -214,9 +214,23 @@ extension Terminal {
         }
         /// The **ChordPro** binary
         arguments.append("\"\(chordProApp.path)\"")
-        
+        /// Songbook export
         if songList {
-            arguments.append("--front-matter='\(sceneState.coverURL.path)'")
+            /// Add the system generated front cover if selected
+            if settings.application.songbookGenerateCover {
+                arguments.append("--front-matter='\(sceneState.coverURL.path)'")
+            }
+            /// Add a custom cover if selected
+            if
+                settings.application.songbookUseCustomCover,
+                let persistentURL = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
+                /// Get access to the URL
+                _ = persistentURL.startAccessingSecurityScopedResource()
+                arguments.append("--front-matter='\(persistentURL.path)'")
+                /// Close the access
+                UserFileBookmark.stopCustomFileAccess(persistentURL: persistentURL)
+            }
+            /// Add the file list
             arguments.append("--filelist=\"\(sceneState.fileListURL.path)\"")
         } else {
             arguments.append("\"\(sceneState.sourceURL.path)\"")

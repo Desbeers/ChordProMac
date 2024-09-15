@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct FileListItem: Identifiable {
-    let id = UUID()
-    let url: URL
+struct FileListItem: Identifiable, Codable, Equatable {
+    var id = UUID()
+    var url: URL
     var enabled: Bool
 }
