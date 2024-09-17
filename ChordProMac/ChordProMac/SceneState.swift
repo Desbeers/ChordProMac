@@ -21,7 +21,7 @@ final class SceneState: ObservableObject {
     /// Status of the last **ChordPro** export
     @Published var exportStatus: AppError = .noErrorOccurred
     /// The temporary directory for processing files
-    let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true)
+    let temporaryDirectoryURL = URL(fileURLWithPath: NSTemporaryDirectory(), isDirectory: true).appendingPathComponent("ChordProTMP", isDirectory: true)
     /// The calculated file name of the song
     var songFileName: String {
         if let file {
@@ -46,10 +46,17 @@ final class SceneState: ObservableObject {
     var fileListURL: URL {
         temporaryDirectoryURL.appendingPathComponent("songlist", conformingTo: .plainText)
     }
-    /// The URL of the cover
-    var coverURL: URL {
-        temporaryDirectoryURL.appendingPathComponent("cover", conformingTo: .pdf)
+
+
+    var localConfigURL: URL? {
+        if let file {
+            let localConfig = file.deletingPathExtension().appendingPathExtension("json")
+            let haveConfig = FileManager.default.fileExists(atPath: localConfig.path)
+            return haveConfig ? localConfig : nil
+        }
+        return nil
     }
+
     /// The optional custom task to run
     @Published var customTask: CustomTask?
     /// Preview variables
@@ -59,6 +66,7 @@ final class SceneState: ObservableObject {
     /// Init the class
     init() {
         self.defaultSongName = "New Song \(Date().formatted(date: .abbreviated, time: .standard))"
+        try? FileManager.default.createDirectory(at: temporaryDirectoryURL, withIntermediateDirectories: true)
     }
 }
 
@@ -67,7 +75,8 @@ extension SceneState {
     func exportPDF(
         text: String,
         songList: Bool = false,
-        cover: Bool = false
+        title: String = "",
+        subtitle: String = ""
     ) async throws -> (data: Data, status: AppError) {
         do {
             let pdf = try await Terminal.exportPDF(
@@ -75,9 +84,10 @@ extension SceneState {
                 settings: AppSettings.load(),
                 sceneState: self,
                 songList: songList,
-                cover: cover
+                title: title,
+                subtitle: subtitle
             )
-            if !songList && !cover {
+            if !songList {
                 /// The PDF is not outdated
                 preview.outdated = false
                 /// Update the preview if open

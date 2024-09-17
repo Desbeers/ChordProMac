@@ -255,33 +255,12 @@ struct ExportFolderView: View {
         }
         Task {
             do {
-                /// Create the cover PDF with **ChordPro** as a single song
-                if appState.settings.application.songbookGenerateCover {
-                    /// Create the cover page
-                    var text: [String] = ["{title: " + appState.settings.application.songbookTitle + "}"]
-                    text.append("{subtitle: " + appState.settings.application.songbookSubtitle + "}")
-                    text.append("{+pdf.fonts.title.size:40}")
-                    text.append("{+pdf.fonts.subtitle.size:20}")
-                    text.append("{+pdf.margintop:100}")
-                    text.append("{+pdf.formats.first.title:[ \"\" \"%{title}\" \"\" ]}")
-                    text.append("{+pdf.formats.first.subtitle:[ \"\" \"%{subtitle}\" \"\" ]}")
-                    text.append("{+pdf.formats.first.footer:[ \"Created with ChordPro\" \"\" \"https://www.chordpro.org\" ]}")
-                    if let coverImage = Bundle.main.url(
-                        forResource: "/lib/ChordPro/res/icons/chordpro-icon.png",
-                        withExtension: nil
-                    ) {
-                        text.append("{image anchor=\"page\" x=\"50%\" y=\"50%\" scale=\"100%\" src=\"" + coverImage.path + "\"}")
-                    }
-                    _ = try await sceneState.exportPDF(
-                        text: text.joined(separator: "\n"),
-                        cover: true
-                    )
-                }
-
                 /// Create the PDF with **ChordPro**
                 let pdf = try await sceneState.exportPDF(
                     text: "",
-                    songList: true
+                    songList: true,
+                    title: appState.settings.application.songbookTitle,
+                    subtitle: appState.settings.application.songbookSubtitle
                 )
                 /// Set the PDF as Data
                 self.pdf = pdf.data

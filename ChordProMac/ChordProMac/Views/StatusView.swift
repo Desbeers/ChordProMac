@@ -19,6 +19,11 @@ struct StatusView: View {
             if !appState.settings.chordPro.configLabel.isEmpty {
                 Text("**Configuration:** \(appState.settings.chordPro.configLabel)")
             }
+
+            if let localConfigURL = sceneState.localConfigURL, !appState.settings.chordPro.noDefaultConfigs {
+                Text("**Local:** \(localConfigURL.deletingPathExtension().lastPathComponent)")
+            }
+
             if appState.settings.chordPro.transpose && appState.settings.chordPro.transposeMakesSense {
                 Text("**Transpose:** \(appState.settings.chordPro.transposeLabel)")
             }

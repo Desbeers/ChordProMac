@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UniformTypeIdentifiers
 import OSLog
 
 /// Terminal utilities
@@ -187,8 +188,10 @@ extension Terminal {
         settings: AppSettings,
         sceneState: SceneState,
         songList: Bool = false,
-        cover: Bool = false
+        title: String = "",
+        subtitle: String = ""
     ) async throws -> (data: Data, status: AppError) {
+
         /// Get the **ChordPro** binary
         let chordProApp = try getChordProBinary()
         /// Remove previous export (if any)
@@ -218,7 +221,10 @@ extension Terminal {
         if songList {
             /// Add the system generated front cover if selected
             if settings.application.songbookGenerateCover {
-                arguments.append("--front-matter='\(sceneState.coverURL.path)'")
+                arguments.append("--title='\(title)'")
+                if !subtitle.isEmpty {
+                    arguments.append("--subtitle='\(subtitle)'")
+                }
             }
             /// Add a custom cover if selected
             if
@@ -245,8 +251,15 @@ extension Terminal {
         if let taskConfig = sceneState.customTask {
             arguments.append("--config='\(taskConfig.url.path)'")
         }
+
+        if let localConfigURL = sceneState.localConfigURL, !settings.chordPro.noDefaultConfigs {
+            _ = localConfigURL.startAccessingSecurityScopedResource()
+            arguments.append("--config='\(localConfigURL.path)'")
+            UserFileBookmark.stopCustomFileAccess(persistentURL: localConfigURL)
+        }
+
         /// Add the output file
-        arguments.append("--output=\"\(cover ? sceneState.coverURL.path : sceneState.exportURL.path)\"")
+        arguments.append("--output='\(sceneState.exportURL.path)'")
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")])
@@ -259,7 +272,7 @@ extension Terminal {
         }
         do {
             /// Try to get the `Data` from the created PDF
-            let data = try Data(contentsOf: cover ? sceneState.coverURL : sceneState.exportURL)
+            let data = try Data(contentsOf: sceneState.exportURL)
             /// Return the `Data` and the status of the creation as an ``AppError`
             /// - Note: That does not mean it is has an error, the status is just using the same structure
             return (data, output.standardError.isEmpty ? .noErrorOccurred : .pdfCreatedWithErrors)

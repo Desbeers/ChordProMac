@@ -17,6 +17,10 @@ extension DebugView {
     public struct ResetApplicationButtonView: View {
         /// Init the `View`
         public init() {}
+
+        /// The scene state in the environment
+        @FocusedValue(\.sceneState) private var sceneState: SceneState?
+
         /// The body of the `View`
         public var body: some View {
             Button(
@@ -45,6 +49,17 @@ extension DebugView {
                     Text("Reset Application")
                 }
             )
+            Button(
+                action: {
+                    if let sceneState {
+                        NSWorkspace.shared.open(sceneState.temporaryDirectoryURL)
+                    }
+                },
+                label: {
+                    Text("Open TMP folder")
+                }
+            )
+            .disabled(sceneState == nil)
         }
     }
 }

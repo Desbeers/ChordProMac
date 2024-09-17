@@ -156,7 +156,9 @@ sub generate_songbook {
 	  label => $::config->{toc}->{title},
 	  line => $::config->{toc}->{line} } ];
 
-    foreach my $ctl ( reverse( @{ $::config->{contents} } ) ) {
+    my @tocs = @{ $::config->{contents} };
+    while ( @tocs ) {
+	my $ctl = pop(@tocs);
 	next unless $options->{toc} // @book > 1;
 
 	for ( qw( fields label line pageno ) ) {
@@ -168,61 +170,112 @@ sub generate_songbook {
 	my $book = prep_outlines( [ map { $_->[1] } @book ], $ctl );
 
 	# Create a pseudo-song for the table of contents.
-	my $t = fmt_subst( $book[0][-1], $ctl->{label} );
-	my $l = $ctl->{line};
+	my $toctitle = fmt_subst( $book[0][-1], $ctl->{label} );
 	my $start = $start_of{songbook} - $options->{"start-page-number"};
+	# Templates for toc line and page.
+	my $tltpl = $ctl->{line};
 	my $pgtpl = $ctl->{pageno};
 
 	# If we have a template, process it as a song and prepend.
 	my $song;
-	    my $cf;
-	if ( $ctl->{template} ) {
+	my $tmplfile;
+	if ( defined($options->{title}) && !@tocs ) {
+	    my $tpl = "toccover";
+	    $tmplfile = CP->findres( "$tpl.cho", class => "templates" );
+	    if ( $verbose ) {
+		warn("ToC template",
+		     $tmplfile ? " found: $tmplfile" : " not found: $tpl.cho\n")
+	    }
+	}
+	elsif ( $ctl->{template} ) {
 	    my $tpl = $ctl->{template};
 	    if ( $tpl =~ /\.\w+/ ) { # file
-		$cf = CP->siblingres( $book[0][-1]->{source}->{file},
+		$tmplfile = CP->siblingres( $book[0][-1]->{source}->{file},
 				      $tpl, class => "templates" );
-		warn("ToC template not found: $tpl\n") unless $cf;
+		warn("ToC template not found: $tpl\n") unless $tmplfile;
 	    }
 	    else {
-		$cf = CP->findres( $tpl.".cho", class => "templates" );
+		$tmplfile = CP->findres( $tpl.".cho", class => "templates" );
 		if ( $verbose ) {
 		    warn("ToC template",
-			 $cf ? " found: $cf" : " not found: $tpl.cho\n")
+			 $tmplfile ? " found: $tmplfile" : " not found: $tpl.cho\n")
 		}
 	    }
 	}
-	if ( $cf ) {
+
+	# Construct front matter songbook.
+	my $fmsb;
+	if ( $tmplfile ) {
+	    # Songbook from template file.
 	    my $opts = {};
-	    my $lines = loadlines( $cf, $opts );
-	    $song = ChordPro::Song->new( { %$opts,
-					   generate => 'PDF' } );
-	    my $l = 0;
-	    $song->parse_song( $lines, \$l, {}, {} );
-	    $t = fmt_subst( $book[0][-1], $song->{title} )
-	      if $song->{title};
-	    my $st = fmt_subst( $book[0][-1], $song->{meta}->{subtitle}->[0] )
-	      if $song->{meta}->{subtitle} && $song->{meta}->{subtitle}->[0];
+	    my $lines = loadlines( $tmplfile, $opts );
+	    $fmsb = ChordPro::Songbook->new;
+	    $fmsb->parse_file( $lines, { %$opts,
+					 generate => 'PDF' } );
+	    for ( $fmsb->{songs}->[-1] ) {
+		$_->{title} = $_->{title}
+		  ? fmt_subst( $book[0][-1], $_->{title} )
+		  : $toctitle;
+		$_->{meta}->{title} //= [ $_->{title} ];
+#	    my $st = fmt_subst( $book[0][-1], $song->{meta}->{subtitle}->[0] )
+#	      if $song->{meta}->{subtitle} && $song->{meta}->{subtitle}->[0];
+	    }
 	}
 	else {
+	    # Create single-song songbook.
+	    $fmsb = ChordPro::Songbook->new;
+	    my $song = ChordPro::Song->new( { generate => 'PDF' } );
 	    $song = { meta => {} };
-	    $song->{title} //= $t;
-	    $song->{meta}->{title} //= [ $t ];
+	    $song->{title} //= $toctitle;
+	    $song->{meta}->{title} //= [ $toctitle ];
+	    $fmsb->add($song);
 	}
+
+	my @songs = @{$fmsb->{songs}};
+
+	# The first (of multiple) gets the blobal title/subtitle.
+	if ( @songs > 1 ) {
+	    for ( $songs[0] ) {
+		$_->{meta}->{title} =
+		  [ fmt_subst( $_, $options->{title} ) ]
+		  if defined $options->{title};
+		$_->{meta}->{subtitle} =
+		  [ fmt_subst( $_, $options->{subtitle} ) ]
+		  if defined $options->{subtitle};
+		$_->{title} = $_->{meta}->{title}->[0];
+	    }
+	}
+
+	# The last song gets the ToC appended.
+	$song = pop(@songs);
 	push( @{ $song->{body} //= [] },
 	      map { +{ type    => "tocline",
 		       context => "toc",
-		       title   => fmt_subst( $_->[-1], $l ),
+		       title   => fmt_subst( $_->[-1], $tltpl ),
 		       page    => $pr->{pdf}->openpage($_->[-1]->{meta}->{tocpage}+$start),
 		       pageno  => fmt_subst( $_->[-1], $pgtpl ),
 		     } } @$book );
 
-	# Prepend the toc.
-	$page = generate_song( $song,
-			       { pr => $pr, prepend => 1, roman => 1,
-				 startpage => 1,
-				 songindex => 1, numsongs => 1,
-			       } );
+	# Prepend the front matter songs.
+	$page = 0;
+	for ( @songs, $song ) {
+	    my $p = generate_song( $_,
+				   { pr => $pr, prepend => 1, roman => 1,
+				     startpage => 1+$page,
+				     songindex => 1, numsongs => 1,
+				   } );
+	    $page += $p;
+	    if ( $ps->{'pagealign-songs'}
+		 && !( $page % 2 ) ) {
+		$pr->newpage($ps, $page);
+		$page++;
+		$p++;
+	    }
+	    $pages_of{front} += $p unless $_ eq $song;
+	    $start_of{toc} = $page if $_ eq $song;
+	}
 	$pages_of{toc} += $page;
+
 	#### TODO: This is not correct if there are more TOCs.
 	$pages_of{toc}++ if $first_song_aligned;
 
@@ -1985,7 +2038,9 @@ sub imageline {
 	      - $ps->{columnspace};
 	}
 	else {
-	    $pw = $ps->{__rightmargin} - $ps->{_leftmargin};
+	    # $pw = $ps->{__rightmargin} - $ps->{_leftmargin};
+	    # See issue #428.
+	    $pw = $ps->{_marginright} - $ps->{_leftmargin};
 	}
 	$ph = $ps->{_margintop} - $ps->{_marginbottom};
 	$pw -= $ps->{_indent} if $anchor eq "float";
@@ -2089,6 +2144,7 @@ sub imageline {
 	}
     };
 
+    my $xtrascale = 1;
     if ( $anchor eq "column" ) {
 	# Relative to the column.
 	$calc->( @{$ps}{qw( __leftmargin __rightmargin
@@ -2105,7 +2161,15 @@ sub imageline {
     }
     else {
 	# image is line oriented.
-	$calc->( $x, $ps->{__rightmargin}, $y, $ps->{__bottommargin}, 0 );
+	# See issue #428.
+	# $calc->( $x, $ps->{__rightmargin}, $y, $ps->{__bottommargin}, 0 );
+	$calc->( $x, $ps->{_marginright}, $y, $ps->{__bottommargin}, 0 );
+	$xtrascale = ( $ps->{__rightmargin}-$ps->{_leftmargin} ) /
+	             ( $ps->{_marginright}-$ps->{_leftmargin} );
+	warn("_MR = ", $ps->{_marginright},
+	     ", _RM = ", $ps->{_rightmargin},
+	     ", __RM = ", $ps->{__rightmargin},
+	     ", XS = ", $xtrascale, "\n") if 0;
     }
 
     $x += $ox if defined $ox;
@@ -2117,8 +2181,8 @@ sub imageline {
 		 )) if $config->{debug}->{images};
 
     $pr->add_object( $img, $x, $y,
-		     xscale => $w/$img->width,
-		     yscale => $h/$img->height,
+		     xscale => $w/$img->width * $xtrascale,
+		     yscale => $h/$img->height * $xtrascale,
 		     border => $opts->{border} || 0,
 		     valign => $opts->{valign} // "top",
 		     align  => $align,
@@ -2841,6 +2905,9 @@ sub prepare_asset {
     # So we first scan the list for SVG and delegate items and turn these
     # into simple display items.
 
+#    warn("_MR = ", $ps->{_marginright}, ", _RM = ", $ps->{_rightmargin},
+#	 ", __RM = ", $ps->{__rightmargin}, "\n");
+#    my $pw = $ps->{__rightmargin} - $ps->{_marginleft};
     my $pw = $ps->{_marginright} - $ps->{_marginleft};
     my $cw = ( $pw - ( $ps->{columns} - 1 ) * $ps->{columnspace} ) /$ps->{columns}
       - $ps->{_indent};
@@ -3191,7 +3258,7 @@ sub sort_songbook {
 
     if ( $sorting =~ /2page|compact/ ) {
 	# Progress indicator
-	print STDERR "Counting pages:\n" if $options->{verbose};
+	warn( "Counting pages:\n" ) if $options->{verbose};
 
 	foreach my $song ( @{$sb->{songs}} ) {
 	    $song->{meta}->{pages} =
@@ -3203,13 +3270,13 @@ sub sort_songbook {
 	}
 	print STDERR "\n" if $options->{verbose}; # Progress indicator
     }
-	
-	foreach my $song ( @{$sb->{songs}} ) {
-	  if (!defined($song->{meta}->{sorttitle})) {
+
+    foreach my $song ( @{$sb->{songs}} ) {
+	if (!defined($song->{meta}->{sorttitle})) {
 	    $song->{meta}->{sorttitle}=$song->{meta}->{title};
-	  }
 	}
-	
+    }
+
     my @songlist = @{$sb->{songs}};
 
     if ( $sorting =~ /title/ ) {
