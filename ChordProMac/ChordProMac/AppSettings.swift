@@ -50,14 +50,17 @@ extension AppSettings {
 
         // MARK: Songbook
 
+        /// The title of the songbook
         var songbookTitle: String = "My Songs"
-
+        /// The optional subtitle of the songbook
         var songbookSubtitle: String = "ChordPro"
-
+        /// Bool to auto-generate a cover
         var songbookGenerateCover: Bool = true
-
+        /// Bool to use a custom cover
         var songbookUseCustomCover: Bool = false
-
+        /// Bool to look recursive into the songs folder
+        var recursiveFileList: Bool = true
+        /// The current filelist
         var fileList: [FileListItem] = []
     }
 

@@ -76,6 +76,12 @@ struct ExportFolderView: View {
                             .id(currentFolder)
                             Text(.init(songCountLabel))
                                 .font(.caption)
+                            Toggle(isOn: $appState.settings.application.recursiveFileList) {
+                                Text("Also look in subfolders for songs")
+                            }
+                            .onChange(of: appState.settings.application.recursiveFileList) { _ in
+                                makeFileList()
+                            }
                         }
                         .wrapSettingsSection(title: "The folder with your songs")
                         VStack(alignment: .leading) {
@@ -83,7 +89,6 @@ struct ExportFolderView: View {
                                 Text("Add a standard cover page")
                             })
                             .padding(.bottom)
-
                             if appState.settings.application.songbookGenerateCover {
                                 VStack {
                                     HStack {
@@ -143,7 +148,6 @@ struct ExportFolderView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .wrapSettingsSection(title: "The cover page")
                     }
-
                     .disabled(chordProRunning)
                     Button(action: {
                         makeSongbook()
@@ -215,11 +219,14 @@ struct ExportFolderView: View {
 
     @MainActor private func makeFileList() {
         var fileList: [FileListItem] = []
+
+        let enumeratorOptions: FileManager.DirectoryEnumerationOptions  = appState.settings.application.recursiveFileList ? [] : [.skipsSubdirectoryDescendants]
+
         if let songsFolder = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
             /// Get access to the URL
             _ = songsFolder.startAccessingSecurityScopedResource()
             if
-                let items = FileManager.default.enumerator(at: songsFolder, includingPropertiesForKeys: nil) {
+                let items = FileManager.default.enumerator(at: songsFolder, includingPropertiesForKeys: nil, options: enumeratorOptions) {
                 while let item = items.nextObject() as? URL {
                     if ChordProDocument.fileExtension.contains(item.pathExtension) {
                         fileList.append(.init(url: item, enabled: true))
