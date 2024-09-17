@@ -182,7 +182,7 @@ extension Terminal {
     ///   - settings: The current ``AppSettings``
     ///   - sceneState: The current ``SceneState``
     /// - Returns: The PDF as `Data` and the status as ``AppError``
-    static func exportDocument(
+    static func exportPDF(
         text: String,
         settings: AppSettings,
         sceneState: SceneState,

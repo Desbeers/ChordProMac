@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View` with the 'share' button'
 struct ShareButtonView: View {
@@ -26,16 +27,11 @@ struct ShareButtonView: View {
                 if let document {
                     Task {
                         do {
-                            _ = try await Terminal.exportDocument(
-                                text: document.document.text,
-                                settings: appState.settings,
-                                sceneState: sceneState
-                            )
+                            _ = try await sceneState.exportPDF(text: document.document.text)
                             exportURL = sceneState.exportURL
                             showSharePicker = true
                         } catch {
-                            /// Show an `Alert`
-                            sceneState.alertError = error
+                            Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                         }
                     }
                 }

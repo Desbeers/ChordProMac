@@ -30,25 +30,13 @@ struct ExportSongView: View {
                 if let document, let sceneState {
                     Task {
                         do {
-                            /// Create the PDF with **ChordPro**
-                            let pdf = try await Terminal.exportDocument(
-                                text: document.document.text,
-                                settings: appState.settings,
-                                sceneState: sceneState
-                            )
+                            let pdf = try await sceneState.exportPDF(text: document.document.text)
                             /// Set the PDF as Data
                             self.pdf = pdf.data
                             /// Show the export dialog
                             exportSongDialog = true
-                            /// The PDF is not outdated
-                            sceneState.preview.outdated = false
-                            /// Set the status
-                            sceneState.exportStatus = pdf.status
                         } catch {
-                            /// Show an error
-                            sceneState.alertError = error
-                            /// Set the status
-                            sceneState.exportStatus = .pdfCreationError
+                            Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                         }
                     }
                 }

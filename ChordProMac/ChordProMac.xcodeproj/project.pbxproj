@@ -32,6 +32,7 @@
 		D75F410E2C0EFDA200F0413B /* TaskMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */; };
 		D75F41102C0F240800F0413B /* CustomTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = D75F410F2C0F240800F0413B /* CustomTask.swift */; };
 		D75F41322C0F31DB00F0413B /* SystemTasks in Resources */ = {isa = PBXBuildFile; fileRef = D75F41312C0F31DB00F0413B /* SystemTasks */; };
+		D767276F2C996638001D1947 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D767276E2C996638001D1947 /* DebugView.swift */; };
 		D7723A4D2C0326120031CD0C /* ChordProMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A4C2C0326120031CD0C /* ChordProMacApp.swift */; };
 		D7723A4F2C0326120031CD0C /* ChordProDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A4E2C0326120031CD0C /* ChordProDocument.swift */; };
 		D7723A512C0326120031CD0C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A502C0326120031CD0C /* ContentView.swift */; };
@@ -108,6 +109,7 @@
 		D75F410D2C0EFDA200F0413B /* TaskMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskMenuView.swift; sourceTree = "<group>"; };
 		D75F410F2C0F240800F0413B /* CustomTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTask.swift; sourceTree = "<group>"; };
 		D75F41312C0F31DB00F0413B /* SystemTasks */ = {isa = PBXFileReference; lastKnownFileType = folder; path = SystemTasks; sourceTree = "<group>"; };
+		D767276E2C996638001D1947 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		D7723A492C0326120031CD0C /* ChordPro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChordPro.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7723A4C2C0326120031CD0C /* ChordProMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordProMacApp.swift; sourceTree = "<group>"; };
 		D7723A4E2C0326120031CD0C /* ChordProDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordProDocument.swift; sourceTree = "<group>"; };
@@ -277,6 +279,7 @@
 				D75005662C38379C005D23E2 /* EditorPaneView.swift */,
 				D75005682C383C77005D23E2 /* PreviewPaneView.swift */,
 				D776B5CD2C8A1EC100E10FE8 /* ExportFolderView.swift */,
+				D767276E2C996638001D1947 /* DebugView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -451,7 +454,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if which /opt/homebrew/bin/swiftlint >/dev/null; then\n  /opt/homebrew/bin/swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellScript = "#if which /opt/homebrew/bin/swiftlint >/dev/null; then\n#  /opt/homebrew/bin/swiftlint\n#else\n#  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\n#   fi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -464,6 +467,7 @@
 				D7D244CE2C3C3C320058FB8E /* ChordProEditorDelegate.swift in Sources */,
 				D75E5FFF2C04FEF00083F96F /* Template.swift in Sources */,
 				D72EA3352C0B68B600B1BA93 /* FontStyle.swift in Sources */,
+				D767276F2C996638001D1947 /* DebugView.swift in Sources */,
 				D7723A4D2C0326120031CD0C /* ChordProMacApp.swift in Sources */,
 				D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */,
 				D796F0EC2C1A6AB600B3DE40 /* AboutView.swift in Sources */,

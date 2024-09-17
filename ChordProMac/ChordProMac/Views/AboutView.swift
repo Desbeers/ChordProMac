@@ -46,7 +46,6 @@ import SwiftUI
                 MoreInfoView(chordProInfo: chordProInfo, showMoreInfo: $showMoreInfo)
             }
         }
-        //.animation(.default, value: chordProInfo)
         .task {
             appState.chordProInfo = await getInfo()
         }

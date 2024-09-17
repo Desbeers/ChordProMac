@@ -26,7 +26,6 @@ struct ContentView: View {
                 .padding(.horizontal)
         }
         .animation(.default, value: sceneState.preview)
-//        .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .toolbar {
             FontSizeButtonsView()
             ExportSongView(label: "Export as PDF")
@@ -37,9 +36,6 @@ struct ContentView: View {
             .labelStyle(.iconOnly)
         }
         .labelStyle(.titleAndIcon)
-//        .sheet(isPresented: $sceneState.showLog) {
-//            LogView()
-//        }
         /// Store the filename in the scene
         .task(id: file) {
             sceneState.file = file

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View` for the Print Button
 struct PrintPDFView: View {
@@ -24,18 +25,11 @@ struct PrintPDFView: View {
                 if let sceneState, let document {
                     Task {
                         do {
-                            _ = try await Terminal.exportDocument(
-                                text: document.document.text,
-                                settings: appState.settings,
-                                sceneState: sceneState
-                            )
+                            _ = try await sceneState.exportPDF(text: document.document.text)
                             /// Show the print dialog
                             AppKitUtils.printDialog(exportURL: sceneState.exportURL)
                         } catch {
-                            /// Show an `Alert`
-                            sceneState.alertError = error
-                            /// Set the status
-                            sceneState.exportStatus = .pdfCreationError
+                            Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                         }
                     }
                 }

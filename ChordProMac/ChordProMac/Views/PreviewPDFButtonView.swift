@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View` for a PDF preview
 struct PreviewPDFButtonView: View {
@@ -52,25 +53,12 @@ struct PreviewPDFButtonView: View {
         if let document {
             Task {
                 do {
-                    let pdf = try await Terminal.exportDocument(
-                        text: document.document.text,
-                        settings: appState.settings,
-                        sceneState: sceneState
-                    )
-                    /// Set the status
-                    sceneState.exportStatus = pdf.status
-                    /// The preview is not outdated
-                    sceneState.preview.outdated = false
+                    let pdf = try await sceneState.exportPDF(text: document.document.text)
                     /// Show the preview
                     sceneState.preview.data = pdf.data
                 } catch {
-                    /// Show an `Alert`
-                    sceneState.alertError = error
-                    /// Set the status
-                    sceneState.exportStatus = .pdfCreationError
+                    Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                 }
-                /// Remove the task (if any)
-                sceneState.customTask = nil
             }
         }
     }

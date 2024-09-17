@@ -66,7 +66,7 @@ struct ExportFolderView: View {
                     .font(.caption)
                 }
                 VStack {
-                ScrollView {
+                    ScrollView {
 
                         VStack {
                             UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
@@ -111,47 +111,39 @@ struct ExportFolderView: View {
                                 }
                                 .padding([.horizontal, .bottom])
                             }
-//                            .disabled(!appState.settings.application.songbookGenerateCover)
-//                            .foregroundColor(
-//                                appState.settings.application.songbookGenerateCover ? .primary : .secondary
-//                            )
-                            //Group {
-                                Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
-                                    Text("Add a custom cover page")
+                            Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
+                                Text("Add a custom cover page")
 
-                                })
-                                if appState.settings.application.songbookUseCustomCover {
-                                    VStack {
-                                        HStack {
-                                            UserFileButtonView(userFile: UserFileItem.songbookCover) {
-                                                currentCover = ExportFolderView.exportCoverTitle
-                                            }
-                                            if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
-                                                Button(
-                                                    action: {
-                                                        coverPreview = url
-                                                    },
-                                                    label: {
-                                                        Image(systemName: "eye")
-                                                    }
-                                                )
-                                            }
+                            })
+                            if appState.settings.application.songbookUseCustomCover {
+                                VStack {
+                                    HStack {
+                                        UserFileButtonView(userFile: UserFileItem.songbookCover) {
+                                            currentCover = ExportFolderView.exportCoverTitle
                                         }
-                                        .disabled(!appState.settings.application.songbookUseCustomCover)
-                                        .id(currentCover)
-                                        .padding()
-                                        Text("Only a PDF can be used as a custom cover")
-                                            .font(.caption)
+                                        if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
+                                            Button(
+                                                action: {
+                                                    coverPreview = url
+                                                },
+                                                label: {
+                                                    Image(systemName: "eye")
+                                                }
+                                            )
+                                        }
                                     }
-                                    //.padding(.vertical)
+                                    .disabled(!appState.settings.application.songbookUseCustomCover)
+                                    .id(currentCover)
+                                    .padding()
+                                    Text("Only a PDF can be used as a custom cover")
+                                        .font(.caption)
                                 }
-                            //}
-
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .wrapSettingsSection(title: "The cover page")
                     }
-                    
+
                     .disabled(chordProRunning)
                     Button(action: {
                         makeSongbook()
@@ -177,8 +169,8 @@ struct ExportFolderView: View {
             }
             .padding()
             .background(.thinMaterial)
-                .wrapSettingsSection(title: "Making the PDF")
-                .opacity(chordProRunning ? 1 : 0)
+            .wrapSettingsSection(title: "Making the PDF")
+            .opacity(chordProRunning ? 1 : 0)
         }
         .toolbar {
             Spacer()
@@ -223,7 +215,6 @@ struct ExportFolderView: View {
 
     @MainActor private func makeFileList() {
         var fileList: [FileListItem] = []
-
         if let songsFolder = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
             /// Get access to the URL
             _ = songsFolder.startAccessingSecurityScopedResource()
@@ -243,12 +234,7 @@ struct ExportFolderView: View {
     }
 
     @MainActor private func makeSongbook() {
-
         chordProRunning = true
-
-
-
-
         /// Start with a fresh list
         var songsURL: [String] = []
         /// Collect the songs
@@ -261,11 +247,12 @@ struct ExportFolderView: View {
         }
         /// Write it to the file list
         do {
-            try songsURL.joined(separator: "\n").write(to: sceneState.fileListURL, atomically: true, encoding: String.Encoding.utf8)
+            try songsURL
+                .joined(separator: "\n")
+                .write(to: sceneState.fileListURL, atomically: true, encoding: String.Encoding.utf8)
         } catch {
             Logger.fileAccess.error("Could not write the file list")
         }
-
         Task {
             do {
                 /// Create the cover PDF with **ChordPro** as a single song
@@ -285,35 +272,23 @@ struct ExportFolderView: View {
                     ) {
                         text.append("{image anchor=\"page\" x=\"50%\" y=\"50%\" scale=\"100%\" src=\"" + coverImage.path + "\"}")
                     }
-                    _ = try await Terminal.exportDocument(
+                    _ = try await sceneState.exportPDF(
                         text: text.joined(separator: "\n"),
-                        settings: AppSettings.load(),
-                        sceneState: sceneState,
                         cover: true
                     )
                 }
 
                 /// Create the PDF with **ChordPro**
-                let pdf = try await Terminal.exportDocument(
+                let pdf = try await sceneState.exportPDF(
                     text: "",
-                    settings: AppSettings.load(),
-                    sceneState: sceneState,
                     songList: true
                 )
                 /// Set the PDF as Data
                 self.pdf = pdf.data
                 /// Show the export dialog
                 exportFolderDialog = true
-                /// The PDF is not outdated
-                sceneState.preview.outdated = false
-                /// Set the status
-                sceneState.exportStatus = pdf.status
             } catch {
-                print(error)
-                /// Show an error
-                sceneState.alertError = error
-                /// Set the status
-                sceneState.exportStatus = .pdfCreationError
+                Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
             }
             chordProRunning = false
         }

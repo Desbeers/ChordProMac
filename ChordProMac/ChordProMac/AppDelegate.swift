@@ -10,17 +10,7 @@ import SwiftUI
 /// The AppDelegate to bring the `About` Window into the SwiftUI world
 class AppDelegate: NSObject, NSApplicationDelegate {
 
-//    /// The **ChordPro** information
-//    @Published var chordProInfo: ChordProInfo?
-//    /// The list of known directives
-//    @Published var directives: [ChordProDirective] = []
-    /// Get the **ChordPro** information
-    func applicationWillFinishLaunching(_ notification: Notification) {
-        print("APP DELEGATE TASK")
-//        Task {
-//            chordProInfo = try? await Terminal.getChordProInfo()
-//            directives = Directive.getChordProDirectives(chordProInfo: chordProInfo)
-//        }
+    func applicationDidFinishLaunching(_ notification: Notification) {
     }
 
     private var aboutBoxWindowController: NSWindowController?

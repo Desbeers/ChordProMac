@@ -62,6 +62,48 @@ final class SceneState: ObservableObject {
     }
 }
 
+extension SceneState {
+    @MainActor
+    func exportPDF(
+        text: String,
+        songList: Bool = false,
+        cover: Bool = false
+    ) async throws -> (data: Data, status: AppError) {
+        do {
+            let pdf = try await Terminal.exportPDF(
+                text: text,
+                settings: AppSettings.load(),
+                sceneState: self,
+                songList: songList,
+                cover: cover
+            )
+            if !songList && !cover {
+                /// The PDF is not outdated
+                preview.outdated = false
+                /// Update the preview if open
+                if preview.active {
+                    preview.data = pdf.data
+                }
+            }
+            /// Set the status
+            exportStatus = pdf.status
+            /// Remove the task (if any)
+            customTask = nil
+            /// Return the PDF data and its status
+            return pdf
+        } catch {
+            /// Show an error
+            alertError = error
+            /// Set the status
+            exportStatus = .pdfCreationError
+            /// Remove the task (if any)
+            customTask = nil
+            /// Trow the error
+            throw error
+        }
+    }
+}
+
 /// The `FocusedValueKey` for the current scene
 struct SceneFocusedValueKey: FocusedValueKey {
     /// The `typealias` for the key

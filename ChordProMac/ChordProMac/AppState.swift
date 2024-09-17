@@ -28,7 +28,6 @@ final class AppState: ObservableObject {
 
     /// Init the class; get application settings
     private init() {
-        print("APPSTATE INIT")
         /// Get the application settings from the cache
         self.settings = AppSettings.load()
         Task { @MainActor in
