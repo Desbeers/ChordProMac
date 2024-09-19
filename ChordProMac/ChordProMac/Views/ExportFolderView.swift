@@ -29,186 +29,21 @@ struct ExportFolderView: View {
     @State private var currentFolder: String? = ExportFolderView.exportFolderTitle
     /// The current selected cover
     @State private var currentCover: String? = ExportFolderView.exportCoverTitle
+
+    // MARK: Body View
+
     /// The body of the `View`
     var body: some View {
         VStack {
             HStack {
-                VStack {
-                    List {
-                        ForEach($appState.settings.application.fileList) { $item in
-                            HStack {
-                                Toggle(isOn: $item.enabled, label: {
-                                    Text("Enable")
-                                })
-                                .labelsHidden()
-                                VStack(alignment: .leading) {
-                                    if !item.path.isEmpty {
-                                        Text(item.path.joined(separator: "・"))
-                                            .font(.caption)
-                                    }
-                                    Text(item.url.deletingPathExtension().lastPathComponent)
-                                }
-                            }
-                            .swipeActions() {
-                                Button {
-                                    Task {
-                                        await openSong(url: item.url)
-                                    }
-                                } label: {
-                                    Label {
-                                        Text("Edit")
-                                    } icon: {
-                                        Image(systemName: "pencil")
-                                    }
-                                }
-                                .tint(.green)
-                                Button {
-                                    NSWorkspace.shared.activateFileViewerSelecting([item.url])
-                                } label: {
-                                    Label {
-                                        Text("Open in Finder")
-                                    } icon: {
-                                        Image(systemName: "folder")
-                                    }
-                                }
-                                .tint(.indigo)
-                            }
-                        }
-                        /// - Note: Monterey is screwing multi-line items when dragged/dropped
-                        .onMove { fromOffsets, toOffset in
-                            appState.settings.application.fileList.move(fromOffsets: fromOffsets, toOffset: toOffset)
-                        }
-                    }
-                    .listStyle(.inset(alternatesRowBackgrounds: true))
-                    .border(Color.accentColor, width: isDropping ? 2 : 0)
-                    .overlay {
-                        if appState.settings.application.fileList.isEmpty {
-                            Text("Drop a folder with your **ChordPro** files here to view its content and to make a Songbook.")
-                                .multilineTextAlignment(.center)
-                                .wrapSettingsSection(title: "File List")
-                        }
-                    }
-                    Label(
-                        title: { Text("You can reorder the songs by drag and drop\nand swipe left for more actions") },
-                        icon: { Image(systemName: "info.circle") }
-                    )
-                    .foregroundStyle(.secondary)
-                    .font(.caption)
-                }
-                VStack {
-                    ScrollView {
-                        VStack {
-                            HStack {
-                                UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
-                                    currentFolder = ExportFolderView.exportFolderTitle
-                                    makeFileList()
-                                })
-                                Button {
-                                    makeFileList()
-                                } label: {
-                                    Image(systemName: "gobackward")
-                                }
-                                .help("Reload the list of songs")
-                            }
-                            .id(currentFolder)
-                            Toggle(isOn: $appState.settings.application.recursiveFileList) {
-                                Text("Also look for songs in subfolders")
-                            }
-                            .onChange(of: appState.settings.application.recursiveFileList) { _ in
-                                makeFileList()
-                            }
-                            .padding(.vertical)
-                            Text(.init(songCountLabel))
-                                .font(.caption)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .wrapSettingsSection(title: "The folder with your songs")
-                        VStack {
-                            Toggle(isOn: $appState.settings.application.songbookGenerateCover, label: {
-                                Text("Add a standard cover page")
-                            })
-                            .padding(.bottom)
-                            if appState.settings.application.songbookGenerateCover {
-                                VStack(alignment: .leading) {
-                                    HStack {
-                                        Text("Title:")
-                                            .frame(width: 60, alignment: .trailing)
-                                            .font(.headline)
-                                        TextField(
-                                            text: $appState.settings.application.songbookTitle,
-                                            prompt: Text("Title")
-                                        ) {
-                                            Text("Title")
-                                        }
-                                    }
-                                    HStack {
-                                        Text("Subtitle:")
-                                            .frame(width: 60, alignment: .trailing)
-                                            .font(.headline)
-                                        TextField(
-                                            text: $appState.settings.application.songbookSubtitle,
-                                            prompt: Text("Subtitle")
-                                        ) {
-                                            Text("Subtitle")
-                                        }
-                                    }
-                                }
-                                .padding([.horizontal, .bottom])
-                            }
-
-                            Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
-                                Text("Add a custom cover page")
-
-                            })
-                            if appState.settings.application.songbookUseCustomCover {
-                                VStack {
-                                    HStack {
-                                        UserFileButtonView(userFile: UserFileItem.songbookCover) {
-                                            currentCover = ExportFolderView.exportCoverTitle
-                                        }
-                                        if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
-                                            Button(
-                                                action: {
-                                                    coverPreview = url
-                                                },
-                                                label: {
-                                                    Image(systemName: "eye")
-                                                }
-                                            )
-                                        }
-                                    }
-                                    .disabled(!appState.settings.application.songbookUseCustomCover)
-                                    .id(currentCover)
-                                    .padding()
-                                    Label(
-                                        title: { Text("Only a PDF can be used as a custom cover") },
-                                        icon: { Image(systemName: "info.circle") }
-                                    )
-                                    .foregroundStyle(.secondary)
-                                    .font(.caption)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity)
-                        .wrapSettingsSection(title: "The cover page")
-                    }
-                    .disabled(chordProRunning)
-                    .frame(maxWidth: .infinity)
-                    Button(action: {
-                        makeSongbook()
-                    }, label: {
-                        Text("Export Songbook")
-                    })
-                    .padding(.top)
-                    .disabled(currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
-                }
-
+                list
+                options
             }
             Divider()
             StatusView()
                 .padding(.horizontal)
         }
-        .frame(width: 640, height: 460, alignment: .top)
+        .frame(width: 640, height: 480, alignment: .top)
         .animation(.default, value: appState.settings.application)
         .overlay {
             VStack {
@@ -222,6 +57,7 @@ struct ExportFolderView: View {
             .opacity(chordProRunning ? 1 : 0)
         }
         .toolbar {
+            /// Just to get the unified View for the window
             Spacer()
         }
         .navigationSubtitle("All the songs in a single PDF")
@@ -265,6 +101,187 @@ struct ExportFolderView: View {
         .environmentObject(sceneState)
     }
 
+    // MARK: List View
+
+    var list: some View {
+        VStack {
+            List {
+                ForEach($appState.settings.application.fileList) { $item in
+                    HStack {
+                        Toggle(isOn: $item.enabled, label: {
+                            Text("Enable")
+                        })
+                        .labelsHidden()
+                        VStack(alignment: .leading) {
+                            if !item.path.isEmpty {
+                                Text(item.path.joined(separator: "・"))
+                                    .font(.caption)
+                            }
+                            Text(item.url.deletingPathExtension().lastPathComponent)
+                        }
+                    }
+                    .swipeActions {
+                        Button {
+                            Task {
+                                await openSong(url: item.url)
+                            }
+                        } label: {
+                            Label {
+                                Text("Edit")
+                            } icon: {
+                                Image(systemName: "pencil")
+                            }
+                        }
+                        .tint(.green)
+                        Button {
+                            NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                        } label: {
+                            Label {
+                                Text("Open in Finder")
+                            } icon: {
+                                Image(systemName: "folder")
+                            }
+                        }
+                        .tint(.indigo)
+                    }
+                }
+                /// - Note: Monterey is screwing multi-line items when dragged/dropped
+                .onMove { fromOffsets, toOffset in
+                    appState.settings.application.fileList.move(fromOffsets: fromOffsets, toOffset: toOffset)
+                }
+            }
+            .listStyle(.inset(alternatesRowBackgrounds: true))
+            .border(Color.accentColor, width: isDropping ? 2 : 0)
+            .overlay {
+                if appState.settings.application.fileList.isEmpty {
+                    Text("Drop a folder with your **ChordPro** files here to view its content and to make a Songbook.")
+                        .multilineTextAlignment(.center)
+                        .wrapSettingsSection(title: "File List")
+                }
+            }
+            Label(
+                title: { Text("You can reorder the songs by drag and drop\nand swipe left for more actions") },
+                icon: { Image(systemName: "info.circle") }
+            )
+            .foregroundStyle(.secondary)
+            .font(.caption)
+        }
+    }
+
+    // MARK: Options View
+
+    var options: some View {
+        VStack {
+            ScrollView {
+                VStack {
+                    HStack {
+                        UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
+                            currentFolder = ExportFolderView.exportFolderTitle
+                            makeFileList()
+                        })
+                        Button {
+                            makeFileList()
+                        } label: {
+                            Image(systemName: "gobackward")
+                        }
+                        .help("Reload the list of songs")
+                    }
+                    .id(currentFolder)
+                    Toggle(isOn: $appState.settings.application.recursiveFileList) {
+                        Text("Also look for songs in subfolders")
+                    }
+                    .onChange(of: appState.settings.application.recursiveFileList) { _ in
+                        makeFileList()
+                    }
+                    .padding(.vertical)
+                    Text(.init(songCountLabel))
+                        .font(.caption)
+                }
+                .frame(maxWidth: .infinity)
+                .wrapSettingsSection(title: "The folder with your songs")
+                VStack {
+                    Toggle(isOn: $appState.settings.application.songbookGenerateCover, label: {
+                        Text("Add a standard cover page")
+                    })
+                    .padding(.bottom)
+                    if appState.settings.application.songbookGenerateCover {
+                        VStack(alignment: .leading) {
+                            HStack {
+                                Text("Title:")
+                                    .frame(width: 60, alignment: .trailing)
+                                    .font(.headline)
+                                TextField(
+                                    text: $appState.settings.application.songbookTitle,
+                                    prompt: Text("Title")
+                                ) {
+                                    Text("Title")
+                                }
+                            }
+                            HStack {
+                                Text("Subtitle:")
+                                    .frame(width: 60, alignment: .trailing)
+                                    .font(.headline)
+                                TextField(
+                                    text: $appState.settings.application.songbookSubtitle,
+                                    prompt: Text("Subtitle")
+                                ) {
+                                    Text("Subtitle")
+                                }
+                            }
+                        }
+                        .padding([.horizontal, .bottom])
+                    }
+
+                    Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
+                        Text("Add a custom cover page")
+
+                    })
+                    if appState.settings.application.songbookUseCustomCover {
+                        VStack {
+                            HStack {
+                                UserFileButtonView(userFile: UserFileItem.songbookCover) {
+                                    currentCover = ExportFolderView.exportCoverTitle
+                                }
+                                if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {
+                                    Button(
+                                        action: {
+                                            coverPreview = url
+                                        },
+                                        label: {
+                                            Image(systemName: "eye")
+                                        }
+                                    )
+                                }
+                            }
+                            .disabled(!appState.settings.application.songbookUseCustomCover)
+                            .id(currentCover)
+                            .padding()
+                            Label(
+                                title: { Text("Only a PDF can be used as a custom cover") },
+                                icon: { Image(systemName: "info.circle") }
+                            )
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .wrapSettingsSection(title: "The cover page")
+            }
+            .disabled(chordProRunning)
+            .frame(maxWidth: .infinity)
+            Button(action: {
+                makeSongbook()
+            }, label: {
+                Text("Export Songbook")
+            })
+            .padding(.top)
+            .disabled(currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
+        }
+    }
+
+    // MARK: Make the list  of files
+
     @MainActor private func makeFileList() {
         var fileList: [FileListItem] = []
 
@@ -303,6 +320,8 @@ struct ExportFolderView: View {
         fileList.sort {$0.url.path < $1.url.path}
         appState.settings.application.fileList = fileList
     }
+
+    // MARK: Make a Songbook
 
     @MainActor private func makeSongbook() {
         chordProRunning = true

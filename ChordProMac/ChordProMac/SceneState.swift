@@ -46,8 +46,7 @@ final class SceneState: ObservableObject {
     var fileListURL: URL {
         temporaryDirectoryURL.appendingPathComponent("filelist", conformingTo: .plainText)
     }
-
-
+    /// The optional local configuration (a config with the same base-name next to a song)
     var localConfigURL: URL? {
         if let file {
             let localConfig = file.deletingPathExtension().appendingPathExtension("json")
@@ -56,7 +55,6 @@ final class SceneState: ObservableObject {
         }
         return nil
     }
-
     /// The optional custom task to run
     @Published var customTask: CustomTask?
     /// Preview variables

@@ -5,6 +5,10 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeIconFile</key>
+			<string>LegacyDocIcon</string>
+			<key>CFBundleTypeIconSystemGenerated</key>
+			<integer>1</integer>
 			<key>CFBundleTypeName</key>
 			<string>ChordPro song</string>
 			<key>CFBundleTypeRole</key>
@@ -15,6 +19,8 @@
 			<array>
 				<string>org.chordpro</string>
 			</array>
+			<key>NSDocumentClass</key>
+			<string>NSDocument</string>
 			<key>NSUbiquitousDocumentUserActivityType</key>
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER).chordpro</string>
 		</dict>
@@ -28,8 +34,13 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>ChordPro song</string>
+			<key>UTTypeIconFile</key>
+			<string>LegacyDocIcon</string>
 			<key>UTTypeIcons</key>
-			<dict/>
+			<dict>
+				<key>UTTypeIconText</key>
+				<string>chordpro</string>
+			</dict>
 			<key>UTTypeIdentifier</key>
 			<string>org.chordpro</string>
 			<key>UTTypeTagSpecification</key>

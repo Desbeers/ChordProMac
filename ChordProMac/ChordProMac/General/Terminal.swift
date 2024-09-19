@@ -182,6 +182,9 @@ extension Terminal {
     ///   - text: The current text of the document
     ///   - settings: The current ``AppSettings``
     ///   - sceneState: The current ``SceneState``
+    ///   - fileList: The optional list of files (for a songbook)
+    ///   - title: The title of the export
+    ///   - subtitle: The optional subtitle of the export
     /// - Returns: The PDF as `Data` and the status as ``AppError``
     static func exportPDF(
         text: String,
