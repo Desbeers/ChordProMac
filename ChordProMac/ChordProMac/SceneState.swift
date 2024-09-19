@@ -44,7 +44,7 @@ final class SceneState: ObservableObject {
     }
     /// The URL of the file list with songs
     var fileListURL: URL {
-        temporaryDirectoryURL.appendingPathComponent("songlist", conformingTo: .plainText)
+        temporaryDirectoryURL.appendingPathComponent("filelist", conformingTo: .plainText)
     }
 
 
@@ -74,7 +74,7 @@ extension SceneState {
     @MainActor
     func exportPDF(
         text: String,
-        songList: Bool = false,
+        fileList: Bool = false,
         title: String = "",
         subtitle: String = ""
     ) async throws -> (data: Data, status: AppError) {
@@ -83,11 +83,11 @@ extension SceneState {
                 text: text,
                 settings: AppSettings.load(),
                 sceneState: self,
-                songList: songList,
+                fileList: fileList,
                 title: title,
                 subtitle: subtitle
             )
-            if !songList {
+            if !fileList {
                 /// The PDF is not outdated
                 preview.outdated = false
                 /// Update the preview if open

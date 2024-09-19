@@ -41,7 +41,37 @@ struct ExportFolderView: View {
                                     Text("Enable")
                                 })
                                 .labelsHidden()
-                                Text(item.url.deletingPathExtension().lastPathComponent)
+                                VStack(alignment: .leading) {
+                                    if !item.path.isEmpty {
+                                        Text(item.path.joined(separator: "・"))
+                                            .font(.caption)
+                                    }
+                                    Text(item.url.deletingPathExtension().lastPathComponent)
+                                }
+                            }
+                            .swipeActions() {
+                                Button {
+                                    Task {
+                                        await openSong(url: item.url)
+                                    }
+                                } label: {
+                                    Label {
+                                        Text("Edit")
+                                    } icon: {
+                                        Image(systemName: "pencil")
+                                    }
+                                }
+                                .tint(.green)
+                                Button {
+                                    NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                                } label: {
+                                    Label {
+                                        Text("Open in Finder")
+                                    } icon: {
+                                        Image(systemName: "folder")
+                                    }
+                                }
+                                .tint(.indigo)
                             }
                         }
                         /// - Note: Monterey is screwing multi-line items when dragged/dropped
@@ -59,7 +89,7 @@ struct ExportFolderView: View {
                         }
                     }
                     Label(
-                        title: { Text("You can reorder the songs by drag and drop") },
+                        title: { Text("You can reorder the songs by drag and drop\nand swipe left for more actions") },
                         icon: { Image(systemName: "info.circle") }
                     )
                     .foregroundStyle(.secondary)
@@ -67,30 +97,39 @@ struct ExportFolderView: View {
                 }
                 VStack {
                     ScrollView {
-
                         VStack {
-                            UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
-                                currentFolder = ExportFolderView.exportFolderTitle
-                                makeFileList()
-                            })
+                            HStack {
+                                UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
+                                    currentFolder = ExportFolderView.exportFolderTitle
+                                    makeFileList()
+                                })
+                                Button {
+                                    makeFileList()
+                                } label: {
+                                    Image(systemName: "gobackward")
+                                }
+                                .help("Reload the list of songs")
+                            }
                             .id(currentFolder)
-                            Text(.init(songCountLabel))
-                                .font(.caption)
                             Toggle(isOn: $appState.settings.application.recursiveFileList) {
-                                Text("Also look in subfolders for songs")
+                                Text("Also look for songs in subfolders")
                             }
                             .onChange(of: appState.settings.application.recursiveFileList) { _ in
                                 makeFileList()
                             }
+                            .padding(.vertical)
+                            Text(.init(songCountLabel))
+                                .font(.caption)
                         }
+                        .frame(maxWidth: .infinity)
                         .wrapSettingsSection(title: "The folder with your songs")
-                        VStack(alignment: .leading) {
+                        VStack {
                             Toggle(isOn: $appState.settings.application.songbookGenerateCover, label: {
                                 Text("Add a standard cover page")
                             })
                             .padding(.bottom)
                             if appState.settings.application.songbookGenerateCover {
-                                VStack {
+                                VStack(alignment: .leading) {
                                     HStack {
                                         Text("Title:")
                                             .frame(width: 60, alignment: .trailing)
@@ -116,6 +155,7 @@ struct ExportFolderView: View {
                                 }
                                 .padding([.horizontal, .bottom])
                             }
+
                             Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
                                 Text("Add a custom cover page")
 
@@ -140,15 +180,20 @@ struct ExportFolderView: View {
                                     .disabled(!appState.settings.application.songbookUseCustomCover)
                                     .id(currentCover)
                                     .padding()
-                                    Text("Only a PDF can be used as a custom cover")
-                                        .font(.caption)
+                                    Label(
+                                        title: { Text("Only a PDF can be used as a custom cover") },
+                                        icon: { Image(systemName: "info.circle") }
+                                    )
+                                    .foregroundStyle(.secondary)
+                                    .font(.caption)
                                 }
                             }
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .frame(maxWidth: .infinity)
                         .wrapSettingsSection(title: "The cover page")
                     }
                     .disabled(chordProRunning)
+                    .frame(maxWidth: .infinity)
                     Button(action: {
                         makeSongbook()
                     }, label: {
@@ -163,7 +208,7 @@ struct ExportFolderView: View {
             StatusView()
                 .padding(.horizontal)
         }
-        .frame(width: 600, height: 460, alignment: .top)
+        .frame(width: 640, height: 460, alignment: .top)
         .animation(.default, value: appState.settings.application)
         .overlay {
             VStack {
@@ -180,6 +225,9 @@ struct ExportFolderView: View {
             Spacer()
         }
         .navigationSubtitle("All the songs in a single PDF")
+        .task {
+            makeFileList()
+        }
         .task(id: appState.settings.application.songbookGenerateCover) {
             if appState.settings.application.songbookGenerateCover {
                 appState.settings.application.songbookUseCustomCover = false
@@ -220,16 +268,32 @@ struct ExportFolderView: View {
     @MainActor private func makeFileList() {
         var fileList: [FileListItem] = []
 
-        let enumeratorOptions: FileManager.DirectoryEnumerationOptions  = appState.settings.application.recursiveFileList ? [] : [.skipsSubdirectoryDescendants]
+        let enumeratorOptions: FileManager.DirectoryEnumerationOptions = appState.settings.application.recursiveFileList ? [] : [.skipsSubdirectoryDescendants]
 
         if let songsFolder = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
             /// Get access to the URL
             _ = songsFolder.startAccessingSecurityScopedResource()
             if
-                let items = FileManager.default.enumerator(at: songsFolder, includingPropertiesForKeys: nil, options: enumeratorOptions) {
+                let items = FileManager.default.enumerator(
+                    at: songsFolder,
+                    includingPropertiesForKeys: nil,
+                    options: enumeratorOptions
+                ) {
                 while let item = items.nextObject() as? URL {
                     if ChordProDocument.fileExtension.contains(item.pathExtension) {
-                        fileList.append(.init(url: item, enabled: true))
+                        if let existingSong = appState.settings.application.fileList.first(where: {$0.url == item }) {
+                            fileList.append(existingSong)
+                        } else {
+                            let parent = item.deletingLastPathComponent()
+                            let path = parent.path.replacingOccurrences(of: UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder)?.path ?? "", with: "")
+                            fileList.append(
+                                FileListItem(
+                                    url: item,
+                                    path: path.split(separator: "/").map(String.init),
+                                    enabled: true
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -265,7 +329,7 @@ struct ExportFolderView: View {
                 /// Create the PDF with **ChordPro**
                 let pdf = try await sceneState.exportPDF(
                     text: "",
-                    songList: true,
+                    fileList: true,
                     title: appState.settings.application.songbookTitle,
                     subtitle: appState.settings.application.songbookSubtitle
                 )
@@ -296,6 +360,22 @@ struct ExportFolderView: View {
             return folder == nil ? "Select a folder with your **ChordPro** songs" : "There are no songs in this folder"
         default:
             return "Found \(count) **ChordPro** songs in this folder"
+        }
+    }
+
+    /// Open a song window with an URL
+    /// - Parameter url: The URL of the song
+    @MainActor func openSong(url: URL) async {
+        /// SwiftUI openDocument is very buggy; don't try to open a document when it is already open; the app will crash..
+        /// So I use the shared NSDocumentController instead
+        if let persistentURL = UserFileBookmark.getBookmarkURL(UserFileItem.exportFolder) {
+            _ = persistentURL.startAccessingSecurityScopedResource()
+            do {
+                try await NSDocumentController.shared.openDocument(withContentsOf: url, display: true)
+            } catch {
+                Logger.application.error("Error opening URL: \(error.localizedDescription, privacy: .public)")
+            }
+            persistentURL.stopAccessingSecurityScopedResource()
         }
     }
 }

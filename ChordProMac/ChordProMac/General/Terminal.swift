@@ -187,7 +187,7 @@ extension Terminal {
         text: String,
         settings: AppSettings,
         sceneState: SceneState,
-        songList: Bool = false,
+        fileList: Bool = false,
         title: String = "",
         subtitle: String = ""
     ) async throws -> (data: Data, status: AppError) {
@@ -218,7 +218,7 @@ extension Terminal {
         /// The **ChordPro** binary
         arguments.append("\"\(chordProApp.path)\"")
         /// Songbook export
-        if songList {
+        if fileList {
             /// Add the system generated front cover if selected
             if settings.application.songbookGenerateCover {
                 arguments.append("--title='\(title)'")

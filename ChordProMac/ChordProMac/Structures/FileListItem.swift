@@ -10,5 +10,6 @@ import Foundation
 struct FileListItem: Identifiable, Codable, Equatable {
     var id = UUID()
     var url: URL
+    var path: [String]
     var enabled: Bool
 }
