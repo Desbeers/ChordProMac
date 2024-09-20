@@ -45,11 +45,6 @@ struct ExportSongbookView: View {
             .wrapSettingsSection(title: "Making the PDF")
             .opacity(songbookState.chordProRunning ? 1 : 0)
         }
-        .toolbar {
-            /// Just to get the unified View for the window
-            Spacer()
-        }
-        .navigationSubtitle("All the songs in a single PDF")
         .task {
             songbookState.makeFileList(appState: appState)
         }
@@ -256,7 +251,7 @@ struct ExportSongbookView: View {
             }, label: {
                 Text("Export Songbook")
             })
-            .padding(.top)
+            .padding()
             .disabled(songbookState.currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
         }
     }

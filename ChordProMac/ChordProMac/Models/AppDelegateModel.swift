@@ -47,11 +47,10 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
         if welcomeWindowController == nil {
             let window = NSWindow()
             window.styleMask = styleMask
+            window.styleMask.remove([.titled])
             window.isMovableByWindowBackground = true
-            window.title = "ChordPro"
             window.contentView = NSHostingView(rootView: WelcomeView(appDelegate: self))
             window.titlebarAppearsTransparent = true
-            window.toolbarStyle = .unified
             window.center()
             /// Just a fancy animation; it is not a document window
             window.animationBehavior = .documentWindow

@@ -18,14 +18,27 @@ struct WelcomeView: View {
     /// The body of the `View`
     var body: some View {
         HStack {
-            Image("ChordProLogo")
-                .resizable()
-                .scaledToFit()
-                .padding()
-                .frame(maxWidth: .infinity)
-                .padding(.bottom)
+            VStack {
+                Text("ChordPro")
+                    .font(.title)
+                Image("ChordProLogo")
+                    .resizable()
+                    .scaledToFit()
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .padding(.bottom)
             VStack {
                 VStack {
+                    Picker("Tabs", selection: $selectedTab) {
+                        ForEach(NewTabs.allCases) { tab in
+                            Text(tab.rawValue)
+                                .tag(tab)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .padding(.bottom)
                     switch selectedTab {
                     case .create:
                         Button(
@@ -93,7 +106,7 @@ struct WelcomeView: View {
                                             }
                                         },
                                         label: {
-                                            Label(url.deletingPathExtension().lastPathComponent, systemImage: "doc.badge.clock")
+                                            Label(url.deletingPathExtension().lastPathComponent, systemImage: "doc.text")
                                         }
                                     )
                                 }
@@ -124,15 +137,6 @@ struct WelcomeView: View {
         .labelStyle(ButtonLabelStyle())
         .buttonStyle(.plain)
         .frame(width: 580)
-        .toolbar {
-            Picker("Tabs", selection: $selectedTab) {
-                ForEach(NewTabs.allCases) { tab in
-                    Text(tab.rawValue)
-                        .tag(tab)
-                }
-            }
-            .pickerStyle(.segmented)
-        }
     }
 }
 
@@ -147,7 +151,7 @@ extension WelcomeView {
 }
 
 extension WelcomeView {
-
+    
     /// The style of a label on the Welcome View
     struct ButtonLabelStyle: LabelStyle {
         func makeBody(configuration: Configuration) -> some View {
