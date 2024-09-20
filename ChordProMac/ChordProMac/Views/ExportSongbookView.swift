@@ -1,5 +1,5 @@
 //
-//  SongbookView.swift
+//  ExportSongbookView.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 05/09/2024.
@@ -11,7 +11,7 @@ import QuickLook
 import OSLog
 
 /// SwiftUI `View` to export a folder of songs to a **ChordPro** Songbook
-struct SongbookView: View {
+struct ExportSongbookView: View {
     /// The observable state of the application
     @StateObject private var appState = AppStateModel.shared
     /// The observable state of the scene
@@ -32,7 +32,7 @@ struct SongbookView: View {
             StatusView()
                 .padding(.horizontal)
         }
-        .frame(width: 640, height: 480, alignment: .top)
+        .frame(width: 680, height: 480, alignment: .top)
         .animation(.default, value: appState.settings.application)
         .overlay {
             VStack {
@@ -163,17 +163,9 @@ struct SongbookView: View {
         VStack {
             ScrollView {
                 VStack {
-                    HStack {
-                        UserFileButtonView(userFile: UserFileItem.exportFolder, action: {
-                            songbookState.currentFolder = SongbookStateModel.exportFolderTitle
-                            songbookState.makeFileList(appState: appState)
-                        })
-                        Button {
-                            songbookState.makeFileList(appState: appState)
-                        } label: {
-                            Image(systemName: "gobackward")
-                        }
-                        .help("Reload the list of songs")
+                    UserFileButton(userFile: UserFileItem.exportFolder) {
+                        songbookState.currentFolder = SongbookStateModel.exportFolderTitle
+                        songbookState.makeFileList(appState: appState)
                     }
                     .id(songbookState.currentFolder)
                     Toggle(isOn: $appState.settings.application.recursiveFileList) {
@@ -228,7 +220,7 @@ struct SongbookView: View {
                     if appState.settings.application.songbookUseCustomCover {
                         VStack {
                             HStack {
-                                UserFileButtonView(userFile: UserFileItem.songbookCover) {
+                                UserFileButton(userFile: UserFileItem.songbookCover) {
                                     songbookState.currentCover = SongbookStateModel.exportCoverTitle
                                 }
                                 if let url = UserFileBookmark.getBookmarkURL(UserFileItem.songbookCover) {

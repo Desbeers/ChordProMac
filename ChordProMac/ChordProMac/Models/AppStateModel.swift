@@ -20,11 +20,14 @@ final class AppStateModel: ObservableObject {
             try? AppSettings.save(settings: settings)
         }
     }
-
+    /// The content for a new document
+    @Published var newDocumentContent: String = ""
     /// The **ChordPro** information
     @Published var chordProInfo: ChordProInfo?
     /// The list of known directives
     @Published var directives: [ChordProDirective] = []
+    /// The list with recent files
+    @Published var recentFiles: [URL] = []
 
     /// Init the class; get application settings
     private init() {

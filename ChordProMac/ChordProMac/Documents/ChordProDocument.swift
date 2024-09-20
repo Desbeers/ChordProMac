@@ -14,10 +14,12 @@ struct ChordProDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.chordProSong] }
     /// The file extensions **ChordPro** can open
     public static let fileExtension: [String] = ["chordpro", "cho", "crd", "chopro", "chord", "pro"]
+    /// The document text for a new song
+    public static let newText: String = "{title: New Song}\n"
     /// The text of the song
     var text: String
     /// Init the song
-    init(text: String = "{title: New Song}\n") {
+    init(text: String = ChordProDocument.newText) {
         let settings = AppSettings.load()
         /// Check if we have to use a custom template
         if

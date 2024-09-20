@@ -33,4 +33,11 @@ extension View {
             Text(error.recoverySuggestion ?? "")
         }
     }
+
+    /// Find the NSWindow of the scene
+    /// - Parameter callback: The optional `NSWindow`
+    /// - Returns: A SwiftUI `background` View
+    func withHostingWindow(_ callback: @escaping (NSWindow?) -> Void) -> some View {
+        self.background(NSWindow.HostingWindowFinder(callback: callback))
+    }
 }

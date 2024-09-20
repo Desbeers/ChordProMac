@@ -1,5 +1,5 @@
 //
-//  ContentView.swift
+//  MainView.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/05/2024.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// SwiftUI `View` for the main content
-struct ContentView: View {
+struct MainView: View {
     /// The optional file location
     let file: URL?
     /// The observable state of the application
@@ -27,11 +27,11 @@ struct ContentView: View {
         }
         .animation(.default, value: sceneState.preview)
         .toolbar {
-            FontSizeButtonsView()
-            ExportSongView(label: "Export as PDF")
+            FontSizeButtons()
+            ExportSongButton(label: "Export as PDF")
             Group {
-                PreviewPDFButtonView(label: "Show Preview")
-                ShareButtonView()
+                PreviewPDFButton(label: "Show Preview")
+                ShareButton()
             }
             .labelStyle(.iconOnly)
         }

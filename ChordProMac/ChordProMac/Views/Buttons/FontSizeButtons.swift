@@ -1,5 +1,5 @@
 //
-//  FontSizeButtonsView.swift
+//  FontSizeButtons.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 17/06/2024.
@@ -9,7 +9,7 @@ import SwiftUI
 
 /// SwiftUI `View` for buttons to resize the editor font
 /// - Note: This can't be in the main menu; macOS Monterey can't handle dynamic buttons
-struct FontSizeButtonsView: View {
+struct FontSizeButtons: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppStateModel
     /// The range of font sizes

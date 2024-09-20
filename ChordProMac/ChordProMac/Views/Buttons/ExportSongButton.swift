@@ -1,5 +1,5 @@
 //
-//  ExportSongView.swift
+//  ExportSongButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/05/2024.
@@ -8,9 +8,9 @@
 import SwiftUI
 import OSLog
 
-/// SwiftUI `View` for an export button
+/// SwiftUI `View` for an export song button
 /// - Note: This button is also in the App Menu to it needs focused values for the document and the scene
-struct ExportSongView: View {
+struct ExportSongButton: View {
     /// The label for the button
     let label: String
     /// The document in the environment

@@ -1,5 +1,5 @@
 //
-//  ShareButtonView.swift
+//  ShareButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 01/07/2024.
@@ -8,8 +8,8 @@
 import SwiftUI
 import OSLog
 
-/// SwiftUI `View` with the 'share' button'
-struct ShareButtonView: View {
+/// SwiftUI `View` with the standard 'share' button'
+struct ShareButton: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene

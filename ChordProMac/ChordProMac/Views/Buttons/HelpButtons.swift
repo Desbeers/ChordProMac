@@ -1,5 +1,5 @@
 //
-//  HelpButtonsView.swift
+//  HelpButtons.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 01/06/2024.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// SwiftUI buttons for the main `help` menu
-struct HelpButtonsView: View {
+struct HelpButtons: View {
     /// The observable state of the application
     @EnvironmentObject private var appState: AppStateModel
     /// The document in the environment

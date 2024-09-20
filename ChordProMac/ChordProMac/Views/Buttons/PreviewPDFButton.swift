@@ -1,5 +1,5 @@
 //
-//  PreviewPDFView.swift
+//  PreviewPDFButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/05/2024.
@@ -8,8 +8,8 @@
 import SwiftUI
 import OSLog
 
-/// SwiftUI `View` for a PDF preview
-struct PreviewPDFButtonView: View {
+/// SwiftUI `View` with a button for a PDF preview
+struct PreviewPDFButton: View {
     /// The label for the button
     let label: String
     /// Bool if we have to replace the current preview
@@ -64,13 +64,13 @@ struct PreviewPDFButtonView: View {
     }
 }
 
-extension PreviewPDFButtonView {
+extension PreviewPDFButton {
 
     /// Update the preview of the current document
     struct UpdatePreview: View {
         /// The body of the `View`
         var body: some View {
-            PreviewPDFButtonView(
+            PreviewPDFButton(
                 label: "Update Preview",
                 replacePreview: true
             )

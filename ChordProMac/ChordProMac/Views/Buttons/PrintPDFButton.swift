@@ -1,5 +1,5 @@
 //
-//  PrintPDFButtonView.swift
+//  PrintPDFButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 02/06/2024.
@@ -9,7 +9,7 @@ import SwiftUI
 import OSLog
 
 /// SwiftUI `View` for the Print Button
-struct PrintPDFButtonView: View {
+struct PrintPDFButton: View {
     /// The label for the button
     let label: String
     /// The observable state of the application

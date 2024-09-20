@@ -1,5 +1,5 @@
 //
-//  ColorPickerButtonView.swift
+//  ColorPickerButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/06/2024.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 /// SwiftUI `View` with a `Button` to select a `Color`
-public struct ColorPickerButtonView: View {
+public struct ColorPickerButton: View {
     /// Binding to the selected color
     @Binding var selectedColor: Color
     /// The label that goes in front of the button

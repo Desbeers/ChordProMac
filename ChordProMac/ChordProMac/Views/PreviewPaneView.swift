@@ -24,7 +24,7 @@ struct PreviewPaneView: View {
             AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
                 .overlay(alignment: .top) {
                     if sceneState.preview.outdated {
-                        PreviewPDFButtonView.UpdatePreview()
+                        PreviewPDFButton.UpdatePreview()
                     }
                 }
                 .overlay(alignment: .bottom) {

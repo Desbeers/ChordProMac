@@ -8,7 +8,7 @@
 			<key>CFBundleTypeIconFile</key>
 			<string>LegacyDocIcon</string>
 			<key>CFBundleTypeIconSystemGenerated</key>
-			<integer>0</integer>
+			<integer>1</integer>
 			<key>CFBundleTypeName</key>
 			<string>ChordPro song</string>
 			<key>CFBundleTypeRole</key>
@@ -37,7 +37,7 @@
 			<key>UTTypeIcons</key>
 			<dict>
 				<key>UTTypeIconText</key>
-				<string></string>
+				<string>chordpro</string>
 			</dict>
 			<key>UTTypeIdentifier</key>
 			<string>org.chordpro</string>

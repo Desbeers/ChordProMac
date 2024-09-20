@@ -1,5 +1,5 @@
 //
-//  UserFileButtonView.swift
+//  UserFileButton.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 26/06/2024.
@@ -16,7 +16,7 @@ import OSLog
 /// So, I just call a good o'l NSOpenPanel here.`
 ///
 /// - Note: A file can be a *normal* file but also a folder
-public struct UserFileButtonView<T: UserFile>: View {
+public struct UserFileButton<T: UserFile>: View {
     /// Init the struct
     public init(userFile: T, action: @escaping () -> Void) {
         self.userFile = userFile
