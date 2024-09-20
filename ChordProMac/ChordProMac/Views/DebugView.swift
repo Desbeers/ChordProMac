@@ -12,15 +12,12 @@ enum DebugView {
 }
 
 extension DebugView {
-
-    /// SwiftUI `View` with a `Button` to reset the application
+    /// SwiftUI `View` with debug buttons
     public struct ResetApplicationButtonView: View {
         /// Init the `View`
         public init() {}
-
         /// The scene state in the environment
-        @FocusedValue(\.sceneState) private var sceneState: SceneState?
-
+        @FocusedValue(\.sceneState) private var sceneState: SceneStateModel?
         /// The body of the `View`
         public var body: some View {
             Button(
@@ -29,19 +26,8 @@ extension DebugView {
                     if let bundleID = Bundle.main.bundleIdentifier {
                         UserDefaults.standard.removePersistentDomain(forName: bundleID)
                     }
-                    /// Delete the cache
-                    let manager = FileManager.default
-                    if let cacheFolderURL = manager.urls(
-                        for: .cachesDirectory,
-                        in: .userDomainMask
-                    ).first {
-                        try? manager.removeItem(at: cacheFolderURL)
-                        try? manager.createDirectory(
-                            at: cacheFolderURL,
-                            withIntermediateDirectories: false,
-                            attributes: nil
-                        )
-                    }
+                    /// Delete the settings
+                    try? Cache.delete(key: "ChordProMacSettings")
                     /// Terminate the application
                     NSApp.terminate(nil)
                 },
@@ -56,7 +42,7 @@ extension DebugView {
                     }
                 },
                 label: {
-                    Text("Open TMP folder")
+                    Text("Open temporary folder")
                 }
             )
             .disabled(sceneState == nil)

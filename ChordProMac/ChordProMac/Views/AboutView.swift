@@ -12,7 +12,7 @@ import SwiftUI
     /// Bool to show the sheet with additional info
     @State private var showMoreInfo: Bool = false
     /// The observable state of the application
-    @StateObject private var appState = AppState.shared
+    @StateObject private var appState = AppStateModel.shared
     /// The body of the `View`
     var body: some View {
         VStack(spacing: 10) {

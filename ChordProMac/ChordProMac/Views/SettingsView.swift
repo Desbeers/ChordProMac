@@ -12,7 +12,7 @@ import OSLog
 /// SwiftUI `View` with the application settings
 struct SettingsView: View {
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The configurations we found in the official **ChordPro** source
     @State var systemConfigurations: [Template] = []
     /// The notations we found in the official **ChordPro** source

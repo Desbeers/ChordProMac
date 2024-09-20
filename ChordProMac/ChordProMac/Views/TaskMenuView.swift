@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 /// SwiftUI `View` with buttons to run a ``CustomTask``
 struct TaskMenuView: View {
     /// The scene in the environment
-    @FocusedValue(\.sceneState) private var sceneState: SceneState?
+    @FocusedValue(\.sceneState) private var sceneState: SceneStateModel?
     /// The body of the `View`
     var body: some View {
         VStack {

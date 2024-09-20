@@ -12,9 +12,9 @@ struct ContentView: View {
     /// The optional file location
     let file: URL?
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
-    @StateObject private var sceneState = SceneState()
+    @StateObject private var sceneState = SceneStateModel()
     /// The body of the `View`
     var body: some View {
         VStack {

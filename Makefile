@@ -5,7 +5,7 @@ MKDIR := mkdir
 
 DEST   := build
 
-WRAPPERBIN := ChordProMac/ChordProMac/Bin
+COREDIR := ChordProMac/ChordProMac/Core
 
 all: archive
 	
@@ -16,12 +16,11 @@ chordpro:
 	git clone --branch dev https://github.com/Desbeers/chordpro.git "${DEST}/ChordProSource"
 	cd "${DEST}/ChordProSource/pp/macosswift" && make chordpro
 	@echo "Copy core to the wrapper..."
-	rm -fr "${WRAPPERBIN}"
-	$(MKDIR) -p "${WRAPPERBIN}"
+	rm -fr "${COREDIR}"
+	$(MKDIR) -p "${COREDIR}"
+	cp -r "${DEST}/ChordProSource/pp/macosswift/ChordProMac/ChordProMac/Bin/" "${COREDIR}"
 	@echo "Remove the static info (not needed anymore)..."
-	cp -r "${DEST}/ChordProSource/pp/macosswift/${WRAPPERBIN}/" "${WRAPPERBIN}"
-	@echo "Remove the static info (not needed anymore)..."
-	rm -f "${WRAPPERBIN}/ChordProInfo.json"
+	rm -f "${COREDIR}/ChordProInfo.json"
 
 xcodebuild:
 	@echo "Building ChordProMac for Apple Silicone"

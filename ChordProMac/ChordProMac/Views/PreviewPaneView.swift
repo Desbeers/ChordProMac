@@ -10,9 +10,9 @@ import SwiftUI
 /// SwiftUI `View` with the preview pane
 struct PreviewPaneView: View {
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
-    @EnvironmentObject private var sceneState: SceneState
+    @EnvironmentObject private var sceneState: SceneStateModel
     /// The document in the environment
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// Optional annotations in the PDF

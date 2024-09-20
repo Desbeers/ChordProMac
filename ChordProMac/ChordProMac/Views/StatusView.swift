@@ -10,9 +10,9 @@ import SwiftUI
 /// SwiftUI `View` wit the status of the scene
 struct StatusView: View {
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
-    @EnvironmentObject private var sceneState: SceneState
+    @EnvironmentObject private var sceneState: SceneStateModel
     /// The body of the `View`
     var body: some View {
         HStack {

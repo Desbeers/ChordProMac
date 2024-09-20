@@ -9,9 +9,9 @@ import SwiftUI
 
 /// SwiftUI `Scene` for **ChordProMac**
 @main struct ChordProMacApp: App {
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    @NSApplicationDelegateAdaptor(AppDelegateModel.self) var appDelegate
     /// The observable state of the application
-    @StateObject private var appState = AppState.shared
+    @StateObject private var appState = AppStateModel.shared
     /// The body of the `Scene`
     var body: some Scene {
         DocumentGroup(newDocument: ChordProDocument()) { file in
@@ -36,12 +36,12 @@ import SwiftUI
                 ExportSongView(label: "Export as PDF…")
                     .environmentObject(appState)
                 Divider()
-                PrintPDFView(label: "Print…")
+                PrintPDFButtonView(label: "Print…")
                     .environmentObject(appState)
             }
             CommandMenu("Songbook") {
                 Button("Export Folder…") {
-                    appDelegate.showExportFolderWindow()
+                    appDelegate.showSongbookWindow()
                 }
             }
             CommandMenu("Tasks") {

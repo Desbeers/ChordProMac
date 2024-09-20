@@ -13,7 +13,7 @@ struct ExportLogView: View {
     /// The label for the button
     let label: String
     /// The observable state of the scene
-    @EnvironmentObject private var sceneState: SceneState
+    @EnvironmentObject private var sceneState: SceneStateModel
     /// Present an export dialog
     @State private var exportLogDialog = false
     /// The log as String

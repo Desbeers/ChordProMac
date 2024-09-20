@@ -16,9 +16,9 @@ struct ExportSongView: View {
     /// The document in the environment
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The scene in the environment
-    @FocusedValue(\.sceneState) private var sceneState: SceneState?
+    @FocusedValue(\.sceneState) private var sceneState: SceneStateModel?
     /// Present an export dialog
     @State private var exportSongDialog = false
     /// The song as PDF

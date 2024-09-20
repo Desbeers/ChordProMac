@@ -189,12 +189,11 @@ extension Terminal {
     static func exportPDF(
         text: String,
         settings: AppSettings,
-        sceneState: SceneState,
+        sceneState: SceneStateModel,
         fileList: Bool = false,
         title: String = "",
         subtitle: String = ""
     ) async throws -> (data: Data, status: AppError) {
-
         /// Get the **ChordPro** binary
         let chordProApp = try getChordProBinary()
         /// Remove previous export (if any)
@@ -245,7 +244,7 @@ extension Terminal {
             arguments.append("\"\(sceneState.sourceURL.path)\"")
         }
         /// Get the user settings that are simple and do not need sandbox help
-        arguments.append(contentsOf: AppState.getUserSettings(settings: settings))
+        arguments.append(contentsOf: AppStateModel.getUserSettings(settings: settings))
         /// Add the optional custom config file
         if let customConfig = getOptionalCustomConfig(settings: settings) {
             arguments.append(customConfig)

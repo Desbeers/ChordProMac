@@ -10,9 +10,9 @@ import SwiftUI
 /// SwiftUI `View to show the latest log`
 struct LogView: View {
     /// The observable state of the application
-    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
-    @EnvironmentObject private var sceneState: SceneState
+    @EnvironmentObject private var sceneState: SceneStateModel
     /// Get the latest log
     var logItems: [LogItem] {
         do {
