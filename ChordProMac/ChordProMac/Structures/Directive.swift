@@ -1,6 +1,6 @@
 //
 //  Directive.swift
-//  Chord Provider
+//  ChordProMac
 //
 //  Created by Nick Berendsen on 24/06/2024.
 //
