@@ -38,7 +38,6 @@
 		D7723A4F2C0326120031CD0C /* ChordProDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A4E2C0326120031CD0C /* ChordProDocument.swift */; };
 		D7723A512C0326120031CD0C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A502C0326120031CD0C /* ContentView.swift */; };
 		D7723A532C0326130031CD0C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7723A522C0326130031CD0C /* Assets.xcassets */; };
-		D7723A562C0326130031CD0C /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D7723A552C0326130031CD0C /* Preview Assets.xcassets */; };
 		D7723A612C032A190031CD0C /* Terminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A602C032A190031CD0C /* Terminal.swift */; };
 		D7723A672C0336C70031CD0C /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A662C0336C70031CD0C /* AppError.swift */; };
 		D7723A692C03442F0031CD0C /* ExportSongView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A682C03442F0031CD0C /* ExportSongView.swift */; };
@@ -117,7 +116,6 @@
 		D7723A4E2C0326120031CD0C /* ChordProDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordProDocument.swift; sourceTree = "<group>"; };
 		D7723A502C0326120031CD0C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D7723A522C0326130031CD0C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		D7723A552C0326130031CD0C /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		D7723A572C0326130031CD0C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D7723A582C0326130031CD0C /* ChordProMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChordProMac.entitlements; sourceTree = "<group>"; };
 		D7723A602C032A190031CD0C /* Terminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terminal.swift; sourceTree = "<group>"; };
@@ -265,17 +263,8 @@
 				D7723A5F2C03291D0031CD0C /* Documents */,
 				D7146DB52C04B39B007E77B8 /* Core */,
 				D75F41312C0F31DB00F0413B /* SystemTasks */,
-				D7723A542C0326130031CD0C /* Preview Content */,
 			);
 			path = ChordProMac;
-			sourceTree = "<group>";
-		};
-		D7723A542C0326130031CD0C /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				D7723A552C0326130031CD0C /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		D7723A5E2C0329150031CD0C /* Views */ = {
@@ -446,7 +435,6 @@
 				D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */,
 				D75F41322C0F31DB00F0413B /* SystemTasks in Resources */,
 				D7146DB92C04B3C3007E77B8 /* script in Resources */,
-				D7723A562C0326130031CD0C /* Preview Assets.xcassets in Resources */,
 				D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */,
 				D7146DBA2C04B3C3007E77B8 /* lib in Resources */,
 				D7723A532C0326130031CD0C /* Assets.xcassets in Resources */,
@@ -691,7 +679,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/General\"";
 				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -732,7 +720,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 6;
-				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"ChordProMac/General\"";
 				DEVELOPMENT_TEAM = FHPCJ7396C;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
