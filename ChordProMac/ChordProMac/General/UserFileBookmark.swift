@@ -17,7 +17,7 @@ public enum UserFileBookmark {
 extension UserFileBookmark {
 
     /// Get an optional bookmark URL
-    /// - Parameter bookmark: The ``CustomFile``
+    /// - Parameter bookmark: The ``UserFile``
     /// - Returns: An URL if found
     public static func getBookmarkURL<T: UserFile>(_ bookmark: T) -> URL? {
         guard let bookmarkData = UserDefaults.standard.data(forKey: bookmark.id) else {

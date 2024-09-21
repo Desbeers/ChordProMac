@@ -8,6 +8,8 @@
 import SwiftUI
 
 /// The AppDelegate to bring additional Windows into the SwiftUI world
+///
+/// - Note: Only from Sonoma, toolbars are supported in a NSHostingView so I just don't use them
 class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
 
     /// Close all windows except the menuBarExtra
@@ -94,6 +96,7 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
         if exportSongbookWindowController == nil {
             let window = NSWindow()
             window.styleMask = styleMask
+            window.styleMask.update(with: .resizable)
             window.title = "Export a Folder to a Songbook"
             window.contentView = NSHostingView(rootView: ExportSongbookView())
             window.center()

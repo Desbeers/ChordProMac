@@ -54,7 +54,7 @@ struct LogView: View {
             .border(Color.accentColor)
             HStack {
                 /// - Note: We can't set a default button in SwiftUI for macOS 12 and want to keep the code simple
-                ExportLogView(label: "Save Log")
+                ExportLogButton(label: "Save Log")
                 Button("Close") {
                     sceneState.showLog = false
                 }

@@ -26,7 +26,7 @@ enum UserFileItem: String, UserFile {
         return self.rawValue
     }
     /// The `UTType` of the file
-    /// - Note: Used to restrict the selection in the ``FileButtonView``
+    /// - Note: Used to restrict the selection in the ``UserFileButton``
     var utTypes: [UTType] {
         switch self {
         case .customConfig:

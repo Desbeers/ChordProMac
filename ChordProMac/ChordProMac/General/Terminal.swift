@@ -181,7 +181,7 @@ extension Terminal {
     /// - Parameters:
     ///   - text: The current text of the document
     ///   - settings: The current ``AppSettings``
-    ///   - sceneState: The current ``SceneState``
+    ///   - sceneState: The current ``SceneStateModel``
     ///   - fileList: The optional list of files (for a songbook)
     ///   - title: The title of the export
     ///   - subtitle: The optional subtitle of the export

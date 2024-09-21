@@ -8,6 +8,7 @@
 import SwiftUI
 import OSLog
 
+/// SwiftUI `View` for a welcome window
 struct WelcomeView: View {
     /// The observable state of the application
     @StateObject private var appState = AppStateModel.shared
@@ -24,76 +25,78 @@ struct WelcomeView: View {
                 Image("ChordProLogo")
                     .resizable()
                     .scaledToFit()
+                    .padding()
             }
             .padding()
             .frame(maxWidth: .infinity)
             .padding(.bottom)
-            VStack {
-                VStack {
-                    Picker("Tabs", selection: $selectedTab) {
-                        ForEach(NewTabs.allCases) { tab in
-                            Text(tab.rawValue)
-                                .tag(tab)
-                        }
+            VStack(spacing: 0) {
+                Picker("Tabs", selection: $selectedTab) {
+                    ForEach(NewTabs.allCases) { tab in
+                        Text(tab.rawValue)
+                            .tag(tab)
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .padding(.bottom)
-                    switch selectedTab {
-                    case .create:
-                        Button(
-                            action: {
-                                appState.newDocumentContent = ChordProDocument.newText
-                                NSDocumentController.shared.newDocument(nil)
-                            },
-                            label: {
-                                Label("Create a new song", systemImage: "doc")
-                            }
-                        )
-                        Button(
-                            action: {
-                                Task {
-                                    if let urls = await NSDocumentController.shared.beginOpenPanel() {
-                                        for url in urls {
-                                            do {
-                                                try await NSDocumentController.shared.openDocument(withContentsOf: url, display: true)
-                                            } catch {
-                                                Logger.application.error("Error opening URL: \(error.localizedDescription, privacy: .public)")
-                                            }
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.bottom)
+                switch selectedTab {
+                case .create:
+                    Button(
+                        action: {
+                            appState.newDocumentContent = ChordProDocument.newText
+                            NSDocumentController.shared.newDocument(nil)
+                        },
+                        label: {
+                            Label("Create a new song", systemImage: "doc")
+                        }
+                    )
+                    Button(
+                        action: {
+                            Task {
+                                if let urls = await NSDocumentController.shared.beginOpenPanel() {
+                                    for url in urls {
+                                        do {
+                                            try await NSDocumentController.shared.openDocument(withContentsOf: url, display: true)
+                                        } catch {
+                                            Logger.application.error("Error opening URL: \(error.localizedDescription, privacy: .public)")
                                         }
                                     }
                                 }
-                            },
-                            label: {
-                                Label("Open an existing song", systemImage: "doc.badge.ellipsis")
                             }
-                        )
-                        Button(
-                            action: {
-                                appDelegate.closeWelcomeWindow()
-                                appDelegate.showExportSongbookWindow()
-                            },
-                            label: {
-                                Label("Make a songbook", systemImage: "doc.on.doc")
+                        },
+                        label: {
+                            Label("Open an existing song", systemImage: "doc.badge.ellipsis")
+                        }
+                    )
+                    Button(
+                        action: {
+                            appDelegate.closeWelcomeWindow()
+                            appDelegate.showExportSongbookWindow()
+                        },
+                        label: {
+                            Label("Make a songbook", systemImage: "doc.on.doc")
+                        }
+                    )
+                    Button(
+                        action: {
+                            if let sampleSong = Bundle.main.url(forResource: "lib/ChordPro/res/examples/swinglow.cho", withExtension: nil) {
+                                let content = try? String(contentsOf: sampleSong, encoding: .utf8)
+                                appState.newDocumentContent = content ?? ChordProDocument.newText
+                                NSDocumentController.shared.newDocument(nil)
                             }
-                        )
-                        Button(
-                            action: {
-                                if let sampleSong = Bundle.main.url(forResource: "lib/ChordPro/res/examples/swinglow.cho", withExtension: nil) {
-                                    let content = try? String(contentsOf: sampleSong, encoding: .utf8)
-                                    appState.newDocumentContent = content ?? ChordProDocument.newText
-                                    NSDocumentController.shared.newDocument(nil)
-                                }
-                            },
-                            label: {
-                                Label("Open an example song", systemImage: "doc.text")
-                            }
-                        )
-                    case .recent:
-                        if appState.recentFiles.isEmpty {
-                            Text("You have no recent songs")
-                        } else {
-                            ScrollView {
+                        },
+                        label: {
+                            Label("Open an example song", systemImage: "doc.text")
+                        }
+                    )
+                case .recent:
+                    if appState.recentFiles.isEmpty {
+                        Text("You have no recent songs")
+                            .frame(maxHeight: .infinity)
+                    } else {
+                        ScrollView {
+                            VStack(spacing:0) {
                                 ForEach(appState.recentFiles, id: \.self) { url in
                                     Button(
                                         action: {
@@ -114,10 +117,9 @@ struct WelcomeView: View {
                         }
                     }
                 }
-                .frame(maxHeight: .infinity, alignment: .top)
                 Divider()
                     .frame(width: 240)
-                    .padding()
+                    .padding([.horizontal, .bottom])
                 if let url = URL(string: "https://www.chordpro.org/") {
                     Link(destination: url) {
                         Label("Visit the **ChordPro** website", systemImage: "globe")
@@ -130,7 +132,7 @@ struct WelcomeView: View {
                 }
             }
             .padding()
-            .frame(maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color(nsColor: .textBackgroundColor))
         }
         .animation(.default, value: selectedTab)
@@ -151,7 +153,7 @@ extension WelcomeView {
 }
 
 extension WelcomeView {
-    
+
     /// The style of a label on the Welcome View
     struct ButtonLabelStyle: LabelStyle {
         func makeBody(configuration: Configuration) -> some View {
@@ -164,8 +166,9 @@ extension WelcomeView {
                     .frame(width: 220, height: 40, alignment: .leading)
             }
             .padding(.leading)
-            .background(.thinMaterial)
+            .background(Color(nsColor: .windowBackgroundColor).opacity(0.5))
             .cornerRadius(6)
+            .padding(.bottom)
         }
     }
 }

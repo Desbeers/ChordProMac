@@ -21,8 +21,10 @@ struct ExportSongbookView: View, DropDelegate {
     @StateObject private var sceneState = SceneStateModel()
     /// The observable state of the songbook
     @StateObject private var songbookState = SongbookStateModel()
-    
+    /// The optional dropped folder with songs
     @State private var droppedURL: URL?
+    /// Optional annotations in the PDF
+    @State private var annotations: [(userName: String, contents: String)] = []
 
     // MARK: Body View
 
@@ -32,24 +34,45 @@ struct ExportSongbookView: View, DropDelegate {
             HStack {
                 list
                 options
+                    .frame(width: 300)
             }
             Divider()
             StatusView()
                 .padding(.horizontal)
         }
-        .frame(width: 680, height: 480, alignment: .top)
+        .frame(minWidth: 680, minHeight: 480, alignment: .top)
         .animation(.default, value: appState.settings.application)
         .overlay {
             VStack {
-                ProgressView()
-                Text("This might take some time...")
-                    .font(.caption)
+                Text(songbookState.chordProRunning ? "Making the PDF" : "Your PDF is ready")
+                    .font(.headline)
+                if let data = songbookState.pdf {
+                        AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
+                            .frame(width: 400, height: 300)
+                            .border(Color.accentColor, width: 1)
+                        HStack {
+                            Button("Close") {
+                                songbookState.pdf = nil
+                            }
+                            Button("Export") {
+                                songbookState.exportFolderDialog = true
+                            }
+                        }
+                        .padding()
+                } else {
+                    ProgressView()
+                        .padding()
+                    Text("This might take some time...")
+                        .font(.caption)
+                }
             }
             .padding()
-            .background(.thinMaterial)
-            .wrapSettingsSection(title: "Making the PDF")
-            .opacity(songbookState.chordProRunning ? 1 : 0)
+            .background(Color(nsColor: .textBackgroundColor))
+            .cornerRadius(12)
+            .shadow(radius: 10)
+            .opacity(songbookState.chordProRunning || songbookState.pdf != nil ? 1 : 0)
         }
+        .animation(.default, value: songbookState.pdf)
         .task {
             songbookState.makeFileList(appState: appState)
         }
@@ -63,7 +86,6 @@ struct ExportSongbookView: View, DropDelegate {
                 appState.settings.application.songbookGenerateCover = false
             }
         }
-        
         .onDrop(of: [.fileURL], delegate: self)
         .fileExporter(
             isPresented: $songbookState.exportFolderDialog,
@@ -72,6 +94,7 @@ struct ExportSongbookView: View, DropDelegate {
             defaultFilename: appState.settings.application.songbookTitle
         ) { _ in
             Logger.pdfBuild.notice("Export completed")
+            songbookState.pdf = nil
         }
         .quickLookPreview($songbookState.coverPreview)
         .environmentObject(appState)

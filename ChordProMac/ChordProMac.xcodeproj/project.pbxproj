@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		D702E0D72C0CC6F5006D9667 /* SceneStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0D62C0CC6F5006D9667 /* SceneStateModel.swift */; };
-		D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */; };
+		D702E0DB2C0CE99C006D9667 /* ExportLogButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */; };
 		D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DC2C0CEA27006D9667 /* LogDocument.swift */; };
 		D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DE2C0CEF42006D9667 /* LogItem.swift */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
@@ -87,7 +87,7 @@
 
 /* Begin PBXFileReference section */
 		D702E0D62C0CC6F5006D9667 /* SceneStateModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneStateModel.swift; sourceTree = "<group>"; };
-		D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogView.swift; sourceTree = "<group>"; };
+		D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogButton.swift; sourceTree = "<group>"; };
 		D702E0DC2C0CEA27006D9667 /* LogDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDocument.swift; sourceTree = "<group>"; };
 		D702E0DE2C0CEF42006D9667 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
@@ -212,6 +212,7 @@
 				D7D244E32C3C3C780058FB8E /* UserFileButton.swift */,
 				D7D244E22C3C3C780058FB8E /* ColorPickerButton.swift */,
 				D75F410D2C0EFDA200F0413B /* TaskMenuButtons.swift */,
+				D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */,
 				D767276E2C996638001D1947 /* DebugButtons.swift */,
 			);
 			path = Buttons;
@@ -286,7 +287,6 @@
 				D774F2842C05F2B900CC4E3E /* StatusView.swift */,
 				D72EA33B2C0BB24600B1BA93 /* LogView.swift */,
 				D776B5CD2C8A1EC100E10FE8 /* ExportSongbookView.swift */,
-				D702E0DA2C0CE99C006D9667 /* ExportLogView.swift */,
 				D74002CA2C04711000291BE7 /* SettingsView.swift */,
 			);
 			path = Views;
@@ -526,7 +526,7 @@
 				D7FBDB8F2C2C96AE00D242ED /* Directive.swift in Sources */,
 				D7D244C42C3C3C320058FB8E /* ChordProEditor.swift in Sources */,
 				D75F410E2C0EFDA200F0413B /* TaskMenuButtons.swift in Sources */,
-				D702E0DB2C0CE99C006D9667 /* ExportLogView.swift in Sources */,
+				D702E0DB2C0CE99C006D9667 /* ExportLogButton.swift in Sources */,
 				D702E0DD2C0CEA27006D9667 /* LogDocument.swift in Sources */,
 				D7D244D42C3C3C460058FB8E /* Logger+extension.swift in Sources */,
 				D702E0D72C0CC6F5006D9667 /* SceneStateModel.swift in Sources */,

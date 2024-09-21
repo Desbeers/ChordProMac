@@ -124,8 +124,6 @@ extension SongbookStateModel {
                 )
                 /// Set the PDF as Data
                 self.pdf = pdf.data
-                /// Show the export dialog
-                exportFolderDialog = true
             } catch {
                 Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
             }
