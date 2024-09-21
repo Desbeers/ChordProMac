@@ -11,7 +11,7 @@ use warnings ;
 use bytes ;
 our ($VERSION, $XS_VERSION, @ISA, @EXPORT, %EXPORT_TAGS, @EXPORT_OK, $AUTOLOAD, %DEFLATE_CONSTANTS, @DEFLATE_CONSTANTS);
 
-$VERSION = '2.101';
+$VERSION = '2.204_001';
 $XS_VERSION = $VERSION;
 $VERSION = eval $VERSION;
 
@@ -96,6 +96,14 @@ $VERSION = eval $VERSION;
         Z_TREES
         Z_UNKNOWN
         Z_VERSION_ERROR
+
+        ZLIBNG_VERSION
+        ZLIBNG_VERNUM
+        ZLIBNG_VER_MAJOR
+        ZLIBNG_VER_MINOR
+        ZLIBNG_VER_REVISION
+        ZLIBNG_VER_STATUS
+        ZLIBNG_VER_MODIFIED
 
         WANT_GZIP
         WANT_GZIP_OR_ZLIB
@@ -597,4 +605,4 @@ sub Compress::Raw::Zlib::deflateStream::deflateParams
 __END__
 
 
-#line 1603
+#line 1644

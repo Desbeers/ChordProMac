@@ -1,7 +1,7 @@
 #line 1 "<embedded>/attributes.pm"
 package attributes;
 
-our $VERSION = 0.33;
+our $VERSION = 0.35;
 
 @EXPORT_OK = qw(get reftype);
 @EXPORT = ();

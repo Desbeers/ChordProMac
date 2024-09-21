@@ -7,9 +7,10 @@ use strict;
 use warnings;
 use vars qw($VERSION @ISA @EXPORT_OK $errmsg);
 use Fcntl qw(O_RDONLY O_RDWR);
+use Cwd qw(getcwd);
 use integer;
 
-$VERSION = '6.02';
+$VERSION = '6.04';
 
 require Exporter;
 @ISA = qw(Exporter);
@@ -121,9 +122,18 @@ sub addfile {
 		##	by attempting to open with mode O_RDWR
 
 	local *FH;
-	$file eq '-' and open(FH, '< -')
-		or sysopen(FH, $file, -d $file ? O_RDWR : O_RDONLY)
+	if ($file eq '-') {
+		if (-d STDIN) {
+			sysopen(FH, getcwd(), O_RDWR)
+				or _bail('Open failed');
+		}
+		open(FH, '< -')
 			or _bail('Open failed');
+	}
+	else {
+		sysopen(FH, $file, -d $file ? O_RDWR : O_RDONLY)
+			or _bail('Open failed');
+	}
 
 	if ($BITS) {
 		my ($n, $buf) = (0, "");
@@ -253,4 +263,4 @@ eval {
 1;
 __END__
 
-#line 821
+#line 831

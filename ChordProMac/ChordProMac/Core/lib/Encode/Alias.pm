@@ -2,7 +2,7 @@
 package Encode::Alias;
 use strict;
 use warnings;
-our $VERSION = do { my @r = ( q$Revision: 2.24 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
+our $VERSION = do { my @r = ( q$Revision: 2.25 $ =~ /\d+/g ); sprintf "%d." . "%02d" x $#r, @r };
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 
 use Exporter 'import';
@@ -163,6 +163,10 @@ sub init_aliases {
     # Allow variants of iso-8859-1 etc.
     define_alias( qr/\biso[-_]?(\d+)[-_](\d+)$/i => '"iso-$1-$2"' );
 
+    # ISO-8859-8-I => ISO-8859-8
+    # https://en.wikipedia.org/wiki/ISO-8859-8-I
+    define_alias( qr/\biso[-_]8859[-_]8[-_]I$/i => '"iso-8859-8"' );
+
     # At least HP-UX has these.
     define_alias( qr/\biso8859(\d+)$/i => '"iso-8859-$1"' );
 
@@ -290,5 +294,5 @@ __END__
 #       Kannada Khmer Korean Laotian Malayalam Mongolian
 #       Oriya Sinhalese Symbol Tamil Telugu Tibetan Vietnamese
 
-#line 395
+#line 399
 

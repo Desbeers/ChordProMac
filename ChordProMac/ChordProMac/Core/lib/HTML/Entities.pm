@@ -89,7 +89,7 @@ for example, would encode I<just> the C<< < >>, C<< & >>, C<< > >>, and C<< "
 
   $encoded = encode_entities($input, '<>&"');
 
-and this would only encode non-plain ascii:
+and this would only encode non-plain ASCII:
 
   $encoded = encode_entities($input, '^\n\x20-\x25\x27-\x7e');
 
@@ -136,17 +136,16 @@ modify it under the same terms as Perl itself.
 =cut
 
 use strict;
-use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
-use vars qw(%entity2char %char2entity);
+our $VERSION = '3.83';
+our (%entity2char, %char2entity);
 
 require 5.004;
 require Exporter;
-@ISA = qw(Exporter);
+our @ISA = qw(Exporter);
 
-@EXPORT = qw(encode_entities decode_entities _decode_entities);
-@EXPORT_OK = qw(%entity2char %char2entity encode_entities_numeric);
+our @EXPORT = qw(encode_entities decode_entities _decode_entities);
+our @EXPORT_OK = qw(%entity2char %char2entity encode_entities_numeric);
 
-$VERSION = "3.69";
 sub Version { $VERSION; }
 
 require HTML::Parser;  # for fast XS implemented decode_entities
@@ -154,7 +153,7 @@ require HTML::Parser;  # for fast XS implemented decode_entities
 
 %entity2char = (
  # Some normal chars that have special meaning in SGML context
- amp    => '&',  # ampersand 
+ amp    => '&',  # ampersand
 'gt'    => '>',  # greater than
 'lt'    => '<',  # less than
  quot   => '"',  # double quote
@@ -444,23 +443,46 @@ sub encode_entities
     } else {
 	$ref = \$_[0];  # modify in-place
     }
+    my $regex;
     if (defined $_[1] and length $_[1]) {
-	unless (exists $subst{$_[1]}) {
-	    # Because we can't compile regex we fake it with a cached sub
+        $regex = $subst{$_[1]};
+        unless (defined $regex) {
 	    my $chars = $_[1];
-	    $chars =~ s,(?<!\\)([]/]),\\$1,g;
-	    $chars =~ s,(?<!\\)\\\z,\\\\,;
-	    my $code = "sub {\$_[0] =~ s/([$chars])/\$char2entity{\$1} || num_entity(\$1)/ge; }";
-	    $subst{$_[1]} = eval $code;
+
+            # keep existing escapes, but also escape any unescaped special character:
+            #  [ (technically unnecessary but included for symmetry with ])
+            #  ] (end of character class)
+            #  \ (escape character)
+            $chars =~ s{
+                # capture group 1: things to skip and keep
+                (
+                    # any escaped character
+                    \\.
+                |
+                    # either an actual POSIX character class or anything
+                    # similar enough to trigger a regex syntax error
+                    \[: \^? [[:lower:][:digit:]]{3,} :\]
+                )
+                |
+                # capture group 2: things to be escaped
+                (
+                    [\[\]\\]
+                )
+            }{
+                defined $1 ? $1 : '\\' . $2
+            }xseg;
+
+            $regex = eval { qr/([$chars])/ };
 	    die( $@ . " while trying to turn range: \"$_[1]\"\n "
-	      . "into code: $code\n "
+              . "into code: /([$chars])/\n "
 	    ) if $@;
+            $subst{$_[1]} = $regex;
 	}
-	&{$subst{$_[1]}}($$ref);
     } else {
 	# Encode control chars, high bit chars and '<', '&', '>', ''' and '"'
-	$$ref =~ s/([^\n\r\t !\#\$%\(-;=?-~])/$char2entity{$1} || num_entity($1)/ge;
+        $regex = qr/([^\n\r\t !\#\$%\(-;=?-~])/;
     }
+    $$ref =~ s/$regex/$char2entity{$1} || num_entity($1)/eg;
     $$ref;
 }
 

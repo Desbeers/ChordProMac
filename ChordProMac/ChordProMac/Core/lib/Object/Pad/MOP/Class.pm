@@ -3,7 +3,7 @@
 #
 #  (C) Paul Evans, 2020-2023 -- leonerd@leonerd.org.uk
 
-package Object::Pad::MOP::Class 0.808;
+package Object::Pad::MOP::Class 0.812;
 
 use v5.14;
 use warnings;
@@ -17,6 +17,8 @@ require Object::Pad;
 C<Object::Pad::MOP::Class> - meta-object representation of a C<Object::Pad> class
 
 =head1 DESCRIPTION
+
+=for highlighter language=perl
 
 Instances of this class represent a class or role implemented by
 L<Object::Pad>. Accessors provide information about the class or role, and
@@ -90,8 +92,12 @@ sub try_for_class
         "Object::Pad::MOP is experimental and may be changed or removed without notice";
    }
 
-   my $code = $targetclass->can( "META" ) or
-      return undef;
+   my $code = do {
+      my $fqname = "${targetclass}::META";
+      no strict 'refs';
+      defined &$fqname or return undef;
+      \&{"${targetclass}::META"};
+   };
 
    return $code->( $targetclass );
 }
@@ -383,6 +389,21 @@ I<Since version 0.46.>
 
 If true, reference values assigned into the field by the constructor or
 accessor methods will be weakened, similar to setting the C<:weak> attribute.
+
+=item attributes => ARRAY
+
+I<Since version 0.811.>
+
+Provides additional attributes to apply to the field, as if declared by
+attribute syntax. This is largely useful for applying third-party field
+attributes.
+
+The referenced array should contain an even-sized list of pairs. The first of
+each pair will be the name of an attribute, and the second will be a value to
+pass (or C<undef> if not applicable). Note that if the third-party attribute
+provides separate parse and apply phases in its hook functions, the parse part
+will I<not> be invoked by this parameter. Whatever value is passed must be
+something accepted by the apply phase alone.
 
 =back
 

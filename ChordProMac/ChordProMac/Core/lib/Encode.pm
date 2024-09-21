@@ -1,6 +1,6 @@
 #line 1 "<embedded>/Encode.pm"
 #
-# $Id: Encode.pm,v 3.08 2020/12/02 01:27:44 dankogai Exp $
+# $Id: Encode.pm,v 3.19 2022/08/04 04:42:30 dankogai Exp $
 #
 package Encode;
 use strict;
@@ -8,8 +8,7 @@ use warnings;
 use constant DEBUG => !!$ENV{PERL_ENCODE_DEBUG};
 our $VERSION;
 BEGIN {
-    $VERSION = "3.08_01";
-    $VERSION = eval $VERSION;
+    $VERSION = sprintf "%d.%02d", q$Revision: 3.19 $ =~ /(\d+)/g;
     require XSLoader;
     XSLoader::load( __PACKAGE__, $VERSION );
 }
@@ -204,18 +203,6 @@ if ($ON_EBCDIC) {
         $_[1] = '' if $chk;
         return $res;
     }
-} else {
-    package Encode::Internal;
-    use parent 'Encode::Encoding';
-    my $obj = bless { Name => "Internal" } => "Encode::Internal";
-    Encode::define_encoding($obj, 'Unicode');
-    sub decode {
-        my ( undef, $str, $chk ) = @_;
-        utf8::upgrade($str);
-        $_[1] = '' if $chk;
-        return $str;
-    }
-    *encode = \&decode;
 }
 
 {
@@ -257,4 +244,4 @@ if ($ON_EBCDIC) {
 
 __END__
 
-#line 974
+#line 977

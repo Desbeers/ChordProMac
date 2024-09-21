@@ -9,12 +9,12 @@ use bytes;
 
 require Exporter ;
 
-use IO::Compress::RawDeflate 2.101 () ;
-use IO::Compress::Adapter::Deflate 2.101 ;
+use IO::Compress::RawDeflate 2.204 () ;
+use IO::Compress::Adapter::Deflate 2.204 ;
 
-use IO::Compress::Base::Common  2.101 qw(:Status );
-use IO::Compress::Gzip::Constants 2.101 ;
-use IO::Compress::Zlib::Extra 2.101 ;
+use IO::Compress::Base::Common  2.204 qw(:Status );
+use IO::Compress::Gzip::Constants 2.204 ;
+use IO::Compress::Zlib::Extra 2.204 ;
 
 BEGIN
 {
@@ -26,7 +26,7 @@ BEGIN
 
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $GzipError);
 
-$VERSION = '2.102';
+$VERSION = '2.204';
 $GzipError = '' ;
 
 @ISA    = qw(IO::Compress::RawDeflate Exporter);
@@ -276,4 +276,4 @@ sub mkFinalTrailer
 
 __END__
 
-#line 1271
+#line 1274

@@ -470,4 +470,68 @@ sub is_corefont {
 
 push( @EXPORT, "is_corefont" );
 
+# Progress reporting.
+
+use Ref::Util qw(is_coderef);
+
+# Progress can return a false result to allow caller to stop.
+
+sub progress(%args) {
+    state $callback;
+    state $phase = "";
+    state $index = 0;
+    state $total = 0;
+    unless ( %args ) {		# reset
+	undef $callback;
+	$phase = "";
+	$index = 0;
+	return;
+    }
+
+    $callback = $args{callback} if exists $args{callback};
+    return 1 unless $callback;
+
+    if ( exists $args{phase} ) {
+	$index = 0 if $phase ne $args{phase};
+	$phase = $args{phase};
+    }
+    if ( exists $args{index} ) {
+	$index = $args{index};
+
+	# Use index<0 to only set callback/phase.
+	$index = $total = 0, return if $index < 0;
+    }
+    if ( exists $args{total} ) {
+	$total = $args{total};
+    }
+
+    my $args = { phase => $phase, index => $index, total => $total, %args };
+
+    my $ret = ++$index;
+    if ( is_coderef($callback) ) {
+	$ret = eval { $callback->(%$args) };
+	if ( $@ ) {
+	    warn($@);
+	    undef $callback;
+	}
+    }
+    else {
+	if ( $callback eq "warn" ) {
+	    # Simple progress message. Suppress if $index = 0 or total = 1.
+	    $callback =
+	      '%{index=0||' .
+	      '%{total=1||Progress[%{phase}]: %{index}/%{total}%{msg| - %{}}}' .
+	      '}';
+	}
+	my $msg = ChordPro::Output::Common::fmt_subst
+	  ( { meta => $args }, $callback );
+	$msg =~ s/\n+$//;
+	warn( $msg, "\n" ) if $msg;
+    }
+
+    return $ret;
+}
+
+push( @EXPORT, "progress" );
+
 1;

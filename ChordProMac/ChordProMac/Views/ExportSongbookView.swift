@@ -11,13 +11,18 @@ import QuickLook
 import OSLog
 
 /// SwiftUI `View` to export a folder of songs to a **ChordPro** Songbook
-struct ExportSongbookView: View {
+/// - Note: macOS Monterey does not understand UTType.folder
+///         so we have to write a whole DropDelegate to validate the drop as 'folder'
+
+struct ExportSongbookView: View, DropDelegate {
     /// The observable state of the application
     @StateObject private var appState = AppStateModel.shared
     /// The observable state of the scene
     @StateObject private var sceneState = SceneStateModel()
     /// The observable state of the songbook
     @StateObject private var songbookState = SongbookStateModel()
+    
+    @State private var droppedURL: URL?
 
     // MARK: Body View
 
@@ -58,20 +63,8 @@ struct ExportSongbookView: View {
                 appState.settings.application.songbookGenerateCover = false
             }
         }
-        .onDrop(of: [.folder], isTargeted: $songbookState.isDropping) { itemProvider in
-            if let item = itemProvider.first {
-                item.loadItem(forTypeIdentifier: UTType.folder.identifier, options: nil) { urlData, _ in
-                    if let url = urlData as? URL {
-                        Task {
-                            UserFileBookmark.setBookmarkURL(UserFileItem.exportFolder, url)
-                            songbookState.currentFolder = url.lastPathComponent
-                            songbookState.makeFileList(appState: appState)
-                        }
-                    }
-                }
-            }
-            return true
-        }
+        
+        .onDrop(of: [.fileURL], delegate: self)
         .fileExporter(
             isPresented: $songbookState.exportFolderDialog,
             document: ExportDocument(pdf: songbookState.pdf),
@@ -254,5 +247,50 @@ struct ExportSongbookView: View {
             .padding()
             .disabled(songbookState.currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
         }
+    }
+}
+
+extension ExportSongbookView {
+    
+    /// DropDelegate protocol item to verify a drop
+    /// - Parameter info: Information about the dropped area
+    /// - Returns: True if a folder is dropped
+    func validateDrop(info: DropInfo) -> Bool {
+        guard
+            info.hasItemsConforming(to: [.fileURL]),
+            let provider = info.itemProviders(for: [.fileURL]).first
+        else { return false }
+        /// Set the standard default
+        var result = false
+        if provider.canLoadObject(ofClass: URL.self) {
+            let group = DispatchGroup()
+            group.enter()
+            _ = provider.loadObject(ofClass: URL.self) { url, _ in
+                defer { group.leave() }
+                if let url {
+                    let flag = try? url.resourceValues(forKeys: [.contentTypeKey]).contentType == .folder
+                    result = flag ?? false
+                }
+                droppedURL = result ? url : nil
+            }
+
+            /// Wait a moment for verification result
+            _ = group.wait(timeout: .now() + 0.5)
+        }
+        return result
+    }
+    
+    /// DropDelegate protocol item to perform a drop action
+    /// - Parameter info: Information about the dropped area
+    /// - Returns: True
+    func performDrop(info: DropInfo) -> Bool {
+        Task {
+            if let url = droppedURL {
+                UserFileBookmark.setBookmarkURL(UserFileItem.exportFolder, url)
+                songbookState.currentFolder = url.lastPathComponent
+                songbookState.makeFileList(appState: appState)
+            }
+        }
+        return true
     }
 }

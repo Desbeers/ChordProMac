@@ -5,7 +5,7 @@ use strict;
 no strict 'refs';
 
 # On one line so MakeMaker will see it.
-our $VERSION = '5.76';
+our $VERSION = '5.77';
 
 #line 22
 

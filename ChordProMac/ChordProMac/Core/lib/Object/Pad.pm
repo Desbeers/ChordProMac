@@ -1,9 +1,9 @@
 #  You may distribute under the terms of either the GNU General Public License
 #  or the Artistic License (the same terms as Perl itself)
 #
-#  (C) Paul Evans, 2019-2023 -- leonerd@leonerd.org.uk
+#  (C) Paul Evans, 2019-2024 -- leonerd@leonerd.org.uk
 
-package Object::Pad 0.808;
+package Object::Pad 0.812;
 
 use v5.14;
 use warnings;
@@ -29,6 +29,8 @@ require mro;
 require Object::Pad::MOP::Class;
 
 =encoding UTF-8
+
+=for highlighter language=perl
 
 =head1 NAME
 
@@ -115,7 +117,7 @@ module to only silence the module's warnings selectively:
 
    use Object::Pad ':experimental(inherit_field)';
 
-   use Object::Pad ':experimental';  # all of the above
+   use Object::Pad ':experimental(:all)';  # all of the above
 
 I<Since version 0.64.>
 
@@ -123,6 +125,10 @@ Multiple experimental features can be enabled at once by giving multiple names
 in the parens, separated by spaces:
 
    use Object::Pad ':experimental(mop custom_field_attr)';
+
+I<Since version 0.810> attempting to request all of the experiments at once
+by using an empty C<:experimental()> is currently accepted, but yields a
+warning. This may be removed in future.
 
 =head2 Automatic Construction
 
@@ -344,6 +350,35 @@ This attribute is a temporary stepping-stone for compatibility with existing
 code. It is recommended to enable this whenever possible, as a later version
 of this module will likely perform this behaviour unconditionally whenever no
 C<BUILD> blocks are present.
+
+=head2 class (anon)
+
+   my $class = class :ATTRS... { ... };
+
+I<Since version 0.809.>
+
+If a C<class> keyword is not followed by a package name, it creates an
+anonymous class expression. This is an expression that yields a value suitable
+to use as a constructor invocant for creating instances of that class, without
+specifying what its package name will actually be.
+
+This is useful for creating small one-off instances inline in expressions,
+such as in unit tests. Since it still accepts the usual attributes and inner
+body statements, it can be useful for creating one-off instances of roles,
+with required methods being applied.
+
+   my $testobj = (class {
+      apply Role::Under::Test;
+      method required { return "a useful value"; }
+   })->new;
+
+Due to limitations on how classes work in Perl, anonymous classes are still
+backed by long-lived named classes in the global symbol table, unlike true
+anonymous functions which can go out of scope and be reclaimed once no
+references to them remain in existence. This means that anonymous classes will
+retain references to any variables captured within them, even if the class
+expression itself goes out of scope and any instances created by it no longer
+remain.
 
 =head2 role
 
@@ -949,7 +984,7 @@ default behaviour in a future version. For now it must be requested specially:
       ...
    }
 
-I<Since version 0.70.>
+I<Since version 0.70; non-experimental since version 0.805.>
 
 An C<ADJUST> block can marked with a C<:params> attribute, meaning that it
 consumes additional constructor parameters by assigning them into lexical
@@ -1137,8 +1172,12 @@ before using the C<class> or C<roll> keywords:
 
 Z<>
 
+=for highlighter
+
    class keyword enabled 'use strict' but this will be removed in a later version at FILE line 3.
    class keyword enabled 'use warnings' but this will be removed in a later version at FILE line 3.
+
+=for highlighter language=perl
 
 =head2 Yield True
 
@@ -1203,8 +1242,12 @@ exist, but its value will be C<B> during the superconstructor. After the
 superconstructor, the C<BUILD> and C<ADJUST> blocks are invoked before the
 completed object is returned to the user. The result will therefore be:
 
+=for highlighter
+
    Value seen by superconstructor is B
    Value seen by user is C
+
+=for highlighter language=perl
 
 =head1 STYLE SUGGESTIONS
 
@@ -1323,11 +1366,18 @@ sub _import_experimental
       my $sym = $syms->[$i];
 
       if( $sym eq ":experimental" ) {
+         carp "Enabling all Object::Pad experiments with an unqualified :experimental";
          $enabled{$_}++ for @experiments;
       }
       elsif( $sym =~ m/^:experimental\((.*)\)$/ ) {
-         my $tags = $1 =~ s/^\s+|\s+$//gr; # trim
-         $enabled{$_}++ for split m/\s+/, $tags;
+         foreach my $tag ( split m/\s+/, $1 =~ s/^\s+|\s+$//gr ) {
+            if( $tag eq ":all" ) {
+               $enabled{$_}++ for @experiments;
+            }
+            else {
+               $enabled{$tag}++;
+            }
+         }
       }
       else {
          $i++;
@@ -1467,6 +1517,8 @@ module L<Devel::MAT::Tool::Object::Pad>. This will provide new commands and
 extend existing ones to better assist with analysing details related to
 C<Object::Pad> classes and instances of them.
 
+=for highlighter
+
    pmat> fields 0x55d7c173d4b8
    The field AV ARRAY(3)=NativeClass at 0x55d7c173d4b8
    Ix Field   Value
@@ -1477,6 +1529,8 @@ C<Object::Pad> classes and instances of them.
    REF() at 0x55d7c17606d8 is:
    └─the %hfield field of ARRAY(3)=NativeClass at 0x55d7c173d4b8, which is:
    ...
+
+=for highlighter language=perl
 
 =head1 DESIGN TODOs
 

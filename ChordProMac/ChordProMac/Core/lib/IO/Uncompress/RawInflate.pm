@@ -6,16 +6,16 @@ use strict ;
 use warnings;
 use bytes;
 
-use Compress::Raw::Zlib  2.101 ;
-use IO::Compress::Base::Common  2.101 qw(:Status );
+use Compress::Raw::Zlib  2.204 ;
+use IO::Compress::Base::Common  2.204 qw(:Status );
 
-use IO::Uncompress::Base  2.101 ;
-use IO::Uncompress::Adapter::Inflate  2.101 ;
+use IO::Uncompress::Base  2.204 ;
+use IO::Uncompress::Adapter::Inflate  2.204 ;
 
 require Exporter ;
 our ($VERSION, @ISA, @EXPORT_OK, %EXPORT_TAGS, %DEFLATE_CONSTANTS, $RawInflateError);
 
-$VERSION = '2.102';
+$VERSION = '2.204';
 $RawInflateError = '';
 
 @ISA    = qw(IO::Uncompress::Base Exporter);
@@ -346,4 +346,4 @@ sub createDeflate
 __END__
 
 
-#line 1129
+#line 1132

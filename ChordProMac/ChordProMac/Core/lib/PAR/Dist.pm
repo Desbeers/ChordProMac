@@ -5,7 +5,7 @@ use strict;
 require Exporter;
 use vars qw/$VERSION @ISA @EXPORT @EXPORT_OK $DEBUG/;
 
-$VERSION    = '0.49'; # Change version in POD, too!
+$VERSION    = '0.53';
 @ISA        = 'Exporter';
 @EXPORT     = qw/
   blib_to_par
@@ -29,7 +29,7 @@ $DEBUG = 0;
 use Carp qw/carp croak/;
 use File::Spec;
 
-#line 142
+#line 138
 
 sub blib_to_par {
     @_ = (path => @_) if @_ == 1;
@@ -59,7 +59,7 @@ sub blib_to_par {
     my @files;
     open MANIFEST, ">", File::Spec->catfile("blib", "MANIFEST") or die $!;
     open META, ">", File::Spec->catfile("blib", "META.yml") or die $!;
-    
+
     require File::Find;
     File::Find::find( sub {
         next unless $File::Find::name;
@@ -91,21 +91,15 @@ sub blib_to_par {
                 $name ||= $1;
                 $name =~ s/::/-/g;
             }
-            elsif (/^version:\s+.*Module::Build::Version/) {
-                while (<OLD_META>) {
-                    /^\s+original:\s+(.*)/ or next;
-                    $version ||= $1;
-                    last;
-                }
-            }
-            elsif (/^version:\s+(.*)/) {
+            elsif (/^version:\s+(\S*)/) {
                 $version ||= $1;
+                $version =~ s/^['"]|['"]$//g;
             }
         }
         close OLD_META;
         close META;
     }
-    
+
     if ((!$name or !$version) and open(MAKEFILE, "Makefile")) {
         while (<MAKEFILE>) {
             if (/^DISTNAME\s+=\s+(.*)$/) {
@@ -127,11 +121,11 @@ sub blib_to_par {
         elsif (not defined $version) {
             $what = 'version';
         }
-        
+
         carp("I was unable to determine the $what of the PAR distribution. Please create a Makefile or META.yml file from which we can infer the information or just specify the missing information as an option to blib_to_par.");
         return();
     }
-    
+
     $name =~ s/\s+$//;
     $version =~ s/\s+$//;
 
@@ -140,7 +134,7 @@ sub blib_to_par {
 
     print META << "YAML" if fileno(META);
 name: $name
-version: $version
+version: '$version'
 build_requires: {}
 conflicts: {}
 dist_name: $file
@@ -205,14 +199,14 @@ sub _build_blib {
     }
 }
 
-#line 401
+#line 391
 
 sub install_par {
     my %args = &_args;
     _install_or_uninstall(%args, action => 'install');
 }
 
-#line 422
+#line 412
 
 sub uninstall_par {
     my %args = &_args;
@@ -229,7 +223,7 @@ sub _install_or_uninstall {
 
     require Cwd;
     my $old_dir = Cwd::cwd();
-    
+
     my ($dist, $tmpdir) = _unzip_to_tmpdir( dist => $args{dist}, subdir => 'blib' );
 
     if ( open (META, File::Spec->catfile('blib', 'META.yml')) ) {
@@ -259,7 +253,7 @@ sub _install_or_uninstall {
         my $target = _installation_target( File::Spec->curdir, $name, \%args );
         my $custom_targets = $args{custom_targets} || {};
         $target->{$_} = $custom_targets->{$_} foreach keys %{$custom_targets};
-        
+
         my $uninstall_shadows = $args{uninstall_shadows};
         my $verbose = $args{verbose};
         ExtUtils::Install::install($target, $verbose, 0, $uninstall_shadows);
@@ -323,7 +317,7 @@ sub _installation_target {
        $sources{inst_man1dir}   => $Config::Config{installman1dir},
        $sources{inst_man3dir}   => $Config::Config{installman3dir},
     };
-    
+
     # Included for future support for ${flavour}perl external lib installation
 #    if ($Config::Config{flavour_perl}) {
 #        my $ext = File::Spec->catdir($dir, 'blib', 'ext');
@@ -337,7 +331,7 @@ sub _installation_target {
 #        $target->{ $sources{inst_external_include} } = $Config::Config{flavour_install_include};
 #        $target->{ $sources{inst_external_src} }     = $Config::Config{flavour_install_src};
 #    }
-    
+
     # insert user overrides
     foreach my $key (keys %$user) {
         my $value = $user->{$key};
@@ -374,14 +368,14 @@ sub _directory_not_empty {
     return $files;
 }
 
-#line 589
+#line 579
 
 sub sign_par {
     my %args = &_args;
     _verify_or_sign(%args, action => 'sign');
 }
 
-#line 604
+#line 594
 
 sub verify_par {
     my %args = &_args;
@@ -389,7 +383,7 @@ sub verify_par {
     return ( $! == Module::Signature::SIGNATURE_OK() );
 }
 
-#line 633
+#line 623
 
 sub merge_par {
     my $base_par = shift;
@@ -407,7 +401,7 @@ sub merge_par {
     if (not -f $base_par or not -r _ or not -w _) {
         croak "'$base_par' is not a file or you do not have enough permissions to read and modify it.";
     }
-    
+
     foreach (@additional_pars) {
         if (not -f $_ or not -r _) {
             croak "'$_' is not a file or you do not have enough permissions to read it.";
@@ -416,7 +410,7 @@ sub merge_par {
 
     # The unzipping will change directories. Remember old dir.
     my $old_cwd = Cwd::cwd();
-    
+
     # Unzip the base par to a temp. dir.
     (undef, my $base_dir) = _unzip_to_tmpdir(
         dist => $base_par, subdir => 'blib'
@@ -432,7 +426,7 @@ sub merge_par {
     # delete (incorrect) MANIFEST
     unlink File::Spec->catfile($blibdir, 'MANIFEST');
 
-    # extract additional pars and merge    
+    # extract additional pars and merge
     foreach my $par (@additional_pars) {
         # restore original directory because the par path
         # might have been relative!
@@ -461,7 +455,7 @@ sub merge_par {
         );
         my ($vol, $subdir, undef) = File::Spec->splitpath( $add_dir, 1);
         my @dir = File::Spec->splitdir( $subdir );
-    
+
         # merge directory structure
         foreach my $dir (@dirs) {
             my ($v, $d, undef) = File::Spec->splitpath( $dir, 1 );
@@ -482,21 +476,21 @@ sub merge_par {
             );
             File::Copy::copy($file, $target)
               or die "Could not copy '$file' to '$target': $!";
-            
+
         }
         chdir($old_cwd);
         File::Path::rmtree([$add_dir]);
     }
-    
+
     # delete (copied) MANIFEST and META.yml
     unlink File::Spec->catfile($blibdir, 'MANIFEST');
     unlink File::Spec->catfile($blibdir, 'META.yml');
-    
+
     chdir($base_dir);
     my $resulting_par_file = Cwd::abs_path(blib_to_par(quiet => 1));
     chdir($old_cwd);
     File::Copy::move($resulting_par_file, $base_par);
-    
+
     File::Path::rmtree([$base_dir]);
 }
 
@@ -523,7 +517,7 @@ sub _merge_meta {
 
   _merge_provides($orig_tree, $extra_tree);
   _merge_requires($orig_tree, $extra_tree);
-  
+
   $yaml_functions->{DumpFile}->($meta_orig_file, $orig_meta);
 
   return 1;
@@ -558,7 +552,7 @@ sub _merge_requires {
   foreach my $type (qw(requires build_requires configure_requires recommends)) {
     next if not exists $extra_hash->{$type};
     $orig_hash->{$type} ||= {};
-    
+
     # one level clone is enough wrt META spec 1.4
     foreach my $module (keys %{ $extra_hash->{$type} }) {
       # FIXME there should be a version comparison here, BUT how are we going to do that without a guaranteed version.pm?
@@ -567,7 +561,7 @@ sub _merge_requires {
   }
 }
 
-#line 822
+#line 812
 
 sub remove_man {
     my %args = &_args;
@@ -585,10 +579,10 @@ sub remove_man {
     if (not -f $par or not -r _ or not -w _) {
         croak "'$par' is not a file or you do not have enough permissions to read and modify it.";
     }
-    
+
     # The unzipping will change directories. Remember old dir.
     my $old_cwd = Cwd::cwd();
-    
+
     # Unzip the base par to a temp. dir.
     (undef, my $base_dir) = _unzip_to_tmpdir(
         dist => $par, subdir => 'blib'
@@ -609,19 +603,19 @@ sub remove_man {
                map  { File::Spec->catfile('blib', $_) }
                readdir DIRECTORY;
     close DIRECTORY;
-    
+
     File::Path::rmtree(\@dirs);
-    
+
     chdir($base_dir);
     my $resulting_par_file = Cwd::abs_path(blib_to_par());
     chdir($old_cwd);
     File::Copy::move($resulting_par_file, $par);
-    
+
     File::Path::rmtree([$base_dir]);
 }
 
 
-#line 888
+#line 878
 
 sub get_meta {
     my %args = &_args;
@@ -632,7 +626,7 @@ sub get_meta {
 
     # The unzipping will change directories. Remember old dir.
     my $old_cwd = Cwd::cwd();
-    
+
     # Unzip the base par to a temp. dir.
     (undef, my $base_dir) = _unzip_to_tmpdir(
         dist => $dist, subdir => 'blib'
@@ -644,18 +638,18 @@ sub get_meta {
     if (not -r $meta) {
         return undef;
     }
-    
+
     open FH, '<', $meta
       or die "Could not open file '$meta' for reading: $!";
-    
+
     local $/ = undef;
     my $meta_text = <FH>;
     close FH;
-    
+
     chdir($old_cwd);
-    
+
     File::Path::rmtree([$base_dir]);
-    
+
     return $meta_text;
 }
 
@@ -832,13 +826,15 @@ sub _unzip_to_tmpdir {
     my %args = &_args;
 
     require File::Temp;
+    require Cwd;
 
     my $dist   = File::Spec->rel2abs($args{dist});
-    my $tmpdirname = File::Spec->catdir(File::Spec->tmpdir, "parXXXXX");
-    my $tmpdir = File::Temp::mkdtemp($tmpdirname)        
-      or die "Could not create temporary directory from template '$tmpdirname': $!";
+    my $tmpdir = File::Temp::tempdir("parXXXXX", TMPDIR => 1, CLEANUP => 1)
+      or die "Could not create temporary directory: $!";
+    $tmpdir = Cwd::abs_path($tmpdir);  #  symlinks cause Archive::Zip issues on some systems
     my $path = $tmpdir;
     $path = File::Spec->catdir($tmpdir, $args{subdir}) if defined $args{subdir};
+
     _unzip(dist => $dist, path => $path);
 
     chdir $tmpdir;
@@ -847,14 +843,14 @@ sub _unzip_to_tmpdir {
 
 
 
-#line 1136
+#line 1128
 
 sub parse_dist_name {
     my $file = shift;
     return(undef, undef, undef, undef) if not defined $file;
 
     (undef, undef, $file) = File::Spec->splitpath($file);
-    
+
     my $version = qr/v?(?:\d+(?:_\d+)?|\d*(?:\.\d+(?:_\d+)?)+)/;
     $file =~ s/\.(?:par|tar\.gz|tar)$//i;
     my @elem = split /-/, $file;
@@ -873,7 +869,7 @@ sub parse_dist_name {
         }
         push @dn, $e;
     }
-    
+
     my $dn;
     $dn = join('-', @dn) if @dn;
 
@@ -896,26 +892,26 @@ sub parse_dist_name {
     return($dn, $dv, $arch, $pv);
 }
 
-#line 1212
+#line 1204
 
 sub generate_blib_stub {
     my %args = &_args;
     my $dist = $args{dist};
     require Config;
-    
+
     my $name    = $args{name};
     my $version = $args{version};
     my $suffix  = $args{suffix};
 
     my ($parse_name, $parse_version, $archname, $perlversion)
       = parse_dist_name($dist);
-    
+
     $name ||= $parse_name;
     $version ||= $parse_version;
     $suffix = "$archname-$perlversion"
       if (not defined $suffix or $suffix eq '')
          and $archname and $perlversion;
-    
+
     $suffix ||= "$Config::Config{archname}-$Config::Config{version}";
     if ( grep { not defined $_ } ($name, $version, $suffix) ) {
         warn "Could not determine distribution meta information from distribution name '$dist'";
@@ -928,7 +924,7 @@ sub generate_blib_stub {
           or die "Could not open META.yml file for writing: $!";
         print META << "YAML" if fileno(META);
 name: $name
-version: $version
+version: '$version'
 build_requires: {}
 conflicts: {}
 dist_name: $name-$version-$suffix.par
@@ -948,7 +944,7 @@ YAML
 }
 
 
-#line 1280
+#line 1272
 
 sub contains_binaries {
     require File::Find;
@@ -960,7 +956,7 @@ sub contains_binaries {
 
     # The unzipping will change directories. Remember old dir.
     my $old_cwd = Cwd::cwd();
-    
+
     # Unzip the base par to a temp. dir.
     (undef, my $base_dir) = _unzip_to_tmpdir(
         dist => $dist, subdir => 'blib'
@@ -978,9 +974,9 @@ sub contains_binaries {
     );
 
     chdir($old_cwd);
-    
+
     File::Path::rmtree([$base_dir]);
-    
+
     return $found ? 1 : 0;
 }
 
@@ -1072,4 +1068,4 @@ sub _check_tools {
 
 1;
 
-#line 1429
+#line 1423

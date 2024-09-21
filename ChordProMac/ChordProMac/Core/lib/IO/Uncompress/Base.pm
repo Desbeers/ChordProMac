@@ -10,12 +10,12 @@ our (@ISA, $VERSION, @EXPORT_OK, %EXPORT_TAGS);
 @ISA    = qw(IO::File Exporter);
 
 
-$VERSION = '2.102';
+$VERSION = '2.204';
 
 use constant G_EOF => 0 ;
 use constant G_ERR => -1 ;
 
-use IO::Compress::Base::Common 2.101 ;
+use IO::Compress::Base::Common 2.204 ;
 
 use IO::File ;
 use Symbol;
@@ -1007,6 +1007,11 @@ sub nextStream
 {
     my $self = shift ;
 
+    # An uncompressed file cannot have a next stream, so
+    # return immediately.
+    return 0
+        if *$self->{Plain} ;
+
     my $status = $self->gotoNextStream();
     $status == 1
         or return $status ;
@@ -1524,4 +1529,4 @@ package IO::Uncompress::Base ;
 1 ;
 __END__
 
-#line 1569
+#line 1574

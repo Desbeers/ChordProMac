@@ -4,7 +4,7 @@ package File::Spec::Unix;
 use strict;
 use Cwd ();
 
-our $VERSION = '3.80';
+our $VERSION = '3.88';
 $VERSION =~ tr/_//d;
 
 #line 42
