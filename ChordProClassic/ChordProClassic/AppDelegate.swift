@@ -14,20 +14,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func application(_ sender: NSApplication, open urls: [URL]) {
     // Use open, not openFiles!
-        print("appDelegate dropped urls:", urls) // diagnostic
-        Logger.application.debug("Something dropped...")
+        print("appDelegate dropped urls:", urls)
         open = urls.first
     }
     
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        
-        
-        let arguments = ProcessInfo.processInfo.arguments
-        
-        dump(arguments)
-        
-        Logger.application.debug("Classic did start!!")
         
         // https://stackoverflow.com/questions/40875935/how-do-i-replace-the-current-swift-script-process-with-a-different-one
         
