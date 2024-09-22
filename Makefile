@@ -18,9 +18,7 @@ chordpro:
 	@echo "Copy core to the wrapper..."
 	rm -fr "${COREDIR}"
 	$(MKDIR) -p "${COREDIR}"
-	cp -r "${DEST}/ChordProSource/pp/macosswift/ChordProMac/ChordProMac/Bin/" "${COREDIR}"
-	@echo "Remove the static info (not needed anymore)..."
-	rm -f "${COREDIR}/ChordProInfo.json"
+	cp -r "${DEST}/ChordProSource/pp/macosswift/${COREDIR}" "${COREDIR}"
 
 xcodebuild:
 	@echo "Building ChordProMac for Apple Silicone"
@@ -46,7 +44,7 @@ archive: xcodebuild
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	# Create the DMG
 	bash Resources/Create-dmg/create-dmg \
-	  --volname "ChordPro Installer" \
+	  --volname "ChordPro Development Version" \
 	  --background "Resources/installer_background.png" \
 	  --eula "Resources/eula.rtf" \
 	  --window-pos 200 120 \
