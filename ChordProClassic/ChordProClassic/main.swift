@@ -16,7 +16,7 @@ let delegate = AppDelegate()
 app.delegate = delegate
 
 
-Logger.application.info("ARG: \(CommandLine.arguments.joined(separator: "-"), privacy: .public)")
+//Logger.application.info("ARG: \(CommandLine.arguments.joined(separator: "-"), privacy: .public)")
 
 // 2
 _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)

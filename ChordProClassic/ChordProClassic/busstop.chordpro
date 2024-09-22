@@ -1,0 +1,51 @@
+{title: Busstop}
+{subtitle: Hollies}
+{key: Am}
+{tag: testing...}
+
+{comment: Just a beatiful song; a bit mangled for dev purpose }
+
+{sov} 
+[Am]Bus stop, [G]wet day, [Am]she's there, [G]I say
+[Am]Please share my umbrella
+[Am]Bus stop, [G]bus goes, [Am]she stays, [G]love grows
+[Am]Under my umbrella
+{comment: This verse has no label}
+{eov}
+ 
+{sov}
+[C]All that [G]summer [Am]we enjoyed it
+[Dm]Wind and rain and [Em]shine
+[Am]That um[G]brella, [Am]we em[G]ployed it
+By [Em]August, she was [Am]mine
+{eov}
+
+{soc: Refrein met Label} 
+[C]Every morning [B7]I would see her [Em]waiting [D]at the [C]stop.
+Sometimes she'd [Am]shopped and she would [B7]show me what she'd [Em]bought.[B7]
+[C]All the people [B7]stared as if we [Em]were both [D]quite in[C]sane
+Someday my [Am]name and hers are [B7]going to be the [Em]same
+{eoc} 
+
+{soc} 
+[C]Every morning [B7]I would see her [Em]waiting [D]at the [C]stop.
+Sometimes she'd [Am]shopped and she would [B7]show me what she'd [Em]bought.[B7]
+[C]All the people [B7]stared as if we [Em]were both [D]quite in[C]sane
+Someday my [Am]name and hers are [B7]going to be the [Em]same
+{eoc} 
+ 
+{start_of_verse} 
+[Am]That's the [G]way the [Am]whole thing [G]started
+[Am]Silly but it's true
+[Am]Thinking [G]of a [Am]sweet ro[G]mance
+Be[Am]ginning in a queue
+{end_of_verse}
+
+{chorus}
+
+{sov} 
+[C]Came the[G] sun the[Am] ice was melting
+[Dm]No more sheltering [Em]now
+[Am]Nice to [G]think that [Am]that umbre[G]lla
+[Em]Led me to a [Am]vow
+{eov}
