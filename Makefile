@@ -18,7 +18,7 @@ chordpro:
 	@echo "Copy core to the wrapper..."
 	rm -fr "${COREDIR}"
 	$(MKDIR) -p "${COREDIR}"
-	cp -r "${DEST}/ChordProSource/pp/macosswift/${COREDIR}" "${COREDIR}"
+	cp -r "${DEST}/ChordProSource/pp/macosswift/${COREDIR}/" "${COREDIR}"
 
 xcodebuild:
 	@echo "Building ChordProMac for Apple Silicone"

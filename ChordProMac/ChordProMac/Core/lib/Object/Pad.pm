@@ -3,9 +3,9 @@
 #
 #  (C) Paul Evans, 2019-2024 -- leonerd@leonerd.org.uk
 
-package Object::Pad 0.812;
+package Object::Pad 0.814;
 
-use v5.14;
+use v5.18;
 use warnings;
 
 use Carp;
@@ -762,6 +762,10 @@ they appear within are permitted.
 
 =head2 has
 
+I<Since version 0.813> this keyword is no longer recognised.
+
+It used to be an earlier version of what is now the L</field> keyword.
+
    has $var;
    has @var;
    has %var;
@@ -770,16 +774,8 @@ they appear within are permitted.
 
    has $var { BLOCK }
 
-A now-deprecated older version of the L</field> keyword.
-
-This generally behaves like C<field>, except that inline expressions are
-evaluated immediately, once, during class declaration time. These are I<not>
-stored to be evaluated for each constructor.
-
 Because of the one-shot immediate nature of these initialisation expressions
-(and a bunch of other reasons), the C<has> keyword is now discouraged for use
-and will emit compile-time warnings in the C<deprecated> category. Use the
-C<field> keyword instead.
+(and a bunch of other reasons), the keyword was removed.
 
 If you need to evaluate an expression exactly once during the class
 declaration and assign its now-constant value to every instace, store it in a
@@ -905,6 +901,27 @@ useful in roles, to create internal helper methods without letting those
 methods be visible to callers, or risking their names colliding with other
 named methods defined on the consuming class.
 
+=head2 my method
+
+   my method NAME { ... }
+
+I<Since version 0.814> lexical method declarations are supported using the
+C<my> keyword prefix. These become available as lexical functions, rather than
+being stored in the class package. As a result, they are not available by
+named method resolution, package C<< ->can >> lookup, or via the MOP. These
+are a convenient alternative to the syntax given above, where the method is
+stored anonymously via a lexical variable.
+
+Since lexical methods are not visible to named method resolution, they must be
+invoked by function-call syntax, remembering to pass in the invocant as the
+first argument:
+
+   my method inner { ... }
+
+   method outer {
+      inner($self, @args);
+   }
+
 =head2 BUILD
 
    BUILD {
@@ -991,7 +1008,7 @@ consumes additional constructor parameters by assigning them into lexical
 variables.
 
 Before the block itself, a list of lexical variables are introduced, inside
-parentheses. The name of each one is preceeded by a colon, and consumes a
+parentheses. The name of each one is preceded by a colon, and consumes a
 constructor parameter of the same name. These parameters are considered
 "consumed" for the purposes of a C<:strict(params)> check.
 
