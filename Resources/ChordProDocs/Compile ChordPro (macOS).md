@@ -9,8 +9,8 @@ While it is not too easy to build **ChordPro** from source, it is doable. It wil
 This is needed to build any of the three options:
 
 - Command Line version
-- SwiftUI GUI version
-- Classic version
+- SwiftUI GUI version for macOS Monterey or higher
+- Classic GUI version
 
 ### Homebrew
 
@@ -49,7 +49,9 @@ In the Terminal:
 
 ***Note**: Sometimes, ChordPro will add new dependencies. If compiling does not work anymore after a checkout, run above comment again.*
 
-This will install most of the needed dependencies, but not all. Extra dependencies you have to install:
+This will install most of the needed dependencies, but not all.
+
+Extra dependencies you have to install:
 
 	cpanm HarfBuzz::Shaper
 	cpanm Mozilla::CA
@@ -98,6 +100,8 @@ Instal an additional formula:
 	
 ### Perl
 
+Extra dependencies you have to install:
+
 	cpanm Alien::wxWidgets
 	cpanm ExtUtils::XSpp
 
@@ -115,7 +119,10 @@ Go to the `pp/macos` directory again and build ChordPro:
 
 	make
 	
-That should give you a DMG build, usable for the architecture of the Mac you are using now.
+This will build a DMG for the architecture of the Mac you are using now.
 
-***Note**: The *wxGUI* is currently ‘Intel only’ but works on Apple Silicone with Rosetta; however, the included libraries are  architecture-specific... So a Classic build on an Apple Silicon Mac will currently **not** run on Intel!*.
+***Note**: An Apple Silicon version will be ad-hoc signed or else it will simply not run.*
+
+You should now have a DMG in the `pp/macos` directory that is ready to use.
+
 
