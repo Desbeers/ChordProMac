@@ -10,6 +10,7 @@
 		D71C4C262CA06C5F00E9D6DC /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71C4C252CA06C5F00E9D6DC /* AppDelegate.swift */; };
 		D71C4C2A2CA06C5F00E9D6DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D71C4C292CA06C5F00E9D6DC /* Assets.xcassets */; };
 		D71C4C352CA06CD300E9D6DC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71C4C342CA06CD300E9D6DC /* main.swift */; };
+		D7C051232CA070A300E1171E /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C051222CA070A300E1171E /* Logger.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		D71C4C2E2CA06C5F00E9D6DC /* ChordProClassic.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ChordProClassic.entitlements; sourceTree = "<group>"; };
 		D71C4C342CA06CD300E9D6DC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D71C4C362CA06E1700E9D6DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		D7C051222CA070A300E1171E /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,6 +58,7 @@
 				D71C4C292CA06C5F00E9D6DC /* Assets.xcassets */,
 				D71C4C2E2CA06C5F00E9D6DC /* ChordProClassic.entitlements */,
 				D71C4C342CA06CD300E9D6DC /* main.swift */,
+				D7C051222CA070A300E1171E /* Logger.swift */,
 			);
 			path = ChordProClassic;
 			sourceTree = "<group>";
@@ -130,6 +133,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D71C4C352CA06CD300E9D6DC /* main.swift in Sources */,
+				D7C051232CA070A300E1171E /* Logger.swift in Sources */,
 				D71C4C262CA06C5F00E9D6DC /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
