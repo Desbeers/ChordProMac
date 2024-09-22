@@ -12,3 +12,4 @@ build/
 
 ## Mac stuff
 .DS_Store
+/TestBuild
