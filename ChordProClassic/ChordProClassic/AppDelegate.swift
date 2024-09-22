@@ -9,6 +9,16 @@ import Cocoa
 import OSLog
 
 class AppDelegate: NSObject, NSApplicationDelegate {
+    
+    var open: URL?
+    
+    func application(_ sender: NSApplication, open urls: [URL]) {
+    // Use open, not openFiles!
+        print("appDelegate dropped urls:", urls) // diagnostic
+        Logger.application.debug("Something dropped...")
+        open = urls.first
+    }
+    
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         
@@ -17,16 +27,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         dump(arguments)
         
-        Logger.application.info("Classic did start!!")
+        Logger.application.debug("Classic did start!!")
         
         // https://stackoverflow.com/questions/40875935/how-do-i-replace-the-current-swift-script-process-with-a-different-one
         
         var args: [String] = [""]
         
-        if let song = Bundle.main.url(forResource: "busstop", withExtension: "chordpro") {
-            args.append("\(song.path)")
+        if let open {
+            args.append("\(open.path)")
         }
-
         // Array of UnsafeMutablePointer<Int8>
         let cargs = args.map { strdup($0) } + [nil]
 

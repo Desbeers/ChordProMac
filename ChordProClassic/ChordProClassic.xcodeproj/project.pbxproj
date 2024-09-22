@@ -11,7 +11,6 @@
 		D71C4C2A2CA06C5F00E9D6DC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D71C4C292CA06C5F00E9D6DC /* Assets.xcassets */; };
 		D71C4C352CA06CD300E9D6DC /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71C4C342CA06CD300E9D6DC /* main.swift */; };
 		D7C051232CA070A300E1171E /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C051222CA070A300E1171E /* Logger.swift */; };
-		D7C051252CA07E3A00E1171E /* busstop.chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7C051242CA07E3A00E1171E /* busstop.chordpro */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,7 +21,6 @@
 		D71C4C342CA06CD300E9D6DC /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		D71C4C362CA06E1700E9D6DC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D7C051222CA070A300E1171E /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
-		D7C051242CA07E3A00E1171E /* busstop.chordpro */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = busstop.chordpro; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,7 +58,6 @@
 				D71C4C292CA06C5F00E9D6DC /* Assets.xcassets */,
 				D71C4C2E2CA06C5F00E9D6DC /* ChordProClassic.entitlements */,
 				D71C4C342CA06CD300E9D6DC /* main.swift */,
-				D7C051242CA07E3A00E1171E /* busstop.chordpro */,
 				D7C051222CA070A300E1171E /* Logger.swift */,
 			);
 			path = ChordProClassic;
@@ -125,7 +122,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				D71C4C2A2CA06C5F00E9D6DC /* Assets.xcassets in Resources */,
-				D7C051252CA07E3A00E1171E /* busstop.chordpro in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,7 +194,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 13.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
