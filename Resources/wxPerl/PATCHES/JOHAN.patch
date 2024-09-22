@@ -1,0 +1,59 @@
+*** Wx-0.9932/ext/dnd/XS/DataObject.xs~	2014-03-08 14:01:25.000000000 +0100
+--- Wx-0.9932/ext/dnd/XS/DataObject.xs	2023-09-20 14:55:20.891828638 +0200
+***************
+*** 15,21 ****
+  
+  MODULE=Wx PACKAGE=Wx::DataFormat
+  
+! #ifdef __WXGTK20__
+  
+  wxDataFormat*
+  newNative( dummy, format = wxDF_INVALID )
+--- 15,21 ----
+  
+  MODULE=Wx PACKAGE=Wx::DataFormat
+  
+! #if defined(__WXGTK20__) || defined(__WXMAC__)
+  
+  wxDataFormat*
+  newNative( dummy, format = wxDF_INVALID )
+***************
+*** 347,350 ****
+  wxURLDataObject::SetURL( url )
+      wxString url
+  
+! #endif
+\ No newline at end of file
+--- 347,350 ----
+  wxURLDataObject::SetURL( url )
+      wxString url
+  
+! #endif
+*** Wx-0.9932/XS/TextCtrl.xsp~	2014-03-08 14:01:15.000000000 +0100
+--- Wx-0.9932/XS/TextCtrl.xsp	2023-09-20 14:58:34.393328438 +0200
+***************
+*** 142,147 ****
+--- 142,150 ----
+  #if defined( __WXMAC__ ) && WXPERL_W_VERSION_GE( 2, 8, 0 )
+      void MacCheckSpelling( bool check );
+  #endif
++ #if defined( __WXMAC__ ) && WXPERL_W_VERSION_GE( 3, 2, 0 )
++     void OSXDisableAllSmartSubstitutions();
++ #endif
+  };
+  
+  %{
+*** Wx-0.9932-macOS-wx3.2/Constant.xs~	2023-09-20 15:02:28.292727098 +0200
+--- Wx-0.9932-macOS-wx3.2/Constant.xs	2023-09-20 16:04:44.273050241 +0200
+***************
+*** 1747,1752 ****
+--- 1747,1755 ----
+      r( wxID_EDIT );                     // id
+      r( wxID_FILE );                     // id
+  #endif
++ #if WXPERL_W_VERSION_GE( 3, 0, 0 )
++     r( wxID_EXECUTE );                  // id
++ #endif
+      r( wxID_FILEDLGG );                 // id
+      r( wxID_ICONIZE_FRAME );            // id
+      r( wxID_MAXIMIZE_FRAME );           // id

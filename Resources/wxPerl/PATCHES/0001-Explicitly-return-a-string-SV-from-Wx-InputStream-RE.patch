@@ -1,0 +1,37 @@
+From 41bcb4f309b5a8f13dfa9c6d417369938cbe6060 Mon Sep 17 00:00:00 2001
+From: Niko Tyni <ntyni@debian.org>
+Date: Sun, 10 Jul 2022 16:53:10 +0100
+Subject: [PATCH] Explicitly return a string SV from Wx::InputStream::READLINE
+
+Perl 5.35.9 changed SV integer / string handling slightly, resulting in
+the return value from READLINE() to evaluate as false regardless of its
+string contents, because it is initially created as the integer 0 and no
+longer gets marked as a valid string. This broke the Wx-Perl-ProcessStream
+distribution test suite.
+
+Fix the regression by explicitly setting SvPOK on the return value,
+mirroring the sibling READ() method.
+
+Bug-Debian: https://bugs.debian.org/1014295
+Bug: https://rt.cpan.org/Ticket/Display.html?id=143774
+Forwarded: https://rt.cpan.org/Ticket/Display.html?id=143774
+
+---
+ XS/Stream.xs | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/XS/Stream.xs b/XS/Stream.xs
+index b6ef184..f680394 100644
+--- a/XS/Stream.xs
++++ b/XS/Stream.xs
+@@ -97,6 +97,7 @@ Wx_InputStream::READLINE()
+     if( THIS->Eof() ) { XSRETURN_UNDEF; }
+     RETVAL = newSViv( 0 );
+     buff = SvPV_nolen( RETVAL );
++    SvPOK_on( RETVAL );
+ 
+     while( THIS->CanRead() && THIS->Read( &c, 1 ).LastRead() != 0 )
+     {
+-- 
+2.35.2
+

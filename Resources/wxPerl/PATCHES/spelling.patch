@@ -1,0 +1,40 @@
+Description: Fix a small spelling mistake
+Bug: https://rt.cpan.org/Ticket/Display.html?id=70363
+Forwarded: https://rt.cpan.org/Ticket/Display.html?id=70363
+Author: Damyan Ivanov <dmn@debian.org>
+Reviewed-by: gregor herrmann <gregoa@debian.org>
+Last-Update: 2017-06-23
+
+--- a/cpp/overload.cpp
++++ b/cpp/overload.cpp
+@@ -145,7 +145,7 @@
+                            wxPliPrototype* prototypes[] )
+ {
+     dXSARGS; // restore the mark we implicitly popped in dMARK!
+-    SV* message = newSVpv( "Availble methods:\n", 0 );
++    SV* message = newSVpv( "Available methods:\n", 0 );
+     sv_2mortal( message );
+ 
+     for( int j = 0; prototypes[j]; ++j )
+--- a/Wx.pm
++++ b/Wx.pm
+@@ -322,7 +322,7 @@
+ 
+ For wxWidgets 2.9.3 and greater, Wx can switch runtime assertions on
+ and off. In wxWidgets 2.9.x and above, there are three levels of
+-debuging
++debugging
+ 
+ 0 - No debug assertions
+ 1 - Low cost debug assertions
+--- a/ext/socket/lib/Wx/Socket.pm
++++ b/ext/socket/lib/Wx/Socket.pm
+@@ -205,7 +205,7 @@
+     ## SetEventHandler
+     EVT_SOCKET($handler, $id , sub{...} )
+ 
+-To make the events easier to use, all the proccess is automatic,
++To make the events easier to use, all the process is automatic,
+ and you just use:
+ 
+     EVT_SOCKET_INPUT($handler , $socket , sub{...} )
