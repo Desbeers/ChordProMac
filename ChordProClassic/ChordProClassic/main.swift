@@ -19,6 +19,7 @@ _ = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
 
 // MARK: The Application Delegate
 
+@available(macOS 10.15, *)
 class AppDelegate: NSObject, NSApplicationDelegate {
     /// The optional URL to open
     var open: URL?
