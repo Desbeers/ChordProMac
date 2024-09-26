@@ -27,14 +27,16 @@ struct PreviewPDFButton: View {
                 if sceneState.preview.data == nil || replacePreview {
                     showPreview()
                 } else {
+                    sceneState.showPreview = false
                     sceneState.preview.data = nil
                 }
             },
             label: {
-                Label(label, systemImage: sceneState.preview.data == nil ? "eye" : "eye.fill")
+                Label(label, systemImage: sceneState.showPreview ? "eye.fill" : "eye")
             }
         )
         .help("Preview the PDF")
+        .disabled(!sceneState.showEditor)
         .task(id: sceneState.customTask) {
             if sceneState.customTask != nil {
                 /// Show a preview with the task
@@ -53,9 +55,10 @@ struct PreviewPDFButton: View {
         if let document {
             Task {
                 do {
-                    let pdf = try await sceneState.exportPDF(text: document.document.text)
+                    let pdf = try await sceneState.exportPDF(text: document.document.text, replace: true)
                     /// Show the preview
                     sceneState.preview.data = pdf.data
+                    sceneState.showPreview = true
                 } catch {
                     Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                 }

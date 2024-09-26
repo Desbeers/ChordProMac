@@ -28,7 +28,7 @@ import SwiftUI
                     }
             } else {
                 MainView(file: file.fileURL)
-                    .frame(minWidth: 680, minHeight: 480)
+                    .frame(minHeight: 680)
                     .environmentObject(appState)
                 /// Give the scene access to the document
                     .focusedSceneValue(\.document, file)
@@ -57,6 +57,10 @@ import SwiftUI
                 PrintPDFButton(label: "Print…")
                     .environmentObject(appState)
             }
+//            CommandGroup(after: .toolbar) {
+//                FontSizeButtons()
+//                    .environmentObject(appState)
+//            }
             CommandMenu("Songbook") {
                 Button("Export Folder…") {
                     appDelegate.closeWelcomeWindow()
@@ -76,7 +80,7 @@ import SwiftUI
 
         Settings {
             SettingsView()
-                .frame(width: 300, height: 440)
+                .frame(width: 320, height: 440)
                 .environmentObject(appState)
         }
     }

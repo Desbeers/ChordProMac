@@ -1,0 +1,11 @@
+pdf {
+    // The font families.
+    fontconfig {
+      sans {
+        ""         : FreeSans.ttf
+        bold       : FreeSansBold.ttf
+        bolditalic : FreeSansBoldOblique.ttf
+        italic     : FreeSansOblique.ttf
+      }
+    }
+}

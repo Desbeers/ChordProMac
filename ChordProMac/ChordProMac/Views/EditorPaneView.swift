@@ -17,7 +17,7 @@ struct EditorPaneView: View {
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
-        if let document {
+        if sceneState.showEditor, let document {
             ChordProEditor(
                 text: document.$document.text,
                 settings: appState.settings.editor,

@@ -19,7 +19,7 @@ struct PreviewPaneView: View {
     @State private var annotations: [(userName: String, contents: String)] = []
     /// The body of the `View`
     var body: some View {
-        if let data = sceneState.preview.data {
+        if sceneState.showPreview, let data = sceneState.preview.data {
             Divider()
             AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
                 .overlay(alignment: .top) {
@@ -47,6 +47,9 @@ struct PreviewPaneView: View {
                 .onChange(of: document?.document.text) { _ in
                     sceneState.preview.outdated = true
                 }
+        } else if sceneState.showPreview || !sceneState.showEditor {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }
