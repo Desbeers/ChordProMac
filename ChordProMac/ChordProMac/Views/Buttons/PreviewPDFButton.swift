@@ -18,7 +18,7 @@ struct PreviewPDFButton: View {
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
-    /// The document in the environment
+    /// The observable state of the document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
@@ -55,7 +55,7 @@ struct PreviewPDFButton: View {
         if let document {
             Task {
                 do {
-                    let pdf = try await sceneState.exportPDF(text: document.document.text, replace: true)
+                    let pdf = try await sceneState.exportToPDF(text: document.document.text, replace: true)
                     /// Show the preview
                     sceneState.preview.data = pdf.data
                     sceneState.showPreview = true

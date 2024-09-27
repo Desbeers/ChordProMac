@@ -57,10 +57,6 @@ import SwiftUI
                 PrintPDFButton(label: "Print…")
                     .environmentObject(appState)
             }
-//            CommandGroup(after: .toolbar) {
-//                FontSizeButtons()
-//                    .environmentObject(appState)
-//            }
             CommandMenu("Songbook") {
                 Button("Export Folder…") {
                     appDelegate.closeWelcomeWindow()

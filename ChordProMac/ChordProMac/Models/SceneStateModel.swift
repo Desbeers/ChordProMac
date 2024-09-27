@@ -84,7 +84,7 @@ extension SceneStateModel {
     ///   - title: The title of the export (for a songbook)
     ///   - subtitle: The subtitle of the export (for a songbook)
     /// - Returns: The PDF as `Data` and the status as ``AppError``
-    @MainActor func exportPDF(
+    @MainActor func exportToPDF(
         text: String,
         replace: Bool = false,
         fileList: Bool = false,

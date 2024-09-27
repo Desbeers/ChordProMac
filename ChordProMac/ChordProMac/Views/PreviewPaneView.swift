@@ -13,7 +13,7 @@ struct PreviewPaneView: View {
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
-    /// The document in the environment
+    /// The observable state of the document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// Optional annotations in the PDF
     @State private var annotations: [(userName: String, contents: String)] = []

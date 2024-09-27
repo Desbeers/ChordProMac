@@ -16,7 +16,7 @@ struct MainView: View {
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
     @StateObject private var sceneState = SceneStateModel()
-    /// The document in the environment
+    /// The observable state of the document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
@@ -71,7 +71,7 @@ struct MainView: View {
                 /// Create the preview unless we show only the editor
                 if appState.settings.application.openSongAction != .editorOnly {
                     do {
-                        let pdf = try await sceneState.exportPDF(text: document?.document.text ?? "error")
+                        let pdf = try await sceneState.exportToPDF(text: document?.document.text ?? "error")
                         /// Show the preview
                         sceneState.preview.data = pdf.data
                         sceneState.showPreview = true
