@@ -30,6 +30,7 @@ struct PreviewPaneView: View {
                 .overlay(alignment: .bottom) {
                     if appState.settings.chordPro.debug, !annotations.isEmpty {
                         ScrollView(.horizontal) {
+                            //Divider()
                             HStack {
                                 Text("Debug:")
                                     .font(.headline)
@@ -39,9 +40,7 @@ struct PreviewPaneView: View {
                             }
                             .padding()
                         }
-                        .background(Color(nsColor: .textBackgroundColor.withAlphaComponent(0.9)))
-                        .border(.secondary)
-                        .padding()
+                        .background(.ultraThinMaterial)
                     }
                 }
                 .onChange(of: document?.document.text) { _ in
@@ -68,7 +67,7 @@ extension PreviewPaneView {
                 showPopover = true
 
             }, label: {
-                Text(annotation.userName)
+                Text(annotation.userName.replacingOccurrences(of: "ChordPro", with: ""))
             })
             .popover(isPresented: $showPopover) {
                 ScrollView {
