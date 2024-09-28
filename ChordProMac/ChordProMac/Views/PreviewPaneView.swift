@@ -30,7 +30,6 @@ struct PreviewPaneView: View {
                 .overlay(alignment: .bottom) {
                     if appState.settings.chordPro.debug, !annotations.isEmpty {
                         ScrollView(.horizontal) {
-                            //Divider()
                             HStack {
                                 Text("Debug:")
                                     .font(.headline)
@@ -40,7 +39,7 @@ struct PreviewPaneView: View {
                             }
                             .padding()
                         }
-                        .background(.ultraThinMaterial)
+                        .background(.ultraThinMaterial.opacity(0.8))
                     }
                 }
                 .onChange(of: document?.document.text) { _ in
