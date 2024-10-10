@@ -21,7 +21,7 @@ final class AppStateModel: ObservableObject {
         }
     }
     /// The content for a new document
-    @Published var newDocumentContent: String = ""
+    @Published var newDocumentContent: String = ChordProDocument.newText
     /// The **ChordPro** information
     @Published var chordProInfo: ChordProInfo?
     /// The list of known directives

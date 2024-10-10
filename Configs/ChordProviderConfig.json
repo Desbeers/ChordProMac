@@ -6,7 +6,7 @@
 //
 // - Note: Include must be included (haha) as an array or else it only takes the last 'include'
 //
-include: [ my-guitar-chords, my-metadata, my-font ]
+include: [ my-guitar-chords, my-metadata, my-fonts ]
 
 // I like the diagrams sorted by name; not by appearance in the song
 diagrams.sorted: true
