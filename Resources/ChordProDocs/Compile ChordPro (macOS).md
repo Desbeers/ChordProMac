@@ -47,14 +47,9 @@ In the Terminal:
 
 ***Note**: Don’t forget the ‘.’ at the end!*
 
+This will install all the needed dependencies to build *ChordPro*.
+
 ***Note**: Sometimes, ChordPro will add new dependencies. If compiling does not work anymore after a checkout, run above comment again.*
-
-This will install most of the needed dependencies, but not all.
-
-Extra dependencies you have to install:
-
-	cpanm HarfBuzz::Shaper
-	cpanm Mozilla::CA
 
 Now you can build the CLI version of *ChordPro*:
 
@@ -105,9 +100,9 @@ Extra dependencies you have to install:
 	cpanm Alien::wxWidgets
 	cpanm ExtUtils::XSpp
 
-Now comes the biggest challenge; install xwPerl from source. Unfortunately, wxPerl is currently not well maintained and I (Desbeers) just dumped my patched version on my [ChordProMac](https://github.com/Desbeers/ChordProMac) dev repository in the `Resources` folder.
+Now comes the biggest challenge; install xwPerl from source. Unfortunately, wxPerl is currently not well maintained and Johan Vromans, the maintainer of *ChordPro*, created an independent fork. [Download](https://github.com/sciurius/wxPerl) the latest release from his repo.
 
-So, assuming you use my patched version, open the `Wx-0.xxxx` folder in the terminal and do the following:
+Open the `Wx-x.xxx` folder in the terminal and do the following:
 
 	perl ./Makefile.PL
 	make
