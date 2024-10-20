@@ -22,23 +22,39 @@ It needs a lot of time, effort and yeh... money for developers to provide such a
 
 That is not realistic for must users, especially not on the Mac. We would love to provide you the expected experience but we can’t. There is nobody in the **ChordPro** community with an Apple Developers certificate to provide you this *ready to go* experience.
 
-## Installation
+## The Gatekeeper
 
-Your download contains a *almost* ready to go **ChordPro**; except is is *ours* and not *yours* yet. An application on the Mac must be [signed](https://support.apple.com/en-gb/guide/security/sec3ad8e6e53/web) to run. Signed by an approved Apple Developer or signed by you.
+Your download contains an *almost* ready to go **ChordPro**; except that the application is only ad-hoc signed by us and not by an approved Apple Developer with a valid certificate. So, the security system on your Mac will give an error when you double-click the application. You have met the Gatekeeper. Depending of the version of macOS you have a different message and have to do different additional handlings to open **ChordPro**.
 
-Your download is signed by *us* now, not approved by Apple. You can’t run it. If you want to use it; you have to *re-sign* it so it becomes *yours*.
+The message will be more or less like this:
 
-The `Install` script will do this for you if you want.
+> Apple could not verify “ChordPro.app" is free of malware that may harm your Mac or compromise your privacy.
 
-> Open the Terminal application and just *drag and drop* the `Install` script into it. It will explain what it is going to do.
+On macOS versions before 15 (Sequoia) it was common practice to `right-click` the application and choose `Open` from the menu. That trick will bypass the gatekeeper and let you open the application.
 
-**It will not do anything without your permission but by providing your administration password, you will give us a *carte-blanche*.** 
+Unfortunately, that does not work anymore on Sequoia and you have to go trough System Settings:
 
-Just review the script beforehand; there is a good reason it is not *clickable*...
+1. Try to open the application. A prompt saying ”ChordPro.app" Not Opened' may appear.
+2. Go to `System Settings -> Privacy & Security`. Scroll down to find *ChordPro*, and an option to "Open Anyway".
+3. Choose "Open Anyway".
+4. Authenticate as an administrator.
+5. *ChordPro* will now open.
+
+## Install with the Terminal
+
+Your download also contains an `Install` script that can do this for you. Same as with the *ChordPro.app*, you can not just double click to run the script. You have to run it manually in the Terminal yourself:
+
+> Open the **Terminal** application in the `Applications/Utilities` and just *drag and drop* the `Install` script into its window.
+
+It will do the following:
+
+- Copy *ChordPro* to your applications folder
+- Move *ChordPro* out of quarantine so the Gatekeeper will let you start the application with just a double-click.
+- Add the *ChordPro* command-line command to your Terminal \$PATH
+
+**It will not do anything without your permission but by providing your administration password, you will bypass all Apple’s security measurements.**
 
 ## Enjoy!
-
-Hopefully, you will get our application up-and-running!
 
 We hope you appreciate our best efforts.
 
