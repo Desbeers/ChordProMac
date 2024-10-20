@@ -1,0 +1,241 @@
+// My attempt to make a **ChordPro** config matching the PDF output of my **Chord Provider** application
+//
+// I don't need a 100% same result, but close!
+//
+// Comment out my stuff from the CustomLibrary that are not relevant for this template
+//
+// - Note: Include must be included (haha) as an array or else it only takes the last 'include'
+//
+include: [ my-guitar-chords, my-metadata, my-fonts ]
+
+// I like the diagrams sorted by name; not by appearance in the song
+diagrams.sorted: true
+
+/// PDF
+pdf {
+    /// LABELS
+	// I like the spacing by default
+	// - Note: This will also move the ToC to the right; it should not do that
+    labels {
+		width : 120
+		align : right
+    }
+    // Fonts and sizes.
+    fonts {
+		toc {
+		    description: "sans 12"
+		}
+	
+	title    { description: "sans-serif 16" }
+	subtitle { description: "sans-serif 12" }
+	text     { description: "sans 10" }
+	label    { description: "sans 10" }
+	chorus   { description: "sans 10" }
+	
+	diagram   { 
+		description: "sans 10"
+		color:       #a0a0a0
+	}
+	
+	chord {
+	    description: "sans 10"
+	    color:       #a0a0a0
+	}
+    comment {
+        // Could add some padding of the content of section?
+        background : #F0E8C9
+        name       : sans
+        size       : 12
+    }
+    label {
+		// It would be nice if we can more fine-graned labels
+        // so we can give some more prominance to a chorus for example
+        name       : sans
+        size       : 12
+    }
+	
+    // Font for numbered chord dots.
+    chordfingers {
+      file        : ChordProSymbols.ttf
+
+      // Colour specification.
+      numbercolor : background
+	  
+	  size: 4
+	  background : #F0E8C9
+    }
+    }
+	
+    // slightly bigger diagrams, on top
+    diagrams {
+	    show:      top
+	    align:     center
+	    width:     9
+	    height:    11
+        // The dots are too big for me, so I make them smaller
+        // - Note: that *does* break the 'open' notes; they don't fit anymore
+	    dotsize:   0.8
+	    vcells:    5
+	    vspace:    2
+	    hspace:    3.25
+	    linewidth: 0.025
+        // - Note: there seems no way to ajust the 'finger-size' in the diagram. They are caculated and too big to my taste.
+    }
+	
+    formats {
+
+      // By default, a page has:
+      default {
+
+        // Background page.
+        background : ""
+
+        // Three-part title format specification, left, center, right.
+        footer : [ "%{title}" "" "%{page}" ]
+
+        // Three-part title format specification, left, center, right.
+        subtitle : [ "" "" "" ]
+
+        // Three-part title format specification, left, center, right.
+        title : [ "" "" "" ]
+      }
+
+      // The very first output page is slightly different:
+      first {
+
+        // Background page.
+        background : ""
+
+        // Three-part title format specification, left, center, right.
+        footer : [ "%{tempo}" "" "" ]
+      }
+
+      // The first page of a song has:
+      title {
+
+        // Background page.
+        background : ""
+
+        // Three-part title format specification, left, center, right.
+        footer : [ "" "" "%{page}" ]
+
+        // Three-part title format specification, left, center, right.
+		// - Note: I use the *artist* as subtitle
+        subtitle : [ "" "%{artist}" "%{tempo}" ]
+
+        // Three-part title format specification, left, center, right.
+        title : [ "" "%{title}" "" ]
+      }
+    }
+	
+    // Appearance of chorus.
+    // - Note: Its seems that the label of the last chorus is *sticking* and atached to a next {start_of_chorus} or {chorus}. It should not.
+    //         
+    chorus {
+
+      // Appearance of side bar.
+      bar {
+
+        // Bar colour.
+        color : #a0a0a0
+
+        // Bar offset to the left of the text. Suppress when zero.
+        offset : 8
+
+        // Bar width. Suppress when zero.
+        width : 0.5
+      }
+
+      // Indent of the chorus, not including bar.
+	  // - Note: Intent it because else the label is *sticked* to the bar when aligning to the right
+      indent : 4
+
+      // Appearance of chorus recall.
+      recall {
+
+        // Quote the chorus like a chorus.
+        choruslike : false
+
+        // Quote the chorus.
+        quote : false
+
+        // Label for recalled chorus.
+        tag : "Repeat Chorus"
+
+        // Font for tag text.
+        type : comment
+      }
+
+      // Label for Chorus.
+	  // - Note: This seems to do nothing
+      tag : ChorusTag
+    }
+	
+    // Baseline distances as a factor of the font size.
+    spacing {
+
+      // Spacing for empty (blank) lines.
+      // - Note: I like to have to have the sections more seperated.
+      empty : 2
+
+      // Spacing for table of contents lines.
+      toc : 1.4
+    }
+}
+
+// Tables of contents.
+// - Note: The *two* ToC's by default is too much much more me. There are *outlines* for that. Books don't have *two* ToC's
+//		    
+contents : [
+  {
+
+    // The metadata for this toc. One or two items.
+    fields : [ songindex ]
+
+    // For future use.
+    fold : false
+
+    // The label (title) for this toc.
+    label : "Table of Contents"
+
+    // The format for the toc lines.
+    line : "%{artist}%{title| - %{}}"
+
+    // Omit this toc.
+    omit : false
+
+    // The format for the page numbers in the toc.
+    pageno : "%{page}"
+
+    // Template song for the toc.
+    template : stdtoc
+  }
+]
+
+parser.preprocess {
+
+	// I like the sections to have a label,
+	// if not set, it is added here...
+	// I have to use **all** because if I just use **directive**
+	// it wil break sections that do already have a label
+
+    all : [
+
+    	{ pattern: "soc}|start_of_chorus}"
+    	  replace: "start_of_chorus" \
+    	           ` label="Chorus"}`
+    	}
+
+    	{ pattern: "sov}|start_of_verse}"
+    	  replace: "start_of_verse" \
+    	           ' label="Verse"}'
+    	}
+        { "pattern" : "{tempo: ",
+          "replace" : "{tempo: Tempo: " }
+    ]
+    
+}
+
+// General suggestions:
+//
+

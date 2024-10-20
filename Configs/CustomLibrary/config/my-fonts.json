@@ -1,0 +1,11 @@
+pdf {
+    // The font families.
+    fontconfig {
+      sans {
+        ""         : /Users/Desbeers/Github/Applications/ChordProMac/Configs/CustomLibrary/fonts/SF-Pro-Text-Regular.otf
+        bold       : FreeSansBold.ttf
+        bolditalic : FreeSansBoldOblique.ttf
+        italic     : FreeSansOblique.ttf
+      }
+    }
+}

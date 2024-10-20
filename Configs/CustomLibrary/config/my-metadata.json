@@ -1,0 +1,27 @@
+// METADATA
+metadata {
+
+  // Known metadata items
+  //
+  // - Note: The full list; this is not appending to defaults
+  keys : [
+    title
+    sorttitle
+    subtitle
+    artist
+    composer
+    lyricist
+    arranger
+    album
+    copyright
+    year
+    key
+    time
+    tempo
+    capo
+    duration
+	// - Note: My own... just to avoid warnings
+	tag
+	musicpath
+  ]
+}
