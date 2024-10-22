@@ -116,6 +116,20 @@ extension ChordProEditor {
                     lineNumber += 1
                 }
             }
+            /// Draw line number for the optional extra (empty) line at the end of the text
+            if layoutManager.extraLineFragmentTextContainer != nil {
+                /// Set the marker rect
+                let markerRect = NSRect(
+                    x: 0,
+                    y: layoutManager.extraLineFragmentRect.origin.y,
+                    width: rect.width,
+                    height: layoutManager.extraLineFragmentRect.height
+                )
+                /// Bool if the line should be highlighted
+                let highlight = layoutManager.extraLineFragmentRect.minY == textView.currentParagraphRect?.minY
+                drawLineNumber(lineNumber, inRect: markerRect, highlight: highlight)
+            }
+            
             /// Draw the number of the line
             func drawLineNumber(_ number: Int, inRect rect: NSRect, highlight: Bool) {
                 var attributes = ChordProEditor.rulerNumberStyle
