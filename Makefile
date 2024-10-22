@@ -45,10 +45,11 @@ archive: xcodebuild
 	# Create the DMG
 	bash Resources/Create-dmg/create-dmg \
 	  --volname "ChordPro Development Version" \
+	  --volicon "Resources/chordpro-dmg.icns" \
 	  --background "Resources/installer_background.png" \
 	  --eula "Resources/eula.rtf" \
 	  --window-pos 200 120 \
-	  --window-size 700 400 \
+	  --window-size 700 440 \
 	  --icon-size 64 \
 	  --icon "ChordPro.app" 560 75 \
 	  --hide-extension "ChordPro.app" \

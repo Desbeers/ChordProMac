@@ -259,7 +259,8 @@ extension Terminal {
             arguments.append("--config='\(localConfigURL.path)'")
             UserFileBookmark.stopCustomFileAccess(persistentURL: localConfigURL)
         }
-
+        /// Define the warning messages
+        arguments.append("--define diagnostics.format='Line %n, %m'")
         /// Add the output file
         arguments.append("--output='\(sceneState.exportURL.path)'")
         /// Run **ChordPro** in the shell

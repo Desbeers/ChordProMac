@@ -19,7 +19,10 @@ import SwiftUI
         // MARK: Song Document View
 
         DocumentGroup(newDocument: ChordProDocument(text: appState.newDocumentContent)) { file in
-            if file.fileURL == nil && file.document.text == appState.standardDocumentContent && appState.settings.application.showWelcomeWindow {
+            if file.fileURL == nil &&
+                file.document.text == appState.standardDocumentContent &&
+                appState.settings.application.showWelcomeWindow &&
+                !(NSDocumentController.shared.currentDocument?.isDocumentEdited ?? false) {
                 ProgressView()
                     .withHostingWindow { window in
                         window?.alphaValue = 0

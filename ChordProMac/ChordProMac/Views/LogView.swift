@@ -17,13 +17,10 @@ struct LogView: View {
     var logItems: [LogItem] {
         do {
             let log = try String(contentsOf: sceneState.logFileURL, encoding: .utf8)
-            /// Since the document is created in the temporarily directory, it has a very long path and name so strip it
-            let strippedLog = log
-                .replacingOccurrences(of: "\(sceneState.sourceURL.path)", with: "SONG")
-                .components(separatedBy: .newlines)
-            /// Return the log in its mapped ``LogItem`` array
-            return strippedLog.map { strippedLog -> LogItem in
-                LogItem(line: strippedLog)
+                .trimmingCharacters(in: .newlines)
+                .replacingOccurrences(of: "\"\(sceneState.sourceURL.path)\":", with: "")
+            return log.components(separatedBy: .newlines).map { line -> LogItem in
+                LogItem(line: line.trimmingCharacters(in: .whitespacesAndNewlines))
             }
         } catch {
             /// There is no log (this should not happen)
@@ -38,15 +35,12 @@ struct LogView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 10) {
                     ForEach(logItems) { log in
-                        /// Skip empty lines
-                        if !log.line.isEmpty {
-                            HStack {
-                                Image(systemName: "exclamationmark.bubble")
-                                Divider()
-                                Text(log.line)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        HStack {
+                            Image(systemName: "exclamationmark.bubble")
+                            Divider()
+                            Text(log.line)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 .padding()
