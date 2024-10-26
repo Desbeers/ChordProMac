@@ -36,12 +36,11 @@ struct ExportSongbookView: View, DropDelegate {
                 options
                     .frame(width: 300)
             }
-            Divider()
             StatusView()
-                .padding(.horizontal)
         }
         .frame(minWidth: 680, minHeight: 500, alignment: .top)
         .animation(.default, value: appState.settings.application)
+        .animation(.default, value: sceneState.showLog)
         .overlay {
             VStack {
                 Text(songbookState.chordProRunning ? "Making the PDF" : "Your PDF is ready")
@@ -56,6 +55,15 @@ struct ExportSongbookView: View, DropDelegate {
                             }
                             Button("Export") {
                                 songbookState.exportFolderDialog = true
+                            }
+                            .fileExporter(
+                                isPresented: $songbookState.exportFolderDialog,
+                                document: ExportDocument(pdf: songbookState.pdf),
+                                contentType: .pdf,
+                                defaultFilename: appState.settings.application.songbookTitle
+                            ) { _ in
+                                Logger.pdfBuild.notice("Export completed")
+                                songbookState.pdf = nil
                             }
                         }
                         .padding()
@@ -87,15 +95,6 @@ struct ExportSongbookView: View, DropDelegate {
             }
         }
         .onDrop(of: [.fileURL], delegate: self)
-        .fileExporter(
-            isPresented: $songbookState.exportFolderDialog,
-            document: ExportDocument(pdf: songbookState.pdf),
-            contentType: .pdf,
-            defaultFilename: appState.settings.application.songbookTitle
-        ) { _ in
-            Logger.pdfBuild.notice("Export completed")
-            songbookState.pdf = nil
-        }
         .quickLookPreview($songbookState.coverPreview)
         .environmentObject(appState)
         .environmentObject(sceneState)

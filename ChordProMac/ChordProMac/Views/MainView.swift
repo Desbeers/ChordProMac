@@ -20,16 +20,16 @@ struct MainView: View {
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
-        VStack {
+        VStack(spacing: 0)  {
             HStack(spacing: 0) {
                 EditorPaneView()
                 PreviewPaneView()
             }
             StatusView()
-                .padding(.horizontal)
         }
         .animation(.default, value: sceneState.showEditor)
         .animation(.default, value: sceneState.showPreview)
+        .animation(.default, value: sceneState.showLog)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack {
@@ -70,6 +70,7 @@ struct MainView: View {
                 }
                 /// Create the preview unless we show only the editor
                 if appState.settings.application.openSongAction != .editorOnly {
+                    sceneState.file = file
                     do {
                         let pdf = try await sceneState.exportToPDF(text: document?.document.text ?? "error")
                         /// Show the preview

@@ -18,15 +18,32 @@ struct EditorPaneView: View {
     /// The body of the `View`
     var body: some View {
         if sceneState.showEditor, let document {
-            ChordProEditor(
-                text: document.$document.text,
-                settings: appState.settings.editor,
-                directives: appState.directives
-            )
-            .introspect { editor in
-                Task { @MainActor in
-                    sceneState.editorInternals = editor
+            VStack(spacing: 0) {
+                ChordProEditor(
+                    text: document.$document.text,
+                    settings: appState.settings.editor,
+                    directives: appState.directives,
+                    log: sceneState.logMessages
+                )
+                .introspect { editor in
+                    Task { @MainActor in
+                        sceneState.editorInternals = editor
+                    }
                 }
+                Divider()
+                HStack(spacing: 0) {
+                    Text("Line \(sceneState.editorInternals.currentLineNumber)")
+                    let logMessages = sceneState.logMessages
+                        .filter { $0.lineNumber == sceneState.editorInternals.currentLineNumber }
+                        .map(\.message)
+                        .joined(separator: ", ")
+                    Text(.init(logMessages.isEmpty ? " " : ": \(logMessages)"))
+                }
+                .font(.caption)
+                .padding(.leading)
+                .padding([.vertical], 4)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color(nsColor: .textBackgroundColor))
             }
             .frame(maxHeight: .infinity)
             /// - Note: Make sure we have an up-to-date list of directives

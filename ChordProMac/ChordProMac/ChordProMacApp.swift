@@ -43,7 +43,7 @@ import SwiftUI
             }
         }
         .commands {
-            CommandGroup(replacing: CommandGroupPlacement.appInfo) {
+            CommandGroup(replacing: .appInfo) {
                 Button("About ChordPro") {
                     appDelegate.showAboutWindow()
                 }

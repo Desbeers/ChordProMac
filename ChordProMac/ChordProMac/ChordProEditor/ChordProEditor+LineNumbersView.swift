@@ -113,9 +113,14 @@ extension ChordProEditor {
                             highlight: highlight
                         )
                     }
+                    if highlight {
+                        /// Set the current line number of the cursor
+                        textView.currentLineNumber = lineNumber
+                    }
                     lineNumber += 1
                 }
             }
+            
             /// Draw line number for the optional extra (empty) line at the end of the text
             if layoutManager.extraLineFragmentTextContainer != nil {
                 /// Set the marker rect
@@ -141,6 +146,10 @@ extension ChordProEditor {
                     attributes[NSAttributedString.Key.foregroundColor] = NSColor.textColor
                 case false:
                     attributes[NSAttributedString.Key.foregroundColor] = NSColor.secondaryLabelColor
+                }
+                if textView.log.map(\.lineNumber).contains(number) {
+                    /// We have a warning, make the line number red
+                    attributes[NSAttributedString.Key.foregroundColor] = NSColor.red
                 }
                 /// Define the rect of the string
                 var stringRect = rect

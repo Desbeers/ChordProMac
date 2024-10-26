@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View to show the latest log`
 struct LogView: View {
@@ -13,55 +14,51 @@ struct LogView: View {
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
-    /// Get the latest log
-    var logItems: [LogItem] {
-        do {
-            let log = try String(contentsOf: sceneState.logFileURL, encoding: .utf8)
-                .trimmingCharacters(in: .newlines)
-                .replacingOccurrences(of: "\"\(sceneState.sourceURL.path)\":", with: "")
-            return log.components(separatedBy: .newlines).map { line -> LogItem in
-                LogItem(line: line.trimmingCharacters(in: .whitespacesAndNewlines))
-            }
-        } catch {
-            /// There is no log (this should not happen)
-            return [LogItem(line: "There is no log available")]
-        }
-    }
+    /// Bool to show the export sheet
+    @State private var exportLogDialog: Bool = false
     /// The body of the `View`
     var body: some View {
-        VStack {
-            Text("Log")
-                .font(.title)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
-                    ForEach(logItems) { log in
-                        HStack {
-                            Image(systemName: "exclamationmark.bubble")
-                            Divider()
-                            Text(log.line)
+        ScrollView {
+            ScrollViewReader { value in
+                ForEach(sceneState.logMessages) { log in
+                    HStack(alignment: .top) {
+                        Image(systemName: "exclamationmark.bubble")
+                            .foregroundStyle(log.type.color)
+                        Divider()
+                        Text(log.time.formatted(.dateTime))
+                        Divider()
+                        if let lineNumber = log.lineNumber {
+                            Text("**Line \(lineNumber):**")
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        Text(log.message)
                     }
+                    .padding([.horizontal], 4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding()
-            }
-            .border(Color.accentColor)
-            HStack {
-                /// - Note: We can't set a default button in SwiftUI for macOS 12 and want to keep the code simple
-                ExportLogButton(label: "Save Log")
-                Button("Close") {
-                    sceneState.showLog = false
-                }
+                /// Just use this as anchor point to keep the scrollview at the bottom
+                Divider()
+                    .opacity(0)
+                    .id(1)
+                    .onChange(of: sceneState.logMessages) { _ in
+                        value.scrollTo(1)
+                    }
             }
         }
-        .frame(
-            minWidth: 300,
-            idealWidth: 400,
-            maxWidth: 500,
-            minHeight: 200,
-            idealHeight: 300,
-            maxHeight: 800
-        )
+        .background(Color(nsColor: .textBackgroundColor))
+        .border(Color.secondary)
+        .fileExporter(
+            isPresented: $exportLogDialog,
+            document: LogDocument(log: sceneState.logMessages.map { item -> String in
+                return "\(item.time): \(item.message)"
+            } .joined(separator: "\n")),
+            contentType: .plainText,
+            defaultFilename: "ChordPro Log Export"
+        ) { _ in
+            Logger.pdfBuild.notice("Export log completed")
+        }
+        .contextMenu {
+            ExportLogButton(label: "Export Messages", exportLogDialog: $exportLogDialog)
+        }
         .padding()
     }
 }

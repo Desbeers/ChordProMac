@@ -15,34 +15,16 @@ struct ExportLogButton: View {
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
     /// Present an export dialog
-    @State private var exportLogDialog = false
-    /// The log as String
-    @State private var log: String?
+    @Binding var exportLogDialog: Bool
     /// The body of the `View`
     var body: some View {
         Button(
             action: {
-                    Task {
-                        do {
-                            log = try String(contentsOf: sceneState.logFileURL, encoding: .utf8)
-                            exportLogDialog = true
-                        } catch {
-                            /// Show an error
-                            sceneState.alertError = error
-                        }
-                    }
+                exportLogDialog = true
             },
             label: {
                 Text(label)
             }
         )
-        .fileExporter(
-            isPresented: $exportLogDialog,
-            document: LogDocument(log: log),
-            contentType: .plainText,
-            defaultFilename: "ChordPro Log Export"
-        ) { _ in
-            Logger.pdfBuild.notice("Export log completed")
-        }
     }
 }

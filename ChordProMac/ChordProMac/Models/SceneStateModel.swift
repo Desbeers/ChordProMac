@@ -18,6 +18,8 @@ final class SceneStateModel: ObservableObject {
     @Published var alertError: Error?
     /// Bool if we want to show the log
     @Published var showLog: Bool = false
+    /// The log messages
+    @Published var logMessages: [ChordProEditor.LogItem] = [.init()]
     /// Status of the last **ChordPro** export
     @Published var exportStatus: AppError = .noErrorOccurred
     /// The temporary directory URL for processing files
@@ -39,10 +41,6 @@ final class SceneStateModel: ObservableObject {
     /// The URL of the export file
     var exportURL: URL {
         temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .pdf)
-    }
-    /// The URL of the log file
-    var logFileURL: URL {
-        temporaryDirectoryURL.appendingPathComponent(songFileName, conformingTo: .plainText)
     }
     /// The URL of the file list with songs
     var fileListURL: URL {

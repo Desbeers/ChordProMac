@@ -22,6 +22,7 @@
 		D72EA33C2C0BB24600B1BA93 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA33B2C0BB24600B1BA93 /* LogView.swift */; };
 		D72EA33E2C0C5C3F00B1BA93 /* LocalizedAlertError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA33D2C0C5C3F00B1BA93 /* LocalizedAlertError.swift */; };
 		D72EA3402C0C5E5800B1BA93 /* View+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA33F2C0C5E5800B1BA93 /* View+extension.swift */; };
+		D73E45CA2CCD290E00AD5A33 /* ChordProEditor+LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D73E45C92CCD290E00AD5A33 /* ChordProEditor+LogItem.swift */; };
 		D74002CB2C04711000291BE7 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CA2C04711000291BE7 /* SettingsView.swift */; };
 		D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CC2C04725D00291BE7 /* AppSettings.swift */; };
 		D74002CF2C04728600291BE7 /* AppStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D74002CE2C04728600291BE7 /* AppStateModel.swift */; };
@@ -100,6 +101,7 @@
 		D72EA33B2C0BB24600B1BA93 /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		D72EA33D2C0C5C3F00B1BA93 /* LocalizedAlertError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedAlertError.swift; sourceTree = "<group>"; };
 		D72EA33F2C0C5E5800B1BA93 /* View+extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "View+extension.swift"; sourceTree = "<group>"; };
+		D73E45C92CCD290E00AD5A33 /* ChordProEditor+LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ChordProEditor+LogItem.swift"; sourceTree = "<group>"; };
 		D74002CA2C04711000291BE7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D74002CC2C04725D00291BE7 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		D74002CE2C04728600291BE7 /* AppStateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStateModel.swift; sourceTree = "<group>"; };
@@ -321,6 +323,7 @@
 				D7D244BB2C3C3C310058FB8E /* ChordProEditor+Internals.swift */,
 				D7D244BC2C3C3C310058FB8E /* ChordProEditor+LayoutManager.swift */,
 				D7D244BD2C3C3C310058FB8E /* ChordProEditor+LineNumbersView.swift */,
+				D73E45C92CCD290E00AD5A33 /* ChordProEditor+LogItem.swift */,
 				D7D244BE2C3C3C310058FB8E /* ChordProEditor+Settings.swift */,
 				D7D244BF2C3C3C310058FB8E /* ChordProEditor+Static.swift */,
 				D7D244C02C3C3C310058FB8E /* ChordProEditor+TextView.swift */,
@@ -551,6 +554,7 @@
 				D7D244E42C3C3C780058FB8E /* ColorPickerButton.swift in Sources */,
 				D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */,
 				D7723A512C0326120031CD0C /* MainView.swift in Sources */,
+				D73E45CA2CCD290E00AD5A33 /* ChordProEditor+LogItem.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
