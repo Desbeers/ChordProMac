@@ -19,7 +19,7 @@ extension Terminal {
     /// Run a script in the shell and return its output
     /// - Parameter arguments: The arguments to pass to the shell
     /// - Returns: The output from the shell
-    static func runInShell(arguments: [String], sceneState: SceneStateModel?) async -> Output {
+    @MainActor static func runInShell(arguments: [String], sceneState: SceneStateModel?) async -> Output {
         /// The normal output
         var allOutput: [OutputItem] = []
         /// The error output
@@ -31,9 +31,7 @@ extension Terminal {
                 allOutput.append(.init(time: output.time, message: output.message))
             case let .standardError(error):
                 if let sceneState {
-                    Task { @MainActor in
-                        sceneState.logMessages.append(parseChordProMessage(error, sceneState: sceneState))
-                    }
+                    sceneState.logMessages.append(parseChordProMessage(error, sceneState: sceneState))
                 }
                 allErrors.append(.init(time: error.time, message: error.message))
             }
@@ -231,10 +229,14 @@ extension Terminal {
         }
         /// The **ChordPro** binary
         arguments.append("\"\(chordProApp.path)\"")
-
-        arguments.append("--verbose")
         /// Songbook export
         if fileList {
+            /// Define the warning messages
+            arguments.append("--define diagnostics.format='%f, line %n, %m'")
+            /// Log in verbose modus to get an idea of the progress
+            arguments.append("--verbose")
+            /// Reset the progress
+            sceneState.songbookProgress = (0, "Processing songs")
             /// Add the system generated front cover if selected
             if settings.application.songbookGenerateCover {
                 arguments.append("--title='\(title)'")
@@ -255,6 +257,9 @@ extension Terminal {
             /// Add the file list
             arguments.append("--filelist=\"\(sceneState.fileListURL.path)\"")
         } else {
+            /// Define the warning messages
+            arguments.append("--define diagnostics.format='Line %n, %m'")
+            /// Add the source file
             arguments.append("\"\(sceneState.sourceURL.path)\"")
         }
         /// Get the user settings that are simple and do not need sandbox help
@@ -273,12 +278,12 @@ extension Terminal {
             arguments.append("--config='\(localConfigURL.path)'")
             UserFileBookmark.stopCustomFileAccess(persistentURL: localConfigURL)
         }
-        /// Define the warning messages
-        arguments.append("--define diagnostics.format='Line %n, %m'")
         /// Add the output file
         arguments.append("--output='\(sceneState.exportURL.path)'")
         /// Add the process to the log
         sceneState.logMessages = [.init(type: .notice, message: "Creating PDF preview")]
+        /// Clear the editor messages
+        sceneState.editorMessages = []
         /// Run **ChordPro** in the shell
         /// - Note: The output is logged
         let output = await Terminal.runInShell(arguments: [arguments.joined(separator: " ")], sceneState: sceneState)
@@ -297,24 +302,33 @@ extension Terminal {
 
 extension Terminal {
 
-    static func parseChordProMessage(_ output: Terminal.OutputItem, sceneState: SceneStateModel) -> ChordProEditor.LogItem {
+    @MainActor static func parseChordProMessage(_ output: Terminal.OutputItem, sceneState: SceneStateModel) -> ChordProEditor.LogItem {
+        /// Cleanup the message
         let message = output.message
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: sceneState.sourceURL.path, with: sceneState.sourceURL.lastPathComponent)
-        let regex = try! NSRegularExpression(pattern: "^Line (\\d+), (.*)")
+        let lineNumberRegex = try! NSRegularExpression(pattern: "^Line (\\d+), (.*)")
+        let progressRegex = try! NSRegularExpression(pattern: "^Progress\\[PDF(.*) - (.*)")
+        /// Check for progress (for a Songbook export)
+        if
+            let match = progressRegex.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
+            let remaining = Range(match.range(at: 2), in: message) {
+            sceneState.songbookProgress  = (sceneState.songbookProgress.item + 1, String(message[remaining]))
+        }
         /// Check for a line number
         if
-            let match = regex.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
+            let match = lineNumberRegex.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
             let lineNumber = Range(match.range(at: 1), in: message),
             let remaining = Range(match.range(at: 2), in: message)
         {
-            return (
-                .init(
-                    time: output.time,
-                    type: .warning,
-                    lineNumber: Int(message[lineNumber]),
-                    message: "Warning: \(String(message[remaining]))")
+            let message = ChordProEditor.LogItem(
+                time: output.time,
+                type: .warning,
+                lineNumber: Int(message[lineNumber]),
+                message: "Warning: \(String(message[remaining]))"
             )
+            sceneState.editorMessages.append(message)
+            return message
         } else {
             return (
                 .init(

@@ -18,45 +18,36 @@ struct LogView: View {
     var body: some View {
         ScrollView {
             ScrollViewReader { value in
-                ForEach(sceneState.logMessages) { log in
-                    HStack(alignment: .top) {
-                        Image(systemName: "exclamationmark.bubble")
-                            .foregroundStyle(log.type.color)
-                        Divider()
-                        Text(log.time.formatted(.dateTime))
-                        Divider()
-                        if let lineNumber = log.lineNumber {
-                            Text("**Line \(lineNumber):**")
+                VStack(spacing: 0) {
+                    ForEach(sceneState.logMessages) { log in
+                        HStack(alignment: .top) {
+                            Image(systemName: "exclamationmark.bubble")
+                                .foregroundStyle(log.type.color)
+                            Text(log.time.formatted(.dateTime))
+                            Text(":")
+                            if let lineNumber = log.lineNumber {
+                                Text("**Line \(lineNumber):**")
+                            }
+                            Text(.init(log.message))
                         }
-                        Text(.init(log.message))
+                        .padding(4)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    .padding([.horizontal], 4)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                    /// Just use this as anchor point to keep the scrollview at the bottom
+                    Divider()
+                        .opacity(0)
+                        .id(1)
+                        .onChange(of: sceneState.logMessages) { _ in
+                            value.scrollTo(1)
+                        }
                 }
-                /// Just use this as anchor point to keep the scrollview at the bottom
-                Divider()
-                    .opacity(0)
-                    .id(1)
-                    .onChange(of: sceneState.logMessages) { _ in
-                        value.scrollTo(1)
-                    }
             }
         }
         .font(.monospaced(.body)())
         .background(Color(nsColor: .textBackgroundColor))
         .border(Color.secondary)
-        .fileExporter(
-            isPresented: $sceneState.exportLogDialog,
-            document: LogDocument(log: sceneState.logMessages.map { item -> String in
-                return "\(item.time): \(item.message)"
-            } .joined(separator: "\n")),
-            contentType: .plainText,
-            defaultFilename: "ChordPro Messages \(Date.now.formatted())"
-        ) { _ in
-            Logger.pdfBuild.notice("Export log completed")
-        }
         .contextMenu {
-            ExportLogButton(label: "Export Messages")
+            LogButtons(buttons: [.clear, .export, .info], exportLabel: "Save the Messages to a File")
         }
         .padding()
     }

@@ -20,6 +20,10 @@ final class SceneStateModel: ObservableObject {
     @Published var showLog: Bool = false
     /// The log messages
     @Published var logMessages: [ChordProEditor.LogItem] = [.init()]
+    /// The log messages that are relevant for the editor
+    var editorMessages: [ChordProEditor.LogItem] = [.init()]
+    /// The prgress when creating a songbook
+    @Published var songbookProgress: (item: Int, title: String) = (0, "")
     /// Bool to export the log mesages
     @Published var exportLogDialog: Bool = false
     /// Status of the last **ChordPro** export

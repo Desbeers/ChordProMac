@@ -44,5 +44,7 @@ struct UpdatePreviewButton: View {
                 .stroke(Color.accentColor.opacity(0.3), lineWidth: 1)
         )
         .padding()
+        ProgressView()
+            .opacity(isRunning ? 1 : 0)
     }
 }

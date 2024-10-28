@@ -1,5 +1,5 @@
 //
-//  ExportLogButton.swift
+//  LogButtons.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 02/06/2024.
@@ -8,33 +8,53 @@
 import SwiftUI
 import OSLog
 
-/// SwiftUI `View` for an export log button
-struct ExportLogButton: View {
-    /// The label for the button
-    let label: String
+/// SwiftUI `View` with log buttons
+@MainActor struct LogButtons: View {
+    /// The buttons to show
+    let buttons: [ButtonType]
+    /// The label for the export button
+    var exportLabel: String = "Save Messages"
     /// The observable state of the application
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
-    @EnvironmentObject private var sceneState: SceneStateModel
+    @FocusedValue(\.sceneState) private var sceneState: SceneStateModel?
     /// The body of the `View`
     var body: some View {
+        Group {
+            ForEach(buttons, id: \.self) { button in
+                switch button {
+                case .export:
+                    export
+                case .clear:
+                    clear
+                case .info:
+                    info
+                }
+            }
+        }
+        .disabled(sceneState == nil)
+    }
+    var export: some View {
         Button(
             action: {
-                sceneState.exportLogDialog = true
+                sceneState?.exportLogDialog = true
             },
             label: {
-                Text(label)
+                Text(exportLabel)
             }
         )
+    }
+    var clear: some View {
         Button(
             action: {
-                sceneState.logMessages = [.init()]
+                sceneState?.logMessages = [.init()]
             },
             label: {
                 Text("Clear the Message Area")
             }
         )
-        Divider()
+    }
+    var info: some View {
         Button(
             action: {
                 insertChordProInfo()
@@ -46,11 +66,19 @@ struct ExportLogButton: View {
     }
 }
 
-extension ExportLogButton {
+extension LogButtons {
+
+    enum ButtonType {
+        case export
+        case clear
+        case info
+    }
+}
+
+extension LogButtons {
 
     func insertChordProInfo() {
         if let chordProInfo = appState.chordProInfo {
-            dump(chordProInfo)
             var text =
 """
 ChordPro Preview Editor version \(chordProInfo.general.chordpro.version)
@@ -84,7 +112,7 @@ Mac GUI written in SwiftUI
                 text += String(repeating: " ", count: 22 - module.name.count)
                 text += "\(module.version)\n"
             }
-            sceneState.logMessages.append(.init(type: .notice, message: text))
+            sceneState?.logMessages.append(.init(type: .notice, message: text))
         }
     }
 }

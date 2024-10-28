@@ -138,7 +138,7 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
         /// The ``AboutView``
         case aboutView = "About ChordPro"
         /// The ``ExportSongbookView``
-        case exportSongbookView = "Export Songs"
+        case exportSongbookView = "Export Songs into a Songbook"
     }
 }
 

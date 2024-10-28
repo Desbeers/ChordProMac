@@ -35,7 +35,7 @@ struct PanesButtons: View {
             }
         }
         .onChange(of: appState.settings.chordPro) { _ in
-            if sceneState.preview.data != nil {
+            if sceneState.panes != .editorOnly {
                 /// Show a preview with the new settings
                 Task {
                     await PreviewPaneView.showPreview(document: document, sceneState: sceneState)

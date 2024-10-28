@@ -38,6 +38,7 @@ struct ExportSongbookView: View, DropDelegate {
             }
             StatusView()
         }
+        .disabled(songbookState.chordProRunning || songbookState.pdf != nil)
         .frame(minWidth: 680, minHeight: 500, alignment: .top)
         .animation(.default, value: appState.settings.application)
         .animation(.default, value: sceneState.showLog)
@@ -53,9 +54,10 @@ struct ExportSongbookView: View, DropDelegate {
                             Button("Close") {
                                 songbookState.pdf = nil
                             }
-                            Button("Export") {
+                            Button("Save Songbook") {
                                 songbookState.exportFolderDialog = true
                             }
+                            .keyboardShortcut(.defaultAction)
                             .fileExporter(
                                 isPresented: $songbookState.exportFolderDialog,
                                 document: ExportDocument(pdf: songbookState.pdf),
@@ -68,10 +70,16 @@ struct ExportSongbookView: View, DropDelegate {
                         }
                         .padding()
                 } else {
-                    ProgressView()
-                        .padding()
-                    Text("This might take some time...")
+                    ProgressView(
+                        value: Double(min(appState.settings.application.fileList.count + 2, sceneState.songbookProgress.item)),
+                        total: Double(appState.settings.application.fileList.count + 2)
+                    ) {
+                        Text("This might take some time...")
+                    }
+                    .progressViewStyle(.circular)
+                    Text("\(sceneState.songbookProgress.title)")
                         .font(.caption)
+                        .padding(.top)
                 }
             }
             .padding()
@@ -267,6 +275,7 @@ struct ExportSongbookView: View, DropDelegate {
                 Text("Export Songbook")
             })
             .padding()
+            .keyboardShortcut(.defaultAction)
             .disabled(songbookState.currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
         }
     }

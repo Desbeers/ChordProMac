@@ -23,7 +23,7 @@ struct EditorPaneView: View {
                     text: document.$document.text,
                     settings: appState.settings.editor,
                     directives: appState.directives,
-                    log: sceneState.logMessages
+                    log: sceneState.editorMessages
                 )
                 .introspect { editor in
                     Task { @MainActor in
@@ -52,6 +52,8 @@ struct EditorPaneView: View {
                 .background(Color(nsColor: .textBackgroundColor))
             }
             .frame(maxHeight: .infinity)
+            /// - Note: Make sure we have an up-to-date list of directives
+            .id(appState.directives.map(\.directive))
         }
     }
 }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import OSLog
 
 /// SwiftUI `View` wit the status of the scene
 struct StatusView: View {
@@ -60,5 +61,15 @@ struct StatusView: View {
         .animation(.default, value: appState.settings)
         .animation(.default, value: sceneState.exportStatus)
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
+        .fileExporter(
+            isPresented: $sceneState.exportLogDialog,
+            document: LogDocument(log: sceneState.logMessages.map { item -> String in
+                return "\(item.time): \(item.message)"
+            } .joined(separator: "\n")),
+            contentType: .plainText,
+            defaultFilename: "ChordPro Messages \(Date.now.formatted())"
+        ) { _ in
+            Logger.pdfBuild.notice("Export log completed")
+        }
     }
 }
