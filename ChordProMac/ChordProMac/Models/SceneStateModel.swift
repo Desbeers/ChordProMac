@@ -20,6 +20,8 @@ final class SceneStateModel: ObservableObject {
     @Published var showLog: Bool = false
     /// The log messages
     @Published var logMessages: [ChordProEditor.LogItem] = [.init()]
+    /// Bool to export the log mesages
+    @Published var exportLogDialog: Bool = false
     /// Status of the last **ChordPro** export
     @Published var exportStatus: AppError = .noErrorOccurred
     /// The temporary directory URL for processing files

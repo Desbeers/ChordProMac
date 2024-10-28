@@ -31,13 +31,24 @@ struct PanesButtons: View {
                 /// Clear the data
                 sceneState.preview.data = nil
                 /// Show a preview with the task
-                PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+                await PreviewPaneView.showPreview(document: document, sceneState: sceneState)
             }
         }
         .onChange(of: appState.settings.chordPro) { _ in
             if sceneState.preview.data != nil {
                 /// Show a preview with the new settings
-                PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+                Task {
+                    await PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+                }
+            }
+        }
+        .onChange(of: sceneState.panes) { [oldValue = sceneState.panes] newValue in
+            /// Clear previous data
+            if oldValue == .editorOnly {
+                sceneState.preview.data = nil
+                Task {
+                    await PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+                }
             }
         }
     }

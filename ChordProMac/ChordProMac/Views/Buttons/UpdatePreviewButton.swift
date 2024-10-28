@@ -13,13 +13,20 @@ struct UpdatePreviewButton: View {
     @EnvironmentObject private var sceneState: SceneStateModel
     /// The observable state of the document
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    /// Bool if **ChordPro** is running in the shell
+    @State private var isRunning: Bool = false
     /// The body of the `View`
     var body: some View {
         Button {
-            PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+            Task {
+                isRunning = true
+                await PreviewPaneView.showPreview(document: document, sceneState: sceneState)
+                isRunning = false
+            }
         } label: {
             Text("Update Preview")
         }
+        .disabled(isRunning)
         .padding(8)
         .background(Color(nsColor: .textColor).opacity(0.04).cornerRadius(10))
         .background(

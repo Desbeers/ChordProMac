@@ -14,8 +14,6 @@ struct LogView: View {
     @EnvironmentObject private var appState: AppStateModel
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
-    /// Bool to show the export sheet
-    @State private var exportLogDialog: Bool = false
     /// The body of the `View`
     var body: some View {
         ScrollView {
@@ -30,7 +28,7 @@ struct LogView: View {
                         if let lineNumber = log.lineNumber {
                             Text("**Line \(lineNumber):**")
                         }
-                        Text(log.message)
+                        Text(.init(log.message))
                     }
                     .padding([.horizontal], 4)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -44,20 +42,21 @@ struct LogView: View {
                     }
             }
         }
+        .font(.monospaced(.body)())
         .background(Color(nsColor: .textBackgroundColor))
         .border(Color.secondary)
         .fileExporter(
-            isPresented: $exportLogDialog,
+            isPresented: $sceneState.exportLogDialog,
             document: LogDocument(log: sceneState.logMessages.map { item -> String in
                 return "\(item.time): \(item.message)"
             } .joined(separator: "\n")),
             contentType: .plainText,
-            defaultFilename: "ChordPro Log Export"
+            defaultFilename: "ChordPro Messages \(Date.now.formatted())"
         ) { _ in
             Logger.pdfBuild.notice("Export log completed")
         }
         .contextMenu {
-            ExportLogButton(label: "Export Messages", exportLogDialog: $exportLogDialog)
+            ExportLogButton(label: "Export Messages")
         }
         .padding()
     }

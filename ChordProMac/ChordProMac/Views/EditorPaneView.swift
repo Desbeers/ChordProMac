@@ -52,8 +52,6 @@ struct EditorPaneView: View {
                 .background(Color(nsColor: .textBackgroundColor))
             }
             .frame(maxHeight: .infinity)
-            /// - Note: Make sure we have an up-to-date list of directives
-            .id(appState.directives.map(\.directive))
         }
     }
 }

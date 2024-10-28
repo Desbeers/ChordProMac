@@ -33,7 +33,7 @@ struct MainView: View {
             ToolbarItem(placement: .primaryAction) {
                 HStack {
                     PanesButtons()
-                    ExportSongButton(label: "Export as PDF")
+                    ExportSongButton(label: "Export PDF")
                     ShareButton()
                         .labelStyle(.iconOnly)
                 }

@@ -56,20 +56,18 @@ struct PreviewPaneView: View {
 }
 
 extension PreviewPaneView {
-
+    
     /// Show a PDF preview
-    @MainActor static func showPreview(document: FileDocumentConfiguration<ChordProDocument>?, sceneState: SceneStateModel) {
+    @MainActor static func showPreview(document: FileDocumentConfiguration<ChordProDocument>?, sceneState: SceneStateModel) async {
         if let document {
-            Task {
-                do {
-                    let pdf = try await sceneState.exportToPDF(text: document.document.text, replace: true)
-                    /// Make sure the preview pane is open
-                    sceneState.panes = sceneState.panes.showPreview
-                    /// Show the preview
-                    sceneState.preview.data = pdf.data
-                } catch {
-                    Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
-                }
+            do {
+                let pdf = try await sceneState.exportToPDF(text: document.document.text, replace: true)
+                /// Make sure the preview pane is open
+                sceneState.panes = sceneState.panes.showPreview
+                /// Show the preview
+                sceneState.preview.data = pdf.data
+            } catch {
+                Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
             }
         }
     }
