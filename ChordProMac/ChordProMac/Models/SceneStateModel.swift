@@ -61,12 +61,11 @@ final class SceneStateModel: ObservableObject {
     @Published var preview = PreviewState()
     /// The internals of the **ChordPro** editor
     @Published var editorInternals = ChordProEditor.Internals()
-    /// Bool to show the editor
-    @Published var showEditor: Bool = false
-    /// Bool to show the preview
-    @Published var showPreview: Bool = false
+    /// The pane(s) to show in ``MainView``
+    @Published var panes: Panes
     /// Init the class
     init() {
+        self.panes = AppStateModel.shared.settings.application.openSongAction
         self.defaultSongName = "New Song \(Date().formatted(date: .abbreviated, time: .standard))"
         try? FileManager.default.createDirectory(at: temporaryDirectoryURL, withIntermediateDirectories: true)
     }
@@ -123,12 +122,45 @@ extension SceneStateModel {
                 exportStatus = .pdfCreationError
                 /// Remove the task (if any)
                 customTask = nil
-                /// Open the editor
-                showEditor = true
-                /// Hide the preview
-                showPreview = false
+                /// Open the editor and hide the preview
+                panes = .editorOnly
                 /// Trow the error
                 throw error
+            }
+        }
+    }
+}
+
+extension SceneStateModel {
+
+    /// The panes we can thow in the ``MainView``
+    enum Panes: String, Codable, CaseIterable  {
+        /// Show only the editor
+        case editorOnly = "Editor"
+        /// Show the editor and preview
+        case editorAndPreview = "Both"
+        /// Show only the preview
+        case previewOnly = "Preview"
+        /// The description for the ``SettingsView``
+        var description: String {
+            switch self {
+            case .editorOnly:
+                return "Open only the Editor"
+            case .editorAndPreview:
+                return "Open the Editor and the Preview"
+            case .previewOnly:
+                return "Open only the Preview"
+            }
+        }
+        /// Show the preview pane, optionaly with the editor
+        var showPreview: Panes {
+            switch self {
+            case .editorOnly:
+                return .editorAndPreview
+            case .editorAndPreview:
+                return .editorAndPreview
+            case .previewOnly:
+                return .previewOnly
             }
         }
     }

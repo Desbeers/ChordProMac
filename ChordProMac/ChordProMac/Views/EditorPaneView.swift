@@ -17,7 +17,7 @@ struct EditorPaneView: View {
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
-        if sceneState.showEditor, let document {
+        if sceneState.panes != .previewOnly, let document {
             VStack(spacing: 0) {
                 ChordProEditor(
                     text: document.$document.text,
@@ -38,6 +38,12 @@ struct EditorPaneView: View {
                         .map(\.message)
                         .joined(separator: ", ")
                     Text(.init(logMessages.isEmpty ? " " : ": \(logMessages)"))
+                    Spacer()
+                    FontSizeButtons()
+                        .labelStyle(.iconOnly)
+                        .controlSize(.small)
+                        .buttonStyle(.plain)
+                        .padding(.trailing)
                 }
                 .font(.caption)
                 .padding(.leading)

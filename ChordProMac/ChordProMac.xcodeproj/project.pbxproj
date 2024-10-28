@@ -43,12 +43,13 @@
 		D7723A612C032A190031CD0C /* Terminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A602C032A190031CD0C /* Terminal.swift */; };
 		D7723A672C0336C70031CD0C /* AppError.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A662C0336C70031CD0C /* AppError.swift */; };
 		D7723A692C03442F0031CD0C /* ExportSongButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A682C03442F0031CD0C /* ExportSongButton.swift */; };
-		D7723A6F2C0354250031CD0C /* PreviewPDFButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A6E2C0354250031CD0C /* PreviewPDFButton.swift */; };
+		D7723A6F2C0354250031CD0C /* PanesButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7723A6E2C0354250031CD0C /* PanesButtons.swift */; };
 		D774F2812C05E07E00CC4E3E /* Note.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2802C05E07E00CC4E3E /* Note.swift */; };
 		D774F2832C05E18B00CC4E3E /* Accidentals.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2822C05E18B00CC4E3E /* Accidentals.swift */; };
 		D774F2852C05F2B900CC4E3E /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2842C05F2B900CC4E3E /* StatusView.swift */; };
 		D774F2872C05F6CB00CC4E3E /* Notation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D774F2862C05F6CB00CC4E3E /* Notation.swift */; };
 		D776B5CE2C8A1EC100E10FE8 /* ExportSongbookView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D776B5CD2C8A1EC100E10FE8 /* ExportSongbookView.swift */; };
+		D77E2BB52CCFE73B0071F57E /* UpdatePreviewButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D77E2BB42CCFE73B0071F57E /* UpdatePreviewButton.swift */; };
 		D795739D2C95CCC600EE315D /* FileListItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D795739C2C95CCC600EE315D /* FileListItem.swift */; };
 		D796F0EC2C1A6AB600B3DE40 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */; };
 		D7A4E2AA2CAB8533000748C2 /* CloseWindowButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7A4E2A92CAB8533000748C2 /* CloseWindowButton.swift */; };
@@ -125,12 +126,13 @@
 		D7723A602C032A190031CD0C /* Terminal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terminal.swift; sourceTree = "<group>"; };
 		D7723A662C0336C70031CD0C /* AppError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppError.swift; sourceTree = "<group>"; };
 		D7723A682C03442F0031CD0C /* ExportSongButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSongButton.swift; sourceTree = "<group>"; };
-		D7723A6E2C0354250031CD0C /* PreviewPDFButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewPDFButton.swift; sourceTree = "<group>"; };
+		D7723A6E2C0354250031CD0C /* PanesButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PanesButtons.swift; sourceTree = "<group>"; };
 		D774F2802C05E07E00CC4E3E /* Note.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Note.swift; sourceTree = "<group>"; };
 		D774F2822C05E18B00CC4E3E /* Accidentals.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Accidentals.swift; sourceTree = "<group>"; };
 		D774F2842C05F2B900CC4E3E /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		D774F2862C05F6CB00CC4E3E /* Notation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Notation.swift; sourceTree = "<group>"; };
 		D776B5CD2C8A1EC100E10FE8 /* ExportSongbookView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSongbookView.swift; sourceTree = "<group>"; };
+		D77E2BB42CCFE73B0071F57E /* UpdatePreviewButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdatePreviewButton.swift; sourceTree = "<group>"; };
 		D795739C2C95CCC600EE315D /* FileListItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileListItem.swift; sourceTree = "<group>"; };
 		D796F0EB2C1A6AB600B3DE40 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		D7A4E2A92CAB8533000748C2 /* CloseWindowButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseWindowButton.swift; sourceTree = "<group>"; };
@@ -206,7 +208,7 @@
 				D7F659B62C2F25D500B65437 /* PrintPDFButton.swift */,
 				D7AC53412C20C1A0002B075F /* FontSizeButtons.swift */,
 				D72EA3372C0B8E2C00B1BA93 /* HelpButtons.swift */,
-				D7723A6E2C0354250031CD0C /* PreviewPDFButton.swift */,
+				D7723A6E2C0354250031CD0C /* PanesButtons.swift */,
 				D7723A682C03442F0031CD0C /* ExportSongButton.swift */,
 				D7F627482C33153100117FBF /* ShareButton.swift */,
 				D7D244E32C3C3C780058FB8E /* UserFileButton.swift */,
@@ -214,6 +216,7 @@
 				D75F410D2C0EFDA200F0413B /* TaskMenuButtons.swift */,
 				D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */,
 				D767276E2C996638001D1947 /* DebugButtons.swift */,
+				D77E2BB42CCFE73B0071F57E /* UpdatePreviewButton.swift */,
 			);
 			path = Buttons;
 			sourceTree = "<group>";
@@ -498,8 +501,9 @@
 				D7D244CA2C3C3C320058FB8E /* ChordProEditor+Settings.swift in Sources */,
 				D7723A612C032A190031CD0C /* Terminal.swift in Sources */,
 				D74002CF2C04728600291BE7 /* AppStateModel.swift in Sources */,
-				D7723A6F2C0354250031CD0C /* PreviewPDFButton.swift in Sources */,
+				D7723A6F2C0354250031CD0C /* PanesButtons.swift in Sources */,
 				D7D244CD2C3C3C320058FB8E /* ChordProEditor+Wrapper.swift in Sources */,
+				D77E2BB52CCFE73B0071F57E /* UpdatePreviewButton.swift in Sources */,
 				D7723A692C03442F0031CD0C /* ExportSongButton.swift in Sources */,
 				D728FF292C1B26F60028D7A9 /* AppDelegateModel.swift in Sources */,
 				D74002CD2C04725D00291BE7 /* AppSettings.swift in Sources */,

@@ -54,6 +54,10 @@ struct ChordProEditor: NSViewRepresentable {
             wrapper.textView.log = log
             wrapper.selectionNeedsDisplay()
         }
+        if wrapper.textView.directives.map(\.directive) != directives.map(\.directive) {
+            wrapper.textView.directives = directives
+            wrapper.selectionNeedsDisplay()
+        }
         /// Update the text in the TextView when it is changed from *outside*; like when adding the example song
         if context.coordinator.task == nil, self.text != wrapper.textView.string {
             wrapper.textView.string = text

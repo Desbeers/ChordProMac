@@ -27,23 +27,12 @@ struct MainView: View {
             }
             StatusView()
         }
-        .animation(.default, value: sceneState.showEditor)
-        .animation(.default, value: sceneState.showPreview)
+        .animation(.default, value: sceneState.panes)
         .animation(.default, value: sceneState.showLog)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack {
-                    if sceneState.showEditor {
-                        FontSizeButtons()
-                            .labelStyle(.iconOnly)
-                    }
-                    Button {
-                        sceneState.showEditor.toggle()
-                    } label: {
-                        Label("Edit", systemImage: sceneState.showEditor ? "pencil.circle.fill" : "pencil.circle")
-                    }
-                    .disabled(!sceneState.showPreview)
-                    PreviewPDFButton(label: "Preview")
+                    PanesButtons()
                     ExportSongButton(label: "Export as PDF")
                     ShareButton()
                         .labelStyle(.iconOnly)
@@ -54,20 +43,8 @@ struct MainView: View {
         /// Set the default panes
         .task {
             if file == nil {
-                sceneState.showEditor = true
-                sceneState.showPreview = false
+                sceneState.panes = .editorOnly
             } else {
-                switch appState.settings.application.openSongAction {
-                case .editorAndPreview:
-                    sceneState.showEditor = true
-                    sceneState.showPreview = true
-                case .editorOnly:
-                    sceneState.showEditor = true
-                    sceneState.showPreview = false
-                case .previewOnly:
-                    sceneState.showEditor = false
-                    sceneState.showPreview = true
-                }
                 /// Create the preview unless we show only the editor
                 if appState.settings.application.openSongAction != .editorOnly {
                     sceneState.file = file
@@ -75,11 +52,9 @@ struct MainView: View {
                         let pdf = try await sceneState.exportToPDF(text: document?.document.text ?? "error")
                         /// Show the preview
                         sceneState.preview.data = pdf.data
-                        sceneState.showPreview = true
                     } catch {
-                        /// Hide the preview and show the editor; something went wrong
-                        sceneState.showEditor = true
-                        sceneState.showPreview = false
+                        /// Something went wrong
+                        Logger.pdfBuild.error("\(error.localizedDescription, privacy: .public)")
                     }
                 }
             }
