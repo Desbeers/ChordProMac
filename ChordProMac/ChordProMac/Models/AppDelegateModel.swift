@@ -61,8 +61,7 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
         }
         /// Update the recent files list
         AppStateModel.shared.recentFiles = NSDocumentController.shared.recentDocumentURLs
-        welcomeWindowController?.showWindow(welcomeWindowController?.window)
-        welcomeWindowController?.window?.makeKeyAndOrderFront(self)
+        openWindow(controller: welcomeWindowController)
     }
     /// Close the ``WelcomeView`` window
     @MainActor func closeWelcomeWindow() {
@@ -86,7 +85,7 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
             window.animationBehavior = .documentWindow
             aboutWindowController = NSWindowController(window: window)
         }
-        aboutWindowController?.showWindow(aboutWindowController?.window)
+        openWindow(controller: aboutWindowController)
     }
     /// Close the ``AboutView`` window
     @MainActor func closeAboutWindow() {
@@ -110,7 +109,17 @@ class AppDelegateModel: NSObject, NSApplicationDelegate, ObservableObject {
             window.animationBehavior = .documentWindow
             exportSongbookWindowController = NSWindowController(window: window)
         }
-        exportSongbookWindowController?.showWindow(exportSongbookWindowController?.window)
+        openWindow(controller: exportSongbookWindowController)
+    }
+
+    // MARK: Open a Window
+
+    /// Open a window and make it key and front
+    /// - Parameter controller: The `NSWindowController` of the window
+    @MainActor private func openWindow(controller: NSWindowController?) {
+        controller?.showWindow(nil)
+        controller?.window?.makeKey()
+        controller?.window?.orderFrontRegardless()
     }
 
     // MARK: Create a default NSWindow

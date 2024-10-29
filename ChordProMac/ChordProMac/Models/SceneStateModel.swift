@@ -130,7 +130,7 @@ extension SceneStateModel {
                 customTask = nil
                 /// Open the editor and hide the preview
                 panes = .editorOnly
-                /// Trow the error
+                /// Throw the error
                 throw error
             }
         }
