@@ -106,6 +106,8 @@ struct ExportSongbookView: View, DropDelegate {
         .quickLookPreview($songbookState.coverPreview)
         .environmentObject(appState)
         .environmentObject(sceneState)
+        /// Give the application access to the scene.
+        .focusedSceneValue(\.sceneState, sceneState)
     }
 
     // MARK: List View
@@ -230,7 +232,6 @@ struct ExportSongbookView: View, DropDelegate {
                         }
                         .padding([.horizontal, .bottom])
                     }
-
                     Toggle(isOn: $appState.settings.application.songbookUseCustomCover, label: {
                         Text("Add a custom cover page")
 

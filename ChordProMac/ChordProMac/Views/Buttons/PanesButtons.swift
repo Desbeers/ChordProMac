@@ -42,7 +42,7 @@ struct PanesButtons: View {
                 }
             }
         }
-        .onChange(of: sceneState.panes) { [oldValue = sceneState.panes] newValue in
+        .onChange(of: sceneState.panes) { [oldValue = sceneState.panes] _ in
             /// Clear previous data
             if oldValue == .editorOnly {
                 sceneState.preview.data = nil

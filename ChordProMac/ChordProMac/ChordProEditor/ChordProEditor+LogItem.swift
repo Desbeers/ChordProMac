@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 extension ChordProEditor {
 
     /// An item for the editor log

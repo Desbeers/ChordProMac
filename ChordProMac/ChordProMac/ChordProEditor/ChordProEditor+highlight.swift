@@ -105,7 +105,6 @@ extension ChordProEditor {
                 }
             }
         }
-
         /// Some extra love for known directives
         guard
             let knownDirectiveRegex = try? NSRegularExpression(

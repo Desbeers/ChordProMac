@@ -24,6 +24,7 @@ struct PreviewPaneView: View {
             if let data = sceneState.preview.data {
                 Divider()
                 AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .overlay(alignment: .top) {
                         if sceneState.preview.outdated {
                             UpdatePreviewButton()
@@ -56,9 +57,12 @@ struct PreviewPaneView: View {
 }
 
 extension PreviewPaneView {
-    
+
     /// Show a PDF preview
-    @MainActor static func showPreview(document: FileDocumentConfiguration<ChordProDocument>?, sceneState: SceneStateModel) async {
+    @MainActor static func showPreview(
+        document: FileDocumentConfiguration<ChordProDocument>?,
+        sceneState: SceneStateModel
+    ) async {
         if let document {
             do {
                 let pdf = try await sceneState.exportToPDF(text: document.document.text, replace: true)

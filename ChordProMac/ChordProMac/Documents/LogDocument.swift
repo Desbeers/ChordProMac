@@ -18,14 +18,16 @@ struct LogDocument: FileDocument {
     init(log: String?) {
         self.log = log ?? "Empty Log"
     }
-    /// Black magic
+    /// Init the configuration
     init(configuration: ReadConfiguration) throws {
         guard
-            let data = configuration.file.regularFileContents
+            let data = configuration.file.regularFileContents,
+            let log = String(data: data, encoding: .utf8)
         else {
             throw AppError.readDocumentError
         }
-        log = String(decoding: data, as: UTF8.self)
+        /// Replace any Windows line endings
+        self.log = log
     }
     /// Save the exported Log
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {

@@ -82,7 +82,7 @@ struct WelcomeView: View {
                                 appDelegate.showExportSongbookWindow()
                             },
                             label: {
-                                Label("Make a songbook", systemImage: "doc.on.doc")
+                                Label("Create a songbook", systemImage: "doc.on.doc")
                             }
                         )
                         Button(
@@ -102,7 +102,7 @@ struct WelcomeView: View {
                             .padding([.horizontal, .bottom])
                         if let url = URL(string: "https://www.chordpro.org/") {
                             Link(destination: url) {
-                                Label("Visit the **ChordPro** website", systemImage: "globe")
+                                Label("Visit the **ChordPro** site", systemImage: "globe")
                             }
                         }
                         if let url = URL(string: "https://www.chordpro.org/chordpro") {

@@ -66,15 +66,13 @@ extension Terminal {
         /// Return the stream
         return AsyncStream { continuation in
             pipe.fileHandleForReading.readabilityHandler = { handler in
-                let standardOutput = String(decoding: handler.availableData, as: UTF8.self)
-                guard !standardOutput.isEmpty else {
+                guard let standardOutput = String(data: handler.availableData, encoding: .utf8) else {
                     return
                 }
                 continuation.yield(.standardOutput(.init(time: .now, message: standardOutput)))
             }
             errorPipe.fileHandleForReading.readabilityHandler = { handler in
-                let errorOutput = String(decoding: handler.availableData, as: UTF8.self)
-                guard !errorOutput.isEmpty else {
+                guard let errorOutput = String(data: handler.availableData, encoding: .utf8) else {
                     return
                 }
                 continuation.yield(.standardError(.init(time: .now, message: errorOutput)))
@@ -290,6 +288,10 @@ extension Terminal {
         /// Try to get the `Data` from the created PDF
         do {
             let data = try Data(contentsOf: sceneState.exportURL)
+            /// If **ChordPro** does not return any output all went well
+            if sceneState.logMessages.count == 1 {
+                sceneState.logMessages.append(.init(type: .notice, message: "No issues found"))
+            }
             /// Return the `Data` and the status of the creation as an ``AppError`
             /// - Note: That does not mean it is has an error, the status is just using the same structure
             return (data, sceneState.logMessages.filter { $0.type == .warning}.isEmpty ? .noErrorOccurred : .pdfCreatedWithErrors)
@@ -302,22 +304,27 @@ extension Terminal {
 
 extension Terminal {
 
+    /// Parse a **ChordPro** mesdsage
+    /// - Parameters:
+    ///   - output: The raw outoput as read from stdError
+    ///   - sceneState: The sceneState of the current document
+    /// - Returns: An item for the internal log
     @MainActor static func parseChordProMessage(_ output: Terminal.OutputItem, sceneState: SceneStateModel) -> ChordProEditor.LogItem {
         /// Cleanup the message
         let message = output.message
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: sceneState.sourceURL.path, with: sceneState.sourceURL.lastPathComponent)
-        let lineNumberRegex = try! NSRegularExpression(pattern: "^Line (\\d+), (.*)")
-        let progressRegex = try! NSRegularExpression(pattern: "^Progress\\[PDF(.*) - (.*)")
+        let lineNumberRegex = try? NSRegularExpression(pattern: "^Line (\\d+), (.*)")
+        let progressRegex = try? NSRegularExpression(pattern: "^Progress\\[PDF(.*) - (.*)")
         /// Check for progress (for a Songbook export)
         if
-            let match = progressRegex.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
+            let match = progressRegex?.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
             let remaining = Range(match.range(at: 2), in: message) {
             sceneState.songbookProgress  = (sceneState.songbookProgress.item + 1, String(message[remaining]))
         }
         /// Check for a line number
         if
-            let match = lineNumberRegex.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
+            let match = lineNumberRegex?.firstMatch(in: message, options: [], range: NSRange(location: 0, length: message.utf16.count)),
             let lineNumber = Range(match.range(at: 1), in: message),
             let remaining = Range(match.range(at: 2), in: message)
         {

@@ -140,7 +140,7 @@ extension SceneStateModel {
 extension SceneStateModel {
 
     /// The panes we can thow in the ``MainView``
-    enum Panes: String, Codable, CaseIterable  {
+    enum Panes: String, Codable, CaseIterable {
         /// Show only the editor
         case editorOnly = "Editor"
         /// Show the editor and preview

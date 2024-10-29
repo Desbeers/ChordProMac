@@ -37,6 +37,9 @@ struct LogView: View {
                     Divider()
                         .opacity(0)
                         .id(1)
+                        .task {
+                            value.scrollTo(1)
+                        }
                         .onChange(of: sceneState.logMessages) { _ in
                             value.scrollTo(1)
                         }

@@ -14,15 +14,6 @@ extension ChordProEditor {
     /// The line numbers view for the editor
     class LineNumbersView: NSRulerView {
 
-        /// A warning for a directive; defined as a directive
-        let warning = Directive(
-            directive: "Warning",
-            group: .metadata,
-            icon: "exclamationmark.triangle",
-            editable: false,
-            help: "A warning is found"
-        )
-
         // MARK: Override draw
 
         /// Draw a background a a stroke on the right of the `NSRulerView`
@@ -49,6 +40,7 @@ extension ChordProEditor {
 
         // MARK: Override drawHashMarksAndLabels
 
+        // swiftlint:disable:next function_body_length
         override func drawHashMarksAndLabels(in rect: NSRect) {
             guard
                 let textView: TextView = self.clientView as? TextView,
@@ -101,18 +93,25 @@ extension ChordProEditor {
                     )
                     /// Bool if the line should be highlighted
                     let highlight = markerRect.minY == textView.currentParagraphRect?.minY
+                    /// Bool if the line contains a warning
+                    let warning = textView.log.map(\.lineNumber).contains(lineNumber)
                     /// Check if the paragraph contains a directive
                     var directive: ChordProDirective?
-                    textStorage.enumerateAttribute(.directive, in: nsRange) {values, _, _ in
-                        if let value = values as? String, textView.directives.map(\.directive).contains(value) {
-                            directive = textView.directives.first { $0.directive == value }
+                    if warning {
+                        directive = ChordProDocument.warningDirective
+                    } else {
+                        textStorage.enumerateAttribute(.directive, in: nsRange) {values, _, _ in
+                            if let value = values as? String, textView.directives.map(\.directive).contains(value) {
+                                directive = textView.directives.first { $0.directive == value }
+                            }
                         }
                     }
                     /// Draw the line number
                     drawLineNumber(
                         lineNumber,
                         inRect: markerRect,
-                        highlight: highlight
+                        highlight: highlight,
+                        warning: warning
                     )
                     /// Draw a symbol if we have a known directive
                     if let directive {
@@ -120,7 +119,7 @@ extension ChordProEditor {
                             directive,
                             inRect: markerRect,
                             highlight: highlight,
-                            warning: false
+                            warning: warning
                         )
                     }
                     if highlight {
@@ -130,7 +129,7 @@ extension ChordProEditor {
                     lineNumber += 1
                 }
             }
-            
+
             /// Draw line number for the optional extra (empty) line at the end of the text
             if layoutManager.extraLineFragmentTextContainer != nil {
                 /// Set the marker rect
@@ -142,13 +141,13 @@ extension ChordProEditor {
                 )
                 /// Bool if the line should be highlighted
                 let highlight = layoutManager.extraLineFragmentRect.minY == textView.currentParagraphRect?.minY
-                drawLineNumber(lineNumber, inRect: markerRect, highlight: highlight)
+                drawLineNumber(lineNumber, inRect: markerRect, highlight: highlight, warning: false)
             }
             /// Set the internals of the editor
             textView.parent?.runIntrospect(textView)
-            
+
             /// Draw the number of the line
-            func drawLineNumber(_ number: Int, inRect rect: NSRect, highlight: Bool) {
+            func drawLineNumber(_ number: Int, inRect rect: NSRect, highlight: Bool, warning: Bool) {
                 var attributes = ChordProEditor.rulerNumberStyle
                 attributes[NSAttributedString.Key.font] = font
                 switch highlight {
@@ -159,15 +158,9 @@ extension ChordProEditor {
                 case false:
                     attributes[NSAttributedString.Key.foregroundColor] = NSColor.secondaryLabelColor
                 }
-                if textView.log.map(\.lineNumber).contains(number) {
-                    /// We have a warning, make the line number red and shw a warning icon
+                /// Set the foregroundcolor to red if we have a warning
+                if warning {
                     attributes[NSAttributedString.Key.foregroundColor] = NSColor.red
-                    drawDirectiveIcon(
-                        warning,
-                        inRect: rect,
-                        highlight: highlight,
-                        warning: true
-                    )
                 }
                 /// Define the rect of the string
                 var stringRect = rect

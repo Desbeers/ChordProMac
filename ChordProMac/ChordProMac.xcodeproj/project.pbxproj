@@ -15,6 +15,7 @@
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
 		D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DBC2C04B668007E77B8 /* libperl.dylib */; };
+		D71A2C4C2CD158FB003F44EF /* AppKitUtils+SplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */; };
 		D728FF292C1B26F60028D7A9 /* AppDelegateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D728FF282C1B26F60028D7A9 /* AppDelegateModel.swift */; };
 		D728FF2B2C1B70B40028D7A9 /* ChordProInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D728FF2A2C1B70B40028D7A9 /* ChordProInfo.swift */; };
 		D72EA32F2C0B2E9400B1BA93 /* UserFileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA32E2C0B2E9400B1BA93 /* UserFileItem.swift */; };
@@ -95,6 +96,7 @@
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
 		D7146DBC2C04B668007E77B8 /* libperl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libperl.dylib; sourceTree = "<group>"; };
+		D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppKitUtils+SplitView.swift"; sourceTree = "<group>"; };
 		D728FF282C1B26F60028D7A9 /* AppDelegateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateModel.swift; sourceTree = "<group>"; };
 		D728FF2A2C1B70B40028D7A9 /* ChordProInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordProInfo.swift; sourceTree = "<group>"; };
 		D72EA32E2C0B2E9400B1BA93 /* UserFileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFileItem.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				D7D244AD2C3C3C240058FB8E /* AppKitUtils+PDFKitRepresentedView.swift */,
 				D7D244AE2C3C3C240058FB8E /* AppKitUtils+printDialog.swift */,
 				D7D244B02C3C3C240058FB8E /* AppKitUtils+SharingServiceRepresentedView.swift */,
+				D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */,
 			);
 			path = AppKitUtils;
 			sourceTree = "<group>";
@@ -522,6 +525,7 @@
 				D774F2812C05E07E00CC4E3E /* Note.swift in Sources */,
 				D7F659B72C2F25D500B65437 /* PrintPDFButton.swift in Sources */,
 				D7D244D92C3C3C5A0058FB8E /* Cache.swift in Sources */,
+				D71A2C4C2CD158FB003F44EF /* AppKitUtils+SplitView.swift in Sources */,
 				D7D244D32C3C3C460058FB8E /* Color+extension.swift in Sources */,
 				D76C40E72C9D9AF000A98C3F /* SongbookStateModel.swift in Sources */,
 				D7D244B72C3C3C240058FB8E /* AppKitUtils+SharingServiceRepresentedView.swift in Sources */,

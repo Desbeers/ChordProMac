@@ -20,13 +20,14 @@ struct MainView: View {
     @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
     /// The body of the `View`
     var body: some View {
-        VStack(spacing: 0)  {
+        VStack(spacing: 0) {
             HStack(spacing: 0) {
                 EditorPaneView()
                 PreviewPaneView()
             }
             StatusView()
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .animation(.default, value: sceneState.panes)
         .animation(.default, value: sceneState.showLog)
         .toolbar {
