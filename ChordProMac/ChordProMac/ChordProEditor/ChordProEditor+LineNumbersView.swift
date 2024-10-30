@@ -40,7 +40,6 @@ extension ChordProEditor {
 
         // MARK: Override drawHashMarksAndLabels
 
-        // swiftlint:disable:next function_body_length
         override func drawHashMarksAndLabels(in rect: NSRect) {
             guard
                 let textView: TextView = self.clientView as? TextView,

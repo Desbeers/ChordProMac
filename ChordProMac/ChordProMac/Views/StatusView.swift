@@ -20,7 +20,7 @@ struct StatusView: View {
             if sceneState.showLog {
                 Divider()
                 LogView()
-                    .frame(height: 140)
+                    .frame(height: 100)
             }
             Divider()
             HStack {

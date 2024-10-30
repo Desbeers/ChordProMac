@@ -17,7 +17,7 @@ struct PanesButtons: View {
     /// The observable state of the scene
     @EnvironmentObject private var sceneState: SceneStateModel
     /// The observable state of the document
-    @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    @Binding var document: ChordProDocument
     /// The body of the `View`
     var body: some View {
         Picker("Options", selection: $sceneState.panes) {

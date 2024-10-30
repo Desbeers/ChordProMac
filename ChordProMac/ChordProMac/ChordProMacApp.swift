@@ -30,7 +30,7 @@ import SwiftUI
                         appDelegate.showWelcomeWindow()
                     }
             } else {
-                MainView(file: file.fileURL)
+                MainView(file: file.fileURL, document: file.$document)
                     .frame(minHeight: 680)
                     .environmentObject(appState)
                 /// Give the scene access to the document
@@ -56,7 +56,7 @@ import SwiftUI
             CommandGroup(after: .importExport) {
                 LogButtons(buttons: [.export], exportLabel: "Save Messages")
                 Divider()
-                ExportSongButton(label: "Export PDF…")
+                ExportSongButton(label: "Export to PDF…")
                     .environmentObject(appState)
                 Divider()
                 PrintPDFButton(label: "Print…")

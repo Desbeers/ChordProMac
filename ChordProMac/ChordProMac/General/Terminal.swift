@@ -30,7 +30,7 @@ extension Terminal {
             case let .standardOutput(output):
                 allOutput.append(.init(time: output.time, message: output.message))
             case let .standardError(error):
-                if let sceneState {
+                if let sceneState, !error.message.isEmpty {
                     sceneState.logMessages.append(parseChordProMessage(error, sceneState: sceneState))
                 }
                 allErrors.append(.init(time: error.time, message: error.message))
@@ -312,8 +312,8 @@ extension Terminal {
     @MainActor static func parseChordProMessage(_ output: Terminal.OutputItem, sceneState: SceneStateModel) -> ChordProEditor.LogItem {
         /// Cleanup the message
         let message = output.message
-            .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: sceneState.sourceURL.path, with: sceneState.sourceURL.lastPathComponent)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         let lineNumberRegex = try? NSRegularExpression(pattern: "^Line (\\d+), (.*)")
         let progressRegex = try? NSRegularExpression(pattern: "^Progress\\[PDF(.*) - (.*)")
         /// Check for progress (for a Songbook export)

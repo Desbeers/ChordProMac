@@ -48,10 +48,10 @@ struct LogView: View {
         }
         .font(.monospaced(.body)())
         .background(Color(nsColor: .textBackgroundColor))
-        .border(Color.secondary)
+        .border(Color.secondary.opacity(0.5))
         .contextMenu {
             LogButtons(buttons: [.clear, .export, .info], exportLabel: "Save the Messages to a File")
         }
-        .padding()
+        .padding(6)
     }
 }

@@ -17,14 +17,11 @@ struct MainView: View {
     /// The observable state of the scene
     @StateObject private var sceneState = SceneStateModel()
     /// The observable state of the document
-    @FocusedValue(\.document) private var document: FileDocumentConfiguration<ChordProDocument>?
+    @Binding var document: ChordProDocument
     /// The body of the `View`
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                EditorPaneView()
-                PreviewPaneView()
-            }
+            panes
             StatusView()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,7 +30,7 @@ struct MainView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack {
-                    PanesButtons()
+                    PanesButtons(document: $document)
                     ExportSongButton(label: "Export PDF")
                     ShareButton()
                         .labelStyle(.iconOnly)
@@ -50,7 +47,7 @@ struct MainView: View {
                 if appState.settings.application.openSongAction != .editorOnly {
                     sceneState.file = file
                     do {
-                        let pdf = try await sceneState.exportToPDF(text: document?.document.text ?? "error")
+                        let pdf = try await sceneState.exportToPDF(text: document.text)
                         /// Show the preview
                         sceneState.preview.data = pdf.data
                     } catch {
@@ -70,6 +67,26 @@ struct MainView: View {
         .task {
             appState.chordProInfo = try? await Terminal.getChordProInfo()
             appState.directives = Directive.getChordProDirectives(chordProInfo: appState.chordProInfo)
+        }
+    }
+    /// The panes of the `View`
+    @ViewBuilder var panes: some View {
+        switch sceneState.panes {
+        case .editorOnly:
+            EditorPaneView(document: $document)
+        case .editorAndPreview:
+            HStack(spacing: 0) {
+                EditorPaneView(document: $document)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    //.layoutPriority(1)
+                PreviewPaneView(document: $document)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    //.layoutPriority(2)
+            }
+            .frame(maxHeight: .infinity)
+            .layoutPriority(1)
+        case .previewOnly:
+            PreviewPaneView(document: $document)
         }
     }
 }
