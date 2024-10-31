@@ -25,13 +25,12 @@ struct MainView: View {
             StatusView()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.default, value: sceneState.panes)
         .animation(.default, value: sceneState.showLog)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 HStack {
                     PanesButtons(document: $document)
-                    ExportSongButton(label: "Export PDF")
+                    ExportSongButton(label: "Export as PDF")
                     ShareButton()
                         .labelStyle(.iconOnly)
                 }
@@ -78,13 +77,10 @@ struct MainView: View {
             HStack(spacing: 0) {
                 EditorPaneView(document: $document)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    //.layoutPriority(1)
                 PreviewPaneView(document: $document)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    //.layoutPriority(2)
             }
             .frame(maxHeight: .infinity)
-            .layoutPriority(1)
         case .previewOnly:
             PreviewPaneView(document: $document)
         }

@@ -22,7 +22,7 @@ struct PreviewPaneView: View {
     var body: some View {
         if let data = sceneState.preview.data {
             AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
-                //.frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(alignment: .top) {
                     if sceneState.preview.outdated {
                         UpdatePreviewButton(document: $document)
@@ -48,7 +48,7 @@ struct PreviewPaneView: View {
                 }
         } else {
             ProgressView()
-                //.frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 }

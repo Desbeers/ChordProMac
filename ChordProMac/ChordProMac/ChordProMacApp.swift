@@ -56,7 +56,7 @@ import SwiftUI
             CommandGroup(after: .importExport) {
                 LogButtons(buttons: [.export], exportLabel: "Save Messages")
                 Divider()
-                ExportSongButton(label: "Export to PDF…")
+                ExportSongButton(label: "Export as PDF…")
                     .environmentObject(appState)
                 Divider()
                 PrintPDFButton(label: "Print…")
