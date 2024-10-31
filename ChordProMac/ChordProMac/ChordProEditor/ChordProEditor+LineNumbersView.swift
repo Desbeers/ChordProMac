@@ -183,9 +183,10 @@ extension ChordProEditor {
                         range: NSRange(location: 0, length: imageString.length)
                     )
                     let imageSize = imageString.size()
-                    let offset = (rect.height - imageSize.height) * 0.5
+                    /// Move the image a bit down
+                    iconRect.origin.y += (layoutManager.lineHeight - imageSize.height) - (layoutManager.baselineNudge * 1.4 )
+                    /// And to the right side of the ruler
                     iconRect.origin.x += iconRect.width - (imageSize.width * 1.4)
-                    iconRect.origin.y += (offset)
                     imageString.draw(in: iconRect)
                 }
             }
