@@ -25,6 +25,8 @@ enum AppError: String, LocalizedError {
     case pdfCreatedWithErrors
     /// An error when **ChordPro** did  not complain but the PDF is not created because the song is empty
     case emptySong
+    /// An error when importing a songbook list is missing songs
+    case songbookListMissingItems
     /// Not an error, all is well
     /// - Note: Used for PDF export
     case noErrorOccurred
@@ -54,6 +56,8 @@ extension AppError {
             return "There where warnings when creating the PDF"
         case .emptySong:
             return "You cannot create a PDF when the song does not have content"
+        case .songbookListMissingItems:
+            return "Not all songs from the list are found"
         case .noErrorOccurred:
             return "All is well"
         default:

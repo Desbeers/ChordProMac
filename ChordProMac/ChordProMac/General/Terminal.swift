@@ -277,7 +277,7 @@ extension Terminal {
             UserFileBookmark.stopCustomFileAccess(persistentURL: localConfigURL)
         }
         /// Add the output file
-        arguments.append("--output='\(sceneState.exportURL.path)'")
+        arguments.append("--output=\"\(sceneState.exportURL.path)\"")
         /// Add the process to the log
         sceneState.logMessages = [.init(type: .notice, message: "Creating PDF preview")]
         /// Clear the editor messages

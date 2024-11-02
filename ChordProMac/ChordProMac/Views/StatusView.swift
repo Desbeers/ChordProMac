@@ -63,7 +63,7 @@ struct StatusView: View {
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .fileExporter(
             isPresented: $sceneState.exportLogDialog,
-            document: LogDocument(log: sceneState.logMessages.map { item -> String in
+            document: PlainTextDocument(text: sceneState.logMessages.map { item -> String in
                 return "\(item.time): \(item.message)"
             } .joined(separator: "\n")),
             contentType: .plainText,

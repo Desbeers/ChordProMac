@@ -1,5 +1,5 @@
 //
-//  LogDocument.swift
+//  PlainTextDocument.swift
 //  ChordProMac
 //
 //  Created by Nick Berendsen on 02/06/2024.
@@ -8,30 +8,29 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Define the **ChordPro** log as plain text
-struct LogDocument: FileDocument {
+/// Define a **ChordPro** plain text file like Log or Songbook
+struct PlainTextDocument: FileDocument {
     /// The UTType to export
     static var readableContentTypes: [UTType] { [.plainText] }
-    /// The log to export
-    var log: String
+    /// The text to export
+    var text: String
     /// Init the struct
-    init(log: String?) {
-        self.log = log ?? "Empty Log"
+    init(text: String?) {
+        self.text = text ?? "Empty Text"
     }
     /// Init the configuration
     init(configuration: ReadConfiguration) throws {
         guard
             let data = configuration.file.regularFileContents,
-            let log = String(data: data, encoding: .utf8)
+            let text = String(data: data, encoding: .utf8)
         else {
             throw AppError.readDocumentError
         }
-        /// Replace any Windows line endings
-        self.log = log
+        self.text = text
     }
-    /// Save the exported Log
+    /// Save the exported text
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
-        guard let data = log.data(using: .utf8) else {
+        guard let data = text.data(using: .utf8) else {
             throw AppError.writeDocumentError
         }
         return .init(regularFileWithContents: data)

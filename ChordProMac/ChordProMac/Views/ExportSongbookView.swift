@@ -90,7 +90,7 @@ struct ExportSongbookView: View, DropDelegate {
         }
         .animation(.default, value: songbookState.pdf)
         .task {
-            songbookState.makeFileList(appState: appState)
+            songbookState.makeFileListFromFolder(appState: appState)
         }
         .task(id: appState.settings.application.songbookGenerateCover) {
             if appState.settings.application.songbookGenerateCover {
@@ -113,7 +113,7 @@ struct ExportSongbookView: View, DropDelegate {
     // MARK: List View
 
     var list: some View {
-        VStack {
+        VStack(spacing: 0) {
             List {
                 ForEach($appState.settings.application.fileList) { $item in
                     HStack {
@@ -160,7 +160,6 @@ struct ExportSongbookView: View, DropDelegate {
                 }
             }
             .listStyle(.inset(alternatesRowBackgrounds: true))
-            .border(Color.accentColor, width: songbookState.isDropping ? 2 : 0)
             .overlay {
                 if appState.settings.application.fileList.isEmpty {
                     Text("Drop a folder with your **ChordPro** files here to view its content and to make a Songbook.")
@@ -168,13 +167,66 @@ struct ExportSongbookView: View, DropDelegate {
                         .wrapSettingsSection(title: "File List")
                 }
             }
+            Divider()
+            /// Selection buttons
+            HStack {
+                Button {
+                    setAllItems(to: true)
+                } label: {
+                    Text("Select All")
+                }
+                .disabled(checkAllStatus(true))
+                Button {
+                    setAllItems(to: false)
+                } label: {
+                    Text("Select None")
+                }
+                .disabled(checkAllStatus(false))
+                Spacer()
+                Button {
+                    songbookState.importSonglistDialog = true
+                } label: {
+                    Text("Load List")
+                }
+                .fileImporter(
+                    isPresented: $songbookState.importSonglistDialog,
+                    allowedContentTypes: [.plainText]
+                ) { result in
+                    switch result {
+                    case .success(let url):
+                        songbookState.makeFileListFromFile(fileURL: url, appState: appState, sceneState: sceneState)
+                    case .failure(let error):
+                        Logger.fileAccess.error("\(error.localizedDescription, privacy: .public)")
+                    }
+                }
+                Button {
+                    songbookState.exportSonglistDialog = true
+                } label: {
+                    Text("Save List")
+                }
+                .fileExporter(
+                    isPresented: $songbookState.exportSonglistDialog,
+                    document: PlainTextDocument(text: songbookState.getSongsPathList(appState: appState).joined(separator: "\n")),
+                    contentType: .plainText,
+                    defaultFilename: "Songbook List"
+                ) { _ in
+                    Logger.pdfBuild.notice("Export of songlist completed")
+                }
+            }
+            .controlSize(.small)
+            .padding(.horizontal)
+            .padding(.vertical, 6)
+            .background(Color(nsColor: .textBackgroundColor))
+            Divider()
             Label(
-                title: { Text("You can reorder the songs by drag and drop\nand swipe left for more actions") },
+                title: { Text("You can reorder the songs by drag and drop. Swipe for more actions.") },
                 icon: { Image(systemName: "info.circle") }
             )
+            .padding(.top, 4)
             .foregroundStyle(.secondary)
             .font(.caption)
         }
+        .border(Color.accentColor, width: songbookState.isDropping ? 2 : 0)
     }
 
     // MARK: Options View
@@ -185,14 +237,14 @@ struct ExportSongbookView: View, DropDelegate {
                 VStack {
                     UserFileButton(userFile: UserFileItem.exportFolder) {
                         songbookState.currentFolder = SongbookStateModel.exportFolderTitle
-                        songbookState.makeFileList(appState: appState)
+                        songbookState.makeFileListFromFolder(appState: appState)
                     }
                     .id(songbookState.currentFolder)
                     Toggle(isOn: $appState.settings.application.recursiveFileList) {
                         Text("Also look for songs in subfolders")
                     }
                     .onChange(of: appState.settings.application.recursiveFileList) { _ in
-                        songbookState.makeFileList(appState: appState)
+                        songbookState.makeFileListFromFolder(appState: appState)
                     }
                     .padding(.vertical)
                     Text(.init(songbookState.songCountLabel(count: appState.settings.application.fileList.count)))
@@ -277,8 +329,21 @@ struct ExportSongbookView: View, DropDelegate {
             })
             .padding()
             .keyboardShortcut(.defaultAction)
-            .disabled(songbookState.currentFolder == nil || appState.settings.application.songbookTitle.isEmpty)
+            .disabled(appState.settings.application.fileList.isEmpty)
         }
+    }
+}
+
+extension ExportSongbookView {
+
+    func setAllItems(to value: Bool) {
+        for (index, _) in appState.settings.application.fileList.enumerated() {
+            appState.settings.application.fileList[index].enabled = value
+        }
+    }
+    func checkAllStatus(_ value: Bool) -> Bool {
+        let items = appState.settings.application.fileList
+        return items.count == items.filter({$0.enabled == value}).count
     }
 }
 
@@ -320,7 +385,7 @@ extension ExportSongbookView {
             if let url = droppedURL {
                 UserFileBookmark.setBookmarkURL(UserFileItem.exportFolder, url)
                 songbookState.currentFolder = url.lastPathComponent
-                songbookState.makeFileList(appState: appState)
+                songbookState.makeFileListFromFolder(appState: appState)
             }
         }
         return true
