@@ -43,50 +43,7 @@ struct ExportSongbookView: View, DropDelegate {
         .animation(.default, value: appState.settings.application)
         .animation(.default, value: sceneState.showLog)
         .overlay {
-            VStack {
-                Text(songbookState.chordProRunning ? "Making the PDF" : "Your PDF is ready")
-                    .font(.headline)
-                if let data = songbookState.pdf {
-                        AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
-                            .frame(width: 400, height: 300)
-                            .border(Color.accentColor, width: 1)
-                        HStack {
-                            Button("Close") {
-                                songbookState.pdf = nil
-                            }
-                            Button("Save Songbook") {
-                                songbookState.exportFolderDialog = true
-                            }
-                            .keyboardShortcut(.defaultAction)
-                            .fileExporter(
-                                isPresented: $songbookState.exportFolderDialog,
-                                document: ExportDocument(pdf: songbookState.pdf),
-                                contentType: .pdf,
-                                defaultFilename: appState.settings.application.songbookTitle
-                            ) { _ in
-                                Logger.pdfBuild.notice("Export completed")
-                                songbookState.pdf = nil
-                            }
-                        }
-                        .padding()
-                } else {
-                    ProgressView(
-                        value: Double(min(appState.settings.application.fileList.count + 2, sceneState.songbookProgress.item)),
-                        total: Double(appState.settings.application.fileList.count + 2)
-                    ) {
-                        Text("This might take some time...")
-                    }
-                    .progressViewStyle(.circular)
-                    Text("\(sceneState.songbookProgress.title)")
-                        .font(.caption)
-                        .padding(.top)
-                }
-            }
-            .padding()
-            .background(Color(nsColor: .textBackgroundColor))
-            .cornerRadius(12)
-            .shadow(radius: 10)
-            .opacity(songbookState.chordProRunning || songbookState.pdf != nil ? 1 : 0)
+            overlay
         }
         .animation(.default, value: songbookState.pdf)
         .task {
@@ -182,40 +139,11 @@ struct ExportSongbookView: View, DropDelegate {
                     Text("Select None")
                 }
                 .disabled(checkAllStatus(false))
-                Spacer()
-                Button {
-                    songbookState.importSonglistDialog = true
-                } label: {
-                    Text("Load List")
-                }
-                .fileImporter(
-                    isPresented: $songbookState.importSonglistDialog,
-                    allowedContentTypes: [.plainText]
-                ) { result in
-                    switch result {
-                    case .success(let url):
-                        songbookState.makeFileListFromFile(fileURL: url, appState: appState, sceneState: sceneState)
-                    case .failure(let error):
-                        Logger.fileAccess.error("\(error.localizedDescription, privacy: .public)")
-                    }
-                }
-                Button {
-                    songbookState.exportSonglistDialog = true
-                } label: {
-                    Text("Save List")
-                }
-                .fileExporter(
-                    isPresented: $songbookState.exportSonglistDialog,
-                    document: PlainTextDocument(text: songbookState.getSongsPathList(appState: appState).joined(separator: "\n")),
-                    contentType: .plainText,
-                    defaultFilename: "Songbook List"
-                ) { _ in
-                    Logger.pdfBuild.notice("Export of songlist completed")
-                }
             }
             .controlSize(.small)
             .padding(.horizontal)
             .padding(.vertical, 6)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color(nsColor: .textBackgroundColor))
             Divider()
             Label(
@@ -331,6 +259,55 @@ struct ExportSongbookView: View, DropDelegate {
             .keyboardShortcut(.defaultAction)
             .disabled(appState.settings.application.fileList.isEmpty)
         }
+    }
+
+    // MARK: Overlay View
+
+    var overlay: some View {
+        VStack {
+            Text(songbookState.chordProRunning ? "Making the PDF" : "Your PDF is ready")
+                .font(.headline)
+            if let data = songbookState.pdf {
+                    AppKitUtils.PDFKitRepresentedView(data: data, annotations: $annotations)
+                        .frame(width: 400, height: 300)
+                        .border(Color.accentColor, width: 1)
+                    HStack {
+                        Button("Close") {
+                            songbookState.pdf = nil
+                        }
+                        Button("Save Songbook") {
+                            songbookState.exportFolderDialog = true
+                        }
+                        .keyboardShortcut(.defaultAction)
+                        .fileExporter(
+                            isPresented: $songbookState.exportFolderDialog,
+                            document: ExportDocument(pdf: songbookState.pdf),
+                            contentType: .pdf,
+                            defaultFilename: appState.settings.application.songbookTitle
+                        ) { _ in
+                            Logger.pdfBuild.notice("Export completed")
+                            songbookState.pdf = nil
+                        }
+                    }
+                    .padding()
+            } else {
+                ProgressView(
+                    value: Double(min(appState.settings.application.fileList.count + 2, sceneState.songbookProgress.item)),
+                    total: Double(appState.settings.application.fileList.count + 2)
+                ) {
+                    Text("This might take some time...")
+                }
+                .progressViewStyle(.circular)
+                Text("\(sceneState.songbookProgress.title)")
+                    .font(.caption)
+                    .padding(.top)
+            }
+        }
+        .padding()
+        .background(Color(nsColor: .textBackgroundColor))
+        .cornerRadius(12)
+        .shadow(radius: 10)
+        .opacity(songbookState.chordProRunning || songbookState.pdf != nil ? 1 : 0)
     }
 }
 
