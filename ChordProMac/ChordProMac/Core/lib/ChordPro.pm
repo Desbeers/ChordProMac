@@ -197,6 +197,10 @@ sub chordpro {
       if @ARGV > 1;
     foreach my $file ( @ARGV ) {
 	my $opts;
+	if ( $file =~ /^--((?:sub)?title)\s*(.*)/ ) {
+	    $options->{$1} = decode_utf8($2);
+	    next;
+	}
 	if ( $file =~ /(^|\s)--(?:meta|config|define)\b/ ) {
 	    # Break into words.
 	    my @w = Text::ParseWords::shellwords($file);
@@ -1250,7 +1254,7 @@ sub runtime_info {
 	no strict 'subs';
 	push( @p,
 	      { name => "wxPerl",    version => $dd->($Wx::VERSION)  },
-	      { name => "wxWidgets", version => $dd->(Wx::wxVERSION) } );
+	      { name => "wxWidgets", version => $dd->($Wx::wxVERSION) } );
     }
 
     local $SIG{__WARN__} = sub {};
@@ -1305,7 +1309,7 @@ sub runtime_info {
     $res->{metadata} = $::config->{metadata}{keys};
 
     @p = ( qw(title subtitle),
-	   ( grep { !/^(sub)?title$/ } sort(@{$::config->{metadata}{keys}}) ),
+	   ( grep { !/^(sub)?title$/ } sort(@{$::config->{metadata}{keys}//[]}) ),
 	   grep { !/^(sub)?title$/ } (keys(%{ChordPro::Song::_directives()})) );
     $res->{directives} = [ @p ];
 

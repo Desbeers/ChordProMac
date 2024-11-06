@@ -2002,7 +2002,7 @@ sub imageline {
     my $id = $elt->{id};
     my $asset = $assets->{$id};
     unless ( $asset ) {
-	warn("Undefined image id: \"$id\"\n");
+	warn("Line " . $elt->{line} . ", Undefined image id: \"$id\"\n");
     }
     my $opts = { %{$asset->{opts}//{}}, %{$elt->{opts}//{}} };
     my $img = $asset->{data};
@@ -2434,7 +2434,16 @@ sub text_vsp {
     $layout->set_font_description( $ftext->{fd} );
     $layout->set_font_size( $ftext->{size} );
     #warn("vsp: ".join( "", @{$elt->{phrases}} )."\n");
-    $layout->set_markup( join( "", @{$elt->{phrases}} ) );
+
+    my $msg = "";
+    {
+	local $SIG{__WARN__} = sub { $msg .= "@_" };
+	$layout->set_markup( join( "", @{$elt->{phrases}} ) );
+    }
+    if ( $msg && $elt->{line} ) {
+	$msg =~ s/^(.*)\n\s+//;
+	warn("Line ", $elt->{line}, ", $msg\n");
+    }
     my $vsp = $layout->get_size->{height} * $ps->{spacing}->{lyrics};
     #warn("vsp $vsp \"", $layout->get_text, "\"\n");
     # Calculate the vertical span of this line.
@@ -2916,16 +2925,14 @@ sub prepare_assets {
 
     my %sa = %{$s->{assets}//{}} ;	# song assets
 
-    warn("PDF: Preparing ", scalar(keys %sa), " image",
-	 keys(%sa) == 1 ? "" : "s", "\n")
+    warn("PDF: Preparing ", plural(scalar(keys %sa), " image"), "\n")
       if $config->{debug}->{images} || $config->{debug}->{assets};
 
     for my $id ( sort keys %sa ) {
 	prepare_asset( $id, $s, $pr );
     }
 
-    warn("PDF: Preparing ", scalar(keys %sa), " image",
-	 keys(%sa) == 1 ? "" : "s", ", done\n")
+    warn("PDF: Preparing ", plural(scalar(keys %sa), " image"), ", done\n")
       if $config->{debug}->{images} || $config->{debug}->{assets};
     $assets = $s->{assets} || {};
     ::dump( $assets, as => "Assets, Pass 2" )
@@ -3033,8 +3040,8 @@ sub prepare_asset {
 				 combine => $combine,
 				 sep     => $sep,
 			       );
-	    warn( "PDF: Preparing SVG image => ", 0+@$o, " element",
-		  @$o == 1 ? "" : "s", ", combine=$combine\n")
+	    warn( "PDF: Preparing SVG image => ",
+		  plural(0+@$o, " element"), ", combine=$combine\n")
 	      if $config->{debug}->{images};
 	    if ( ! @$o ) {
 		warn("Error in SVG embedding (no SVG objects found)\n");
