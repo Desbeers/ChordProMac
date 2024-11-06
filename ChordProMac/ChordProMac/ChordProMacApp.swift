@@ -54,7 +54,8 @@ import SwiftUI
             }
 #endif
             CommandGroup(after: .importExport) {
-                LogButtons(buttons: [.export], exportLabel: "Save Messages")
+                LogButtons(buttons: [.export], exportLabel: "Save Messages…")
+                    .environmentObject(appState)
                 Divider()
                 ExportSongButton(label: "Export as PDF…")
                     .environmentObject(appState)

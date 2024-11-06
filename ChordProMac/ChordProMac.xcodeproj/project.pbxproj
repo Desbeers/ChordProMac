@@ -8,14 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		D702E0D72C0CC6F5006D9667 /* SceneStateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0D62C0CC6F5006D9667 /* SceneStateModel.swift */; };
-		D702E0DB2C0CE99C006D9667 /* ExportLogButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */; };
+		D702E0DB2C0CE99C006D9667 /* LogButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DA2C0CE99C006D9667 /* LogButtons.swift */; };
 		D702E0DD2C0CEA27006D9667 /* PlainTextDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DC2C0CEA27006D9667 /* PlainTextDocument.swift */; };
 		D702E0DF2C0CEF42006D9667 /* LogItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D702E0DE2C0CEF42006D9667 /* LogItem.swift */; };
 		D7146DB92C04B3C3007E77B8 /* script in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB62C04B3C0007E77B8 /* script */; };
 		D7146DBA2C04B3C3007E77B8 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB72C04B3C2007E77B8 /* lib */; };
 		D7146DBB2C04B3C3007E77B8 /* chordpro in Resources */ = {isa = PBXBuildFile; fileRef = D7146DB82C04B3C2007E77B8 /* chordpro */; };
 		D7146DBE2C04B68F007E77B8 /* libperl.dylib in Resources */ = {isa = PBXBuildFile; fileRef = D7146DBC2C04B668007E77B8 /* libperl.dylib */; };
-		D71A2C4C2CD158FB003F44EF /* AppKitUtils+SplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */; };
 		D728FF292C1B26F60028D7A9 /* AppDelegateModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D728FF282C1B26F60028D7A9 /* AppDelegateModel.swift */; };
 		D728FF2B2C1B70B40028D7A9 /* ChordProInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = D728FF2A2C1B70B40028D7A9 /* ChordProInfo.swift */; };
 		D72EA32F2C0B2E9400B1BA93 /* UserFileItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = D72EA32E2C0B2E9400B1BA93 /* UserFileItem.swift */; };
@@ -89,14 +88,13 @@
 
 /* Begin PBXFileReference section */
 		D702E0D62C0CC6F5006D9667 /* SceneStateModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SceneStateModel.swift; sourceTree = "<group>"; };
-		D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportLogButton.swift; sourceTree = "<group>"; };
+		D702E0DA2C0CE99C006D9667 /* LogButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogButtons.swift; sourceTree = "<group>"; };
 		D702E0DC2C0CEA27006D9667 /* PlainTextDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlainTextDocument.swift; sourceTree = "<group>"; };
 		D702E0DE2C0CEF42006D9667 /* LogItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogItem.swift; sourceTree = "<group>"; };
 		D7146DB62C04B3C0007E77B8 /* script */ = {isa = PBXFileReference; lastKnownFileType = folder; path = script; sourceTree = "<group>"; };
 		D7146DB72C04B3C2007E77B8 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		D7146DB82C04B3C2007E77B8 /* chordpro */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = chordpro; sourceTree = "<group>"; };
 		D7146DBC2C04B668007E77B8 /* libperl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libperl.dylib; sourceTree = "<group>"; };
-		D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AppKitUtils+SplitView.swift"; sourceTree = "<group>"; };
 		D728FF282C1B26F60028D7A9 /* AppDelegateModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegateModel.swift; sourceTree = "<group>"; };
 		D728FF2A2C1B70B40028D7A9 /* ChordProInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChordProInfo.swift; sourceTree = "<group>"; };
 		D72EA32E2C0B2E9400B1BA93 /* UserFileItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserFileItem.swift; sourceTree = "<group>"; };
@@ -216,7 +214,7 @@
 				D7D244E32C3C3C780058FB8E /* UserFileButton.swift */,
 				D7D244E22C3C3C780058FB8E /* ColorPickerButton.swift */,
 				D75F410D2C0EFDA200F0413B /* TaskMenuButtons.swift */,
-				D702E0DA2C0CE99C006D9667 /* ExportLogButton.swift */,
+				D702E0DA2C0CE99C006D9667 /* LogButtons.swift */,
 				D767276E2C996638001D1947 /* DebugButtons.swift */,
 				D77E2BB42CCFE73B0071F57E /* UpdatePreviewButton.swift */,
 			);
@@ -315,7 +313,6 @@
 				D7D244AD2C3C3C240058FB8E /* AppKitUtils+PDFKitRepresentedView.swift */,
 				D7D244AE2C3C3C240058FB8E /* AppKitUtils+printDialog.swift */,
 				D7D244B02C3C3C240058FB8E /* AppKitUtils+SharingServiceRepresentedView.swift */,
-				D71A2C4B2CD158FB003F44EF /* AppKitUtils+SplitView.swift */,
 			);
 			path = AppKitUtils;
 			sourceTree = "<group>";
@@ -525,7 +522,6 @@
 				D774F2812C05E07E00CC4E3E /* Note.swift in Sources */,
 				D7F659B72C2F25D500B65437 /* PrintPDFButton.swift in Sources */,
 				D7D244D92C3C3C5A0058FB8E /* Cache.swift in Sources */,
-				D71A2C4C2CD158FB003F44EF /* AppKitUtils+SplitView.swift in Sources */,
 				D7D244D32C3C3C460058FB8E /* Color+extension.swift in Sources */,
 				D76C40E72C9D9AF000A98C3F /* SongbookStateModel.swift in Sources */,
 				D7D244B72C3C3C240058FB8E /* AppKitUtils+SharingServiceRepresentedView.swift in Sources */,
@@ -542,7 +538,7 @@
 				D7FBDB8F2C2C96AE00D242ED /* Directive.swift in Sources */,
 				D7D244C42C3C3C320058FB8E /* ChordProEditor.swift in Sources */,
 				D75F410E2C0EFDA200F0413B /* TaskMenuButtons.swift in Sources */,
-				D702E0DB2C0CE99C006D9667 /* ExportLogButton.swift in Sources */,
+				D702E0DB2C0CE99C006D9667 /* LogButtons.swift in Sources */,
 				D702E0DD2C0CEA27006D9667 /* PlainTextDocument.swift in Sources */,
 				D7D244D42C3C3C460058FB8E /* Logger+extension.swift in Sources */,
 				D702E0D72C0CC6F5006D9667 /* SceneStateModel.swift in Sources */,

@@ -63,9 +63,7 @@ struct StatusView: View {
         .errorAlert(error: $sceneState.alertError, log: $sceneState.showLog)
         .fileExporter(
             isPresented: $sceneState.exportLogDialog,
-            document: PlainTextDocument(text: sceneState.logMessages.map { item -> String in
-                return "\(item.time): \(item.message)"
-            } .joined(separator: "\n")),
+            document: PlainTextDocument(text: appState.exportMessages(messages: sceneState.logMessages)),
             contentType: .plainText,
             defaultFilename: "ChordPro Messages \(Date.now.formatted())"
         ) { _ in

@@ -90,3 +90,58 @@ final class AppStateModel: ObservableObject {
         return arguments
     }
 }
+
+extension AppStateModel {
+
+    func exportMessages(messages: [ChordProEditor.LogItem]) -> String {
+        let log = messages.map { item -> String in
+            return "\(item.time): \(item.message)"
+        } .joined(separator: "\n")
+        return log + runtimeInfo
+    }
+
+    var runtimeInfo: String {
+        if let chordProInfo = chordProInfo {
+            var text =
+"""
+
+-----------------------------------------------
+ChordPro Preview Editor version \(chordProInfo.general.chordpro.version)
+https://www.chordpro.org
+Copyright 2016,2024 Johan Vromans <jvromans@squirrel.nl>
+
+Mac GUI written in SwiftUI
+
+**Run-time information:**
+ ChordProCore:
+    \(chordProInfo.general.chordpro.version) (\(chordProInfo.general.chordpro.aux))
+  Perl:
+    \(chordProInfo.general.abc) (\(chordProInfo.general.perl.path))
+  Resource path:
+
+"""
+            for resource in chordProInfo.resources {
+                text += "    \(resource.path)\n"
+            }
+
+            text +=
+"""
+  ABC support:
+    \(chordProInfo.general.abc)
+
+**Modules and libraries:**
+
+"""
+            for module in chordProInfo.modules {
+                text += "    \(module.name)"
+                text += String(repeating: " ", count: 22 - module.name.count)
+                text += "\(module.version)\n"
+            }
+            text += "-----------------------------------------------"
+            return text
+        } else {
+            /// This should not happen
+            return "Runtime Information not available"
+        }
+    }
+}

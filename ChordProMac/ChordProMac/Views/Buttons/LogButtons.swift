@@ -27,8 +27,6 @@ import OSLog
                     export
                 case .clear:
                     clear
-                case .info:
-                    info
                 }
             }
         }
@@ -37,6 +35,7 @@ import OSLog
     var export: some View {
         Button(
             action: {
+                /// Show the export dialog
                 sceneState?.exportLogDialog = true
             },
             label: {
@@ -54,16 +53,6 @@ import OSLog
             }
         )
     }
-    var info: some View {
-        Button(
-            action: {
-                insertChordProInfo()
-            },
-            label: {
-                Text("Insert Runtime Information")
-            }
-        )
-    }
 }
 
 extension LogButtons {
@@ -71,48 +60,5 @@ extension LogButtons {
     enum ButtonType {
         case export
         case clear
-        case info
-    }
-}
-
-extension LogButtons {
-
-    func insertChordProInfo() {
-        if let chordProInfo = appState.chordProInfo {
-            var text =
-"""
-ChordPro Preview Editor version \(chordProInfo.general.chordpro.version)
-https://www.chordpro.org
-Copyright 2016,2024 Johan Vromans <jvromans@squirrel.nl>
-
-Mac GUI written in SwiftUI
-
-**Run-time information:**
- ChordProCore:
-    \(chordProInfo.general.chordpro.version) (\(chordProInfo.general.chordpro.aux))
-  Perl:
-    \(chordProInfo.general.abc) (\(chordProInfo.general.perl.path))
-  Resource path:
-
-"""
-            for resource in chordProInfo.resources {
-                text += "    \(resource.path)\n"
-            }
-
-            text +=
-"""
-  ABC support:
-    \(chordProInfo.general.abc)
-
-**Modules and libraries:**
-
-"""
-            for module in chordProInfo.modules {
-                text += "    \(module.name)"
-                text += String(repeating: " ", count: 22 - module.name.count)
-                text += "\(module.version)\n"
-            }
-            sceneState?.logMessages.append(.init(type: .notice, message: text))
-        }
     }
 }
