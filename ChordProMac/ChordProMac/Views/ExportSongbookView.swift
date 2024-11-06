@@ -2,8 +2,6 @@
 //  ExportSongbookView.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 05/09/2024.
-//
 
 import SwiftUI
 import UniformTypeIdentifiers
@@ -313,11 +311,17 @@ struct ExportSongbookView: View, DropDelegate {
 
 extension ExportSongbookView {
 
+    /// Set all **ChordPro** files in the list as enabled or disabled
+    /// - Parameter value: The selection state of the files
     func setAllItems(to value: Bool) {
         for (index, _) in appState.settings.application.fileList.enumerated() {
             appState.settings.application.fileList[index].enabled = value
         }
     }
+
+    /// Check the status of the **ChordPro** files in the list
+    /// - Parameter value: The requested state of the files
+    /// - Returns: True or false
     func checkAllStatus(_ value: Bool) -> Bool {
         let items = appState.settings.application.fileList
         return items.count == items.filter({$0.enabled == value}).count

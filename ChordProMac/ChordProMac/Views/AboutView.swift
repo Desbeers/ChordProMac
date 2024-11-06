@@ -2,8 +2,6 @@
 //  AboutView.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 13/06/2024.
-//
 
 import SwiftUI
 
@@ -39,14 +37,5 @@ import SwiftUI
         .closeWindowModifier {
             appDelegate.closeAboutWindow()
         }
-        .task {
-            appState.chordProInfo = await getInfo()
-        }
-    }
-
-    /// Get the **ChordPro** information
-    /// - Returns: The information as ``ChordProInfo``
-    private func getInfo() async -> ChordProInfo? {
-        return try? await Terminal.getChordProInfo()
     }
 }

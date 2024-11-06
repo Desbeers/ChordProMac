@@ -2,8 +2,6 @@
 //  ChordProEditor+LogItem.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 26/10/2024.
-//
 
 import SwiftUI
 

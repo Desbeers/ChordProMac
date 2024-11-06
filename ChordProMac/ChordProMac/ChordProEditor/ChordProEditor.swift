@@ -2,8 +2,6 @@
 //  ChordProEditor.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 27/06/2024.
-//
 
 import SwiftUI
 
@@ -13,7 +11,7 @@ import SwiftUI
 struct ChordProEditor: NSViewRepresentable {
     /// The `Binding` to the text of the document
     @Binding var text: String
-    /// The ``Settings`` for the editor
+    /// The  settings for the editor
     let settings: Settings
     /// All the directives we know about
     let directives: [ChordProDirective]

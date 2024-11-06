@@ -2,8 +2,6 @@
 //  LogButtons.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 02/06/2024.
-//
 
 import SwiftUI
 import OSLog
@@ -57,8 +55,11 @@ import OSLog
 
 extension LogButtons {
 
+    /// The button type for the log
     enum ButtonType {
+        /// Export log button
         case export
+        /// Clear log button
         case clear
     }
 }

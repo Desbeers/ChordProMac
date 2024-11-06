@@ -2,18 +2,14 @@
 //  AppStateModel.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 27/05/2024.
-//
 
 import Foundation
-import OSLog
 
 /// The observable state of the application
 /// - Note: Every open song window shares this state
 final class AppStateModel: ObservableObject {
-
+    /// The shared AppStateModel
     static let shared = AppStateModel()
-
     /// All the settings for the application
     @Published var settings: AppSettings {
         didSet {
@@ -93,6 +89,9 @@ final class AppStateModel: ObservableObject {
 
 extension AppStateModel {
 
+    /// Export the log together with the runtimw info
+    /// - Parameter messages: All the messages crteated by the **ChordPro** CLI
+    /// - Returns: A formatted string
     func exportMessages(messages: [ChordProEditor.LogItem]) -> String {
         let log = messages.map { item -> String in
             return "\(item.time): \(item.message)"
@@ -100,6 +99,7 @@ extension AppStateModel {
         return log + runtimeInfo
     }
 
+    /// The **ChordPro** runtime info
     var runtimeInfo: String {
         if let chordProInfo = chordProInfo {
             var text =

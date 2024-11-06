@@ -2,8 +2,6 @@
 //  EditorPaneView.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 05/07/2024.
-//
 
 import SwiftUI
 

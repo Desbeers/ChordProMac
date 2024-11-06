@@ -2,8 +2,6 @@
 //  SongbookStateModel.swift
 //  ChordProMac
 //
-//  Created by Nick Berendsen on 20/09/2024.
-//
 
 import AppKit
 import OSLog
