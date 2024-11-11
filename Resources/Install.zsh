@@ -2,7 +2,7 @@
 
 ######################################################
 #                                                    #
-# Install and ad-hoc re-sign an application on macOS #
+# Install an application on macOS                    #
 #                                                    #
 ######################################################
 
@@ -30,8 +30,6 @@ if [ $(id -u) != 0 ]; then
 It will do the following:
 
 - Copy $APPLICATION to your applications folder
-- Remove all attributes that prevents code-signing
-- Re-sign $APPLICATION ‘ad-hoc’, so it is yours and yours only
 - Move $APPLICATION out of quarantine
 - Add the $APPLICATION command-line command to your Terminal \$PATH
 "
@@ -47,21 +45,14 @@ echo "\nCopy $APPLICATION to your Applications folder..."
 
 rm -fr "/Applications/ChordPro.app"
 
-cp -r "${0:a:h}/ChordPro.app" /Applications/
+cp -R "${0:a:h}/ChordPro.app" /Applications/
 
-echo "Ad-hoc code-sign $APPLICATION to make it yours...\n$RESET$MAGENTA"
-
-# Remove stuff that prevents code-signing
-xattr -cr /Applications/ChordPro.app
-# Re-sign the application
-codesign --force --deep -s - /Applications/ChordPro.app
-
-echo "$RESET\nRemove the quarantine flag; its yours now!"
+echo "Remove the quarantine flag..."
 
 xattr -rd com.apple.quarantine /Applications/ChordPro.app
 
 echo "Adding $APPLICATION to your path for real power in the Terminal..."
 
-echo "/Applications/ChordPro.app/Contents/Resources" > /private/etc/paths.d/chordpro
+echo "/Applications/ChordPro.app/Contents/Resources/cli" > /private/etc/paths.d/chordpro
 
 echo "\nDone!\n\nEnjoy $APPLICATION on your Mac!\n"

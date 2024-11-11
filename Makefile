@@ -18,13 +18,14 @@ chordpro:
 	@echo "Copy core to the wrapper..."
 	rm -fr "${COREDIR}"
 	$(MKDIR) -p "${COREDIR}"
-	cp -r "${DEST}/ChordProSource/pp/macosswift/${COREDIR}/" "${COREDIR}"
+	cp -R "${DEST}/ChordProSource/pp/macosswift/${COREDIR}/" "${COREDIR}"
+	cd "${COREDIR}"; ln -s -v ../chordpro cli/chordpro
 
 xcodebuild:
 	@echo "Building ChordProMac for Apple Silicone"
 	rm -fr "${DEST}/XcodeSource"
 	$(MKDIR) -p "${DEST}/XcodeSource"
-	cp -r "ChordProMac" "${DEST}/XcodeSource"
+	cp -R "ChordProMac" "${DEST}/XcodeSource"
 	xcodebuild -project ${DEST}/XcodeSource/ChordProMac/ChordProMac.xcodeproj \
 		-arch arm64 \
 		CODE_SIGN_IDENTITY="-" \
@@ -38,8 +39,8 @@ archive: xcodebuild
 	@echo "Archive ChordPro"
 	rm -fr "${DEST}/ChordPro"
 	$(MKDIR) -p "${DEST}/ChordPro"
-	cp -r "${DEST}/Release/ChordPro.app" "${DEST}/ChordPro"
-	cp "Resources/README.pdf" "${DEST}/ChordPro"
+	cp -R "${DEST}/Release/ChordPro.app" "${DEST}/ChordPro"
+	cp "Resources/README.html" "${DEST}/ChordPro"
 	cp "Resources/Install.zsh" "${DEST}/ChordPro"
 	rm -f "${TESTBUILDDIR}/${DMGNAME}"
 	# Create the DMG
@@ -53,8 +54,8 @@ archive: xcodebuild
 	  --icon-size 64 \
 	  --icon "ChordPro.app" 560 75 \
 	  --hide-extension "ChordPro.app" \
-	  --icon "README.pdf" 560 175 \
-	  --hide-extension "README.pdf" \
+	  --icon "README.html" 560 175 \
+	  --hide-extension "README.html" \
 	  --icon "Install.zsh" 560 275 \
 	  --hide-extension "Install.zsh" \
 	  "${TESTBUILDDIR}/${DMGNAME}" \
